@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Instamenu</string>
+
+    <string name="action_filter">Filter</string>
+    <string name="action_ok">OK</string>
+    <string name="action_share">Share</string>
+
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="title_fragment_camera"></string>
+    <string name="title_fragment_display"></string>
+    <string name="title_fragment_home">Home</string>
+    <string name="title_fragment_filter">Filter</string>
+    <string name="title_fragment_item">Menu</string>
+
+</resources>

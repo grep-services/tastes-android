@@ -1,0 +1,21 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!-- widget dimens -->
+
+    <!-- view -->
+    <dimen name="margin">12dp</dimen> <!-- default margin that can be used for any view. -->
+
+    <!-- text -->
+    <dimen name="text">20sp</dimen>
+
+    <!-- button -->
+    <dimen name="button_width">32dp</dimen>
+    <dimen name="button_height">32dp</dimen>
+
+    <!-- listview -->
+    <dimen name="list_divider">1px</dimen>
+
+</resources>
