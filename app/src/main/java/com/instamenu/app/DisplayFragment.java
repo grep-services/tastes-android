@@ -21,6 +21,8 @@ import com.instamenu.R;
 import com.instamenu.util.LogWrapper;
 import com.instamenu.widget.TagAdapter;
 
+import java.util.List;
+
 public class DisplayFragment extends Fragment implements Button.OnClickListener {
 
     // lat, lng 될 수도 있으므로 일단 남겨둔다.
@@ -104,7 +106,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
             list.setAdapter(adapter);
 
             // test
-            adapter.addTag("i_am_tag_1");
+            //adapter.addTag("i_am_tag_1");
 
             edit = (EditText) view.findViewById(R.id.fragment_display_edit);
 
@@ -145,7 +147,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
 
     public void actionOKClicked() {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayActionOKClicked();
+            mCallbacks.onDisplayActionOKClicked(adapter.getTags(), adapter.getSwitches());
         }
     }
 
@@ -179,6 +181,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
         if(tag == null) return false;
         if(tag.trim().equals("")) return false;
         if(tag.trim().contains(" ")) return false;
+        if(adapter.getTags().contains(tag)) return false;
 
         return true;
     }
@@ -201,6 +204,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
     public interface DisplayFragmentCallbacks {
         public void onDisplayInitActionBar();
         public void onDisplayActionHomeClicked();
-        public void onDisplayActionOKClicked();
+        public void onDisplayActionOKClicked(List<String> tags, List<String> switches);
     }
 }

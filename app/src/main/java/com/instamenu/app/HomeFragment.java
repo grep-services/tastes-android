@@ -9,15 +9,23 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.instamenu.R;
 import com.instamenu.content.Image;
+import com.instamenu.util.LogWrapper;
 import com.instamenu.widget.ImageAdapter;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
-public class HomeFragment extends Fragment {
+import java.util.ArrayList;
+import java.util.List;
+
+public class HomeFragment extends Fragment implements GridView.OnItemClickListener {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    ImageLoader imageLoader;
 
     GridView grid;
     ImageAdapter adapter;
@@ -46,6 +54,8 @@ public class HomeFragment extends Fragment {
             //mParam1 = getArguments().getString(ARG_PARAM1);
             //mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        imageLoader = ImageLoader.getInstance();
     }
 
     @Override
@@ -55,13 +65,29 @@ public class HomeFragment extends Fragment {
 
         grid = (GridView) view.findViewById(R.id.fragment_home_grid);
 
-        adapter = new ImageAdapter(inflater);
+        adapter = new ImageAdapter(inflater, imageLoader);
 
         grid.setAdapter(adapter);
+        grid.setOnItemClickListener(this);
 
-        adapter.addImage(new Image(1, "url", "date", "address", 300, null));
+        setView();
 
         return view;
+    }
+
+    public void setView() {
+        LogWrapper.e("HOME", "set view");
+        // get tags from pref.
+        //=> pull to refresh 등에서는 pref에서 tags 받아올 필요 없을 거라고 생각할수도 있지만, tag를 1번만 받아오는 구조라면, 나중에 display나 filter 등에서 넘어올 때
+        // 다른 정보를 더 받아와야 되는 등, 점점더 골치아파진다.(왜냐하면 이 home frag는 한번 실행되면 계속 남아있으므로 pref도 그대로일 것이기 때문.)
+        // get images from server with tags.
+        List<String> list = new ArrayList<String>();
+        list.add("tag0");
+        Image image = new Image(19, "http://54.65.1.56:3639/media/origin/img1_jTUpfOP.jpg", "http://54.65.1.56:3639/media/thumbnail/img1_FjdDYrJ.jpg", "2014-12-12T19:31:41.533835Z", "address10", 300, list);
+        List<Image> images = new ArrayList<Image>();
+        images.add(image);
+        // set to adapter.
+        adapter.setImages(images);
     }
 
     @Override
@@ -123,9 +149,17 @@ public class HomeFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if(mCallbacks != null) {
+            mCallbacks.onHomeItemClicked((Image) adapter.getItem(position));
+        }
+    }
+
     public interface HomeFragmentCallbacks {
         public void onHomeInitActionBar();
         public void onHomeActionHomeClicked();
         public void onHomeActionFilterClicked();
+        public void onHomeItemClicked(Image image);
     }
 }

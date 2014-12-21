@@ -14,11 +14,17 @@
         android:divider="@color/list_divider"
         android:dividerHeight="@dimen/list_divider"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_divider"/>
+
     <android.support.v7.widget.Toolbar
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="?attr/actionBarSize"
-        android:background="?attr/colorPrimary">
+        android:background="@color/view">
 
         <LinearLayout
             android:layout_width="match_parent"

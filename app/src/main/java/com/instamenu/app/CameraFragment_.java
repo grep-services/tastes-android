@@ -29,6 +29,8 @@ toggle되는 설정들 없으므로 아직 host customize하진 않고 simple에
 */
 public class CameraFragment_ extends CameraFragment implements Button.OnClickListener{
 
+    private CameraView cameraView;
+
     private CameraFragmentCallbacks mCallbacks = null;// callback. 변경 ui는 fragment에 있고, 변경 대상 vars는 activity에 있다. activity가 implement하게 하고, 그 method를 call한다.
     // 근데 이거 그런방법은 없는가? callback 그대로 쓰는 등...
     private MainActivity mActivity = null;// 쓰일 곳이 한군데이긴 하지만, attatch에 붙여서 사용하는게 더 정리되어 보인다.
@@ -58,7 +60,7 @@ public class CameraFragment_ extends CameraFragment implements Button.OnClickLis
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_camera_, container, false);
 
-        CameraView cameraView = (CameraView)view.findViewById(R.id.fragment_camera_preview);
+        /*CameraView */cameraView = (CameraView)view.findViewById(R.id.fragment_camera_preview);
 
         setCameraView(cameraView);
 
@@ -111,7 +113,7 @@ public class CameraFragment_ extends CameraFragment implements Button.OnClickLis
 
     public void takeSimplePicture() {
         if (mCallbacks != null) {
-            mCallbacks.onCameraTakeSimplePicture(this);
+            mCallbacks.onCameraTakeSimplePicture();
         }
     }
 
@@ -164,7 +166,7 @@ public class CameraFragment_ extends CameraFragment implements Button.OnClickLis
         public void onCameraInitActionBar();
         public void onCameraActionNavClicked();
         public void onFlashModeChanged(String mode_flash);
-        public void onCameraTakeSimplePicture(CameraFragment_ cameraFragment);
+        public void onCameraTakeSimplePicture();
         public void onCameraHomeClicked();
     }
 }

@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.instamenu.R;
 import com.instamenu.content.Image;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +23,26 @@ public class ImageAdapter extends BaseAdapter {
     List<Image> images;
 
     LayoutInflater inflater;
+    ImageLoader imageLoader;
 
-    public ImageAdapter(LayoutInflater inflater) {
-        this(inflater, new ArrayList<Image>());
+    public ImageAdapter(LayoutInflater inflater, ImageLoader imageLoader) {
+        this(inflater, imageLoader, new ArrayList<Image>());
     }
 
-    public ImageAdapter(LayoutInflater inflater, List<Image> images) {
+    public ImageAdapter(LayoutInflater inflater, ImageLoader imageLoader, List<Image> images) {
         this.inflater = inflater;
+        this.imageLoader = imageLoader;
         this.images = images;
+    }
+
+    public void setImages(List<Image> images) {
+        if(images == null) {
+            images = new ArrayList<Image>();
+        }
+
+        this.images = images;
+
+        notifyDataSetChanged();
     }
 
     public void addImage(Image image) {
@@ -79,7 +92,8 @@ public class ImageAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        viewHolder.image.setImageResource(R.drawable.ic_launcher);
+        //viewHolder.image.setImageResource(R.drawable.ic_launcher);
+        imageLoader.displayImage(images.get(position).thumbnail, viewHolder.image);
         viewHolder.distance.setText(String.valueOf(images.get(position).distance));
 
         return convertView;

@@ -4,11 +4,14 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Camera;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.commonsware.cwac.camera.CameraHost;
@@ -17,14 +20,30 @@ import com.commonsware.cwac.camera.CameraUtils;
 import com.commonsware.cwac.camera.PictureTransaction;
 import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.instamenu.R;
+import com.instamenu.content.Image;
+import com.instamenu.util.LogWrapper;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends ActionBarActivity implements ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private Toolbar toolbar;
 
+    private SharedPreferences preferences;
+    private List<String> tags;
+    private List<String> switches;
+    private String strTags;
+    private String strSwitches;
+
     private boolean flag_fragment_home = false;// except for home, default back key processing.
 
-    private CameraFragment_ cameraFragment = null;// set when the picture taken.
+    private ViewPagerFragment viewPagerFragment;
+    private CameraFragment_ cameraFragment;
+    private HomeFragment homeFragment;
 
     private boolean use_ffc = false;
     // 일단, continuous가 대세다. 이걸 더 발전시킨다. take전에 autofocus는 답답함 늘릴 수 있다. 차라리 tap to autofocus나 추가한다.
@@ -34,6 +53,10 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     private boolean use_fullbleed = true;
     private String mode_flash = null;
 
+    // for home (gps)
+    private double latitude = 37.5129273;
+    private double longitude = 126.9247538;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,16 +65,23 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // init preferences
+        initPreferences();
+
+        // init imageloader before other fragments' init.
+        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this).build();
+        ImageLoader.getInstance().init(configuration);
+
         // initalization - set viewpager including camera, home
-        Fragment fragment = ViewPagerFragment.newInstance();
-        replaceFragment(fragment, ViewPagerFragment.class.getSimpleName());
+        viewPagerFragment = ViewPagerFragment.newInstance();
+        replaceFragment(viewPagerFragment);
     }
 
-    public void replaceFragment(Fragment fragment, String tag) {// 아직 replace만 tag 필요.(for vp)
+    public void replaceFragment(Fragment fragment) {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        fragmentTransaction.replace(R.id.container, fragment, tag);// replace.
+        fragmentTransaction.replace(R.id.container, fragment);// replace.
 
         fragmentTransaction.commit();
     }
@@ -66,8 +96,115 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         fragmentTransaction.commit();
     }
 
+    //---- pref - 일단 분리해서 만들어둔다.
+    public ArrayList<String> getList(String string) {
+        if(string != null) {
+            return new ArrayList<String>(Arrays.asList(string.split("\\|")));
+        } else {
+            return null;
+        }
+    }
+
+    public String getString(List<String> list) {
+        String string = null;
+
+        for(String item : list) {
+            if(string == null) {
+                string = new String(item);
+            } else {
+                string += ("|" + item);
+            }
+        }
+
+        return string;
+    }
+
+    public void initPreferences() {
+        preferences = getSharedPreferences("instamenu", Context.MODE_PRIVATE);
+
+        strTags = preferences.getString("Tags", null);
+        tags = getList(strTags);
+
+        strSwitches = preferences.getString("Switches", null);
+        switches = getList(strSwitches);
+
+        //LogWrapper.e("INIT PREF", strTags+","+strSwitches);
+    }
+
+    public void setPreferences(List<String> tags, List<String> switches) {
+        this.tags = tags;
+        this.switches = switches;
+
+        strTags = getString(this.tags);
+        strSwitches = getString(this.switches);
+
+        if(strTags != null && strSwitches != null) {
+            SharedPreferences.Editor editor = preferences.edit();
+
+            editor.putString("Tags", strTags);
+            editor.putString("Switches", strSwitches);
+
+            editor.commit();
+        }
+
+        //LogWrapper.e("SET PREF", strTags+","+strSwitches);
+    }
+
+    public void addPreferences(List<String> tags, List<String> switches) {
+        if (tags != null && switches != null) {
+            if (this.tags == null) {
+                this.tags = new ArrayList<String>();
+            }
+
+            if (this.switches == null) {
+                this.switches = new ArrayList<String>();
+            }
+
+            for (int i = 0; i < tags.size(); i++) {
+                if (this.tags.contains(tags.get(i)) == false) {
+                    this.tags.add(tags.get(i));
+                    this.switches.add(switches.get(i));
+                } else {
+                    int index = this.tags.indexOf(tags.get(i));
+                    if (this.switches.get(index).equals(switches.get(i)) == false) {
+                        this.switches.set(index, switches.get(i));
+                    }
+                }
+            }
+
+            String strTags = getString(this.tags);
+            String strSwitches = getString(this.switches);
+
+            if(strSwitches.equals(this.strSwitches) == false) {
+                SharedPreferences.Editor editor = preferences.edit();
+
+                this.strSwitches = strSwitches;
+
+                editor.putString("Switches", this.strSwitches);
+
+                if(strTags.equals(this.strTags) == false) {
+                    this.strTags = strTags;
+
+                    editor.putString("Tags", this.strTags);
+                }
+
+                editor.commit();
+            }
+        }
+
+        //LogWrapper.e("ADD PREF", strTags+","+strSwitches);
+    }
+
+    //---- vp
+    @Override
+    public void onSetFragments() {
+        // vp에서 저 fragment들을 설정하는 시각을 여기서 정확히 예측하느니, callback으로 이렇게 한다.
+        cameraFragment = viewPagerFragment.getCameraFragment();
+        homeFragment = viewPagerFragment.getHomeFragment();
+    }
+
     //---- camera
-    void takeSimplePicture() {
+    public void takeSimplePicture() {
 
         // =====> button disabled하는 code 필요.
         cameraFragment.setShotButtonEnabled(false);
@@ -137,8 +274,8 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
                 }
             });
 
-            //DisplayActivity.imageToShow=image;
-            //startActivity(new Intent(MainActivity.this, DisplayActivity.class));
+            cameraFragment.restartPreview();
+
             DisplayFragment.imageToShow = image;
             addFragment(DisplayFragment.newInstance("", ""));
         }
@@ -195,20 +332,13 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     }
 
     @Override
-    public void onCameraTakeSimplePicture(CameraFragment_ cameraFragment) {
-        this.cameraFragment = cameraFragment;
-
+    public void onCameraTakeSimplePicture() {
         takeSimplePicture();
     }
 
     @Override
     public void onCameraHomeClicked() {
-        FragmentManager fragmentManager = getFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentByTag(ViewPagerFragment.class.getSimpleName());
-
-        if(fragment != null) {
-            ((ViewPagerFragment) fragment).setCurrentPage(1);
-        }
+        viewPagerFragment.setCurrentPage(1);
     }
 
     //---- display
@@ -226,15 +356,14 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     }
 
     @Override
-    public void onDisplayActionOKClicked() {
+    public void onDisplayActionOKClicked(List<String> tags, List<String> switches) {
         // send to server.
+        // add to pref.
+        addPreferences(tags, switches);
         // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
-        FragmentManager fragmentManager = getFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentByTag(ViewPagerFragment.class.getSimpleName());
+        homeFragment.setView();
 
-        if(fragment != null) {
-            ((ViewPagerFragment) fragment).setCurrentPage(1);
-        }
+        viewPagerFragment.setCurrentPage(1);
 
         onBackPressed();
     }
@@ -255,7 +384,13 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
 
     @Override
     public void onHomeActionFilterClicked() {
-        Fragment fragment = FilterFragment.newInstance("", "");
+        Fragment fragment = FilterFragment.newInstance(tags, switches);
+        addFragment(fragment);
+    }
+
+    @Override
+    public void onHomeItemClicked(Image image) {
+        Fragment fragment = ItemFragment.newInstance(image);
         addFragment(fragment);
     }
 
@@ -274,28 +409,20 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     }
 
     @Override
-    public void onFilterActionOKClicked() {
+    public void onFilterActionOKClicked(List<String> tags, List<String> switches) {
         // set to pref.
+        setPreferences(tags, switches);
+        // update home
+        homeFragment.setView();
         // and then, back.
         onBackPressed();
     }
 
     @Override
-    public void onBackPressed() {
-        FragmentManager fragmentManager = getFragmentManager();
-        if(fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
-        } else {
-            if(flag_fragment_home == true) {
-                Fragment fragment = fragmentManager.findFragmentByTag(ViewPagerFragment.class.getSimpleName());
-
-                if(fragment != null) {
-                    ((ViewPagerFragment) fragment).setCurrentPage(0);
-                }
-            } else {
-                finish();
-            }
-        }
+    public void onHideKeyboard(View view) {
+        // 그런데 아직 안됨...
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromInputMethod(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     //---- item
@@ -317,6 +444,24 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
 
     }
 
+    @Override
+    public void onItemAddTag(List<String> tags, List<String> switches) {
+        addPreferences(tags, switches);
+    }
+
+    @Override
+    public void onBackPressed() {
+        FragmentManager fragmentManager = getFragmentManager();
+        if(fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack();
+        } else {
+            if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
+                viewPagerFragment.setCurrentPage(0);
+            } else {
+                finish();
+            }
+        }
+    }
 
     /*
     // 나중에는 menu item들도 activity에서 fragment별로 묶고, 이렇게 button들은 callback 굳이 쓰지 말고 이렇게 바로 오도록 한다.

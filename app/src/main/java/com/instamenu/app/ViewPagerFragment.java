@@ -3,6 +3,7 @@ package com.instamenu.app;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.graphics.Camera;
 import android.os.Bundle;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -12,7 +13,12 @@ import android.view.ViewGroup;
 
 import com.instamenu.R;
 
+import java.util.List;
+
 public class ViewPagerFragment extends Fragment {
+
+    private CameraFragment_ cameraFragment;
+    private HomeFragment homeFragment;
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
@@ -32,6 +38,11 @@ public class ViewPagerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        cameraFragment = CameraFragment_.newInstance();
+        homeFragment = HomeFragment.newInstance("", "");
+
+        setFragments();
     }
 
     @Override
@@ -73,9 +84,16 @@ public class ViewPagerFragment extends Fragment {
         }
     }
 */
+    public void setFragments() {
+        if (mCallbacks != null) {
+            mCallbacks.onSetFragments();
+        }
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
         try {
             mCallbacks = (ViewPagerFragmentCallbacks) activity;
         } catch (ClassCastException e) {
@@ -91,6 +109,14 @@ public class ViewPagerFragment extends Fragment {
 
     public void setCurrentPage(int index) {
         mViewPager.setCurrentItem(index);
+    }
+
+    public CameraFragment_ getCameraFragment() {
+        return cameraFragment;
+    }
+
+    public HomeFragment getHomeFragment() {
+        return homeFragment;
     }
 
     /*
@@ -110,11 +136,13 @@ public class ViewPagerFragment extends Fragment {
 
             switch(position) {
                 case 0:
-                    fragment = CameraFragment_.newInstance();
+                    //fragment = CameraFragment_.newInstance();
+                    fragment = cameraFragment;
 
                     break;
                 case 1:
-                    fragment = HomeFragment.newInstance("", "");
+                    //fragment = HomeFragment.newInstance("", "");
+                    fragment = homeFragment;
 
                     break;
             }
@@ -130,5 +158,6 @@ public class ViewPagerFragment extends Fragment {
 
     public interface ViewPagerFragmentCallbacks {
         //public void onViewPagerPageSelected(int position);
+        public void onSetFragments();
     }
 }

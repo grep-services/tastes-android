@@ -2,6 +2,8 @@ package com.instamenu.app;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -9,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -17,13 +20,21 @@ import android.widget.Toast;
 import com.instamenu.R;
 import com.instamenu.widget.TagAdapter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.StringTokenizer;
+
 public class FilterFragment extends Fragment implements Button.OnClickListener {
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_TAGS = "tags";
+    private static final String ARG_SWITCHES = "switches";
 
-    private String mParam1;
-    private String mParam2;
+    private List<String> tags;
+    private List<String> switches;
+
+    SharedPreferences preferences;
 
     ListView list;
     TagAdapter adapter;
@@ -32,11 +43,11 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
 
     private FilterFragmentCallbacks mCallbacks;
 
-    public static FilterFragment newInstance(String param1, String param2) {
+    public static FilterFragment newInstance(List<String> tags, List<String> switches) {
         FilterFragment fragment = new FilterFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putStringArrayList(ARG_TAGS, tags != null ? (ArrayList<String>) tags : null);
+        args.putStringArrayList(ARG_SWITCHES, switches != null ? (ArrayList<String>) switches : null);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,8 +62,8 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         setHasOptionsMenu(true);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            tags = getArguments().getStringArrayList(ARG_TAGS);
+            switches = getArguments().getStringArrayList(ARG_SWITCHES);
         }
     }
 
@@ -63,7 +74,7 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         list = (ListView) view.findViewById(R.id.fragment_filter_list);
 
         // setting adapter
-        adapter = new TagAdapter(inflater);
+        adapter = new TagAdapter(inflater, tags, switches);
         list.setAdapter(adapter);
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
@@ -112,7 +123,13 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
 
     public void actionOKClicked() {
         if (mCallbacks != null) {
-            mCallbacks.onFilterActionOKClicked();
+            mCallbacks.onFilterActionOKClicked(adapter.getTags(), adapter.getSwitches());
+        }
+    }
+
+    public void hideKeyboard() {
+        if (mCallbacks != null) {
+            mCallbacks.onHideKeyboard(edit);
         }
     }
 
@@ -146,6 +163,7 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         if(tag == null) return false;
         if(tag.trim().equals("")) return false;
         if(tag.trim().contains(" ")) return false;
+        if(adapter.getTags().contains(tag)) return false;
 
         return true;
     }
@@ -157,6 +175,8 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
                 String tag = edit.getText().toString();
                 if(checkTag(tag) == true) {
                     adapter.addTag(tag.trim());
+
+                    hideKeyboard();
                 } else {
                     Toast.makeText(getActivity(), "Type right tag format", Toast.LENGTH_SHORT).show();
                 }
@@ -168,6 +188,7 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     public interface FilterFragmentCallbacks {
         public void onFilterInitActionBar();
         public void onFilterActionHomeClicked();
-        public void onFilterActionOKClicked();
+        public void onFilterActionOKClicked(List<String> tags, List<String> switches);
+        public void onHideKeyboard(View view);
     }
 }

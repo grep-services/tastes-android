@@ -1,5 +1,6 @@
 package com.instamenu.content;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,9 +11,10 @@ import java.util.List;
  * 어차피 server에서 filtering해서 가져오는 소량 자료인 만큼
  * 필요한 내용들만 갖고 있으면서 편하게 쓸 수 있는 컨셉이다.
  */
-public class Image {
+public class Image implements Serializable {
     public int id;
-    public String url;
+    public String origin;
+    public String thumbnail;
     public String date;
     public String address;
     public long distance;
@@ -20,9 +22,10 @@ public class Image {
 
     // 자세한 setter, getter들은 나중에 date, location들을 str에서 제대로 된 object들로 바꾸고 나서(tag도 tag custom object 만들게 될 수도 있다.) 만든다.
 
-    public Image(int id, String url, String date, String address, long distance, List<String> tags) {
+    public Image(int id, String origin, String thumbnail, String date, String address, long distance, List<String> tags) {
         this.id = id;
-        this.url = url;
+        this.origin = origin;
+        this.thumbnail = thumbnail;
         this.date = date;
         this.address = address;
         this.distance = distance;
