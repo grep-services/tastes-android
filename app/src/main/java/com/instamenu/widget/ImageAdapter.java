@@ -93,7 +93,7 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         //viewHolder.image.setImageResource(R.drawable.ic_launcher);
-        imageLoader.displayImage(images.get(position).thumbnail, viewHolder.image);
+        imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, viewHolder.image);
         viewHolder.distance.setText(String.valueOf(images.get(position).distance));
 
         return convertView;

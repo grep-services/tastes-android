@@ -80,7 +80,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         View header = inflater.inflate(R.layout.list_header, null, false);
 
         imageView = (ImageView)header.findViewById(R.id.list_header_image);
-        imageLoader.displayImage(image.origin, imageView);
+        imageLoader.displayImage("http://54.65.1.56:3639"+image.origin, imageView);
 
         list.addHeaderView(header);
 

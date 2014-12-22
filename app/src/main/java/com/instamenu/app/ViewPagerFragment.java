@@ -17,6 +17,12 @@ import java.util.List;
 
 public class ViewPagerFragment extends Fragment {
 
+    private static final String ARG_LATITUDE = "latitude";
+    private static final String ARG_LONGITUDE = "longitude";
+
+    private double latitude;
+    private double longitude;
+
     private CameraFragment_ cameraFragment;
     private HomeFragment homeFragment;
 
@@ -26,8 +32,13 @@ public class ViewPagerFragment extends Fragment {
 
     private ViewPagerFragmentCallbacks mCallbacks;
 
-    public static ViewPagerFragment newInstance() {
+    public static ViewPagerFragment newInstance(double latitude, double longitude) {
         ViewPagerFragment fragment = new ViewPagerFragment();
+
+        Bundle args = new Bundle();
+        args.putDouble(ARG_LATITUDE, latitude);
+        args.putDouble(ARG_LONGITUDE, longitude);
+        fragment.setArguments(args);
 
         return fragment;
     }
@@ -39,8 +50,13 @@ public class ViewPagerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (getArguments() != null) {
+            latitude = getArguments().getDouble(ARG_LATITUDE);
+            longitude = getArguments().getDouble(ARG_LONGITUDE);
+        }
+
         cameraFragment = CameraFragment_.newInstance();
-        homeFragment = HomeFragment.newInstance("", "");
+        homeFragment = HomeFragment.newInstance(latitude, longitude);
 
         setFragments();
     }

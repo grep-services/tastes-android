@@ -73,7 +73,7 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         ImageLoader.getInstance().init(configuration);
 
         // initalization - set viewpager including camera, home
-        viewPagerFragment = ViewPagerFragment.newInstance();
+        viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
         replaceFragment(viewPagerFragment);
     }
 
@@ -97,6 +97,24 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     }
 
     //---- pref - 일단 분리해서 만들어둔다.
+    public ArrayList<String> getFilters() {
+        // get switch-on tags.
+        ArrayList<String> filters = null;
+
+        if(tags != null) {
+            for(int i = 0; i < tags.size(); i++) {
+                if(filters == null) {
+                    filters = new ArrayList<String>();
+                }
+
+                if(switches.get(i).equals("true")) {
+                    filters.add(tags.get(i));
+                }
+            }
+        }
+
+        return filters;
+    }
     public ArrayList<String> getList(String string) {
         if(string != null) {
             return new ArrayList<String>(Arrays.asList(string.split("\\|")));

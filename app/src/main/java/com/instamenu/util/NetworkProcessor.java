@@ -31,7 +31,7 @@ public class NetworkProcessor {
     private static final String file_name = "image.jpg";
     private static final String mime_type = "application/octet-stream";
     //private static final String mime_type = "multipart/form-data";
-
+    /*
     public String getGet() {
         String result = null;
         HttpClient httpClient = new DefaultHttpClient();
@@ -52,7 +52,7 @@ public class NetworkProcessor {
 
         return result;
     }
-
+    */
     // 전체적으로 null check 필요한 부분들 exception에서 걸리면 설정해준다.
     public String getResponse(String path, List<NameValuePair> parameters, byte[] file)
     {
