@@ -2,6 +2,8 @@ package com.instamenu.app;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,13 +15,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.instamenu.R;
 import com.instamenu.content.Image;
+import com.instamenu.util.QueryWrapper;
 import com.instamenu.widget.TagAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ItemFragment extends Fragment implements Button.OnClickListener {
@@ -33,6 +38,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     private static final String ARG_IMAGE = "image";
 
     private Image image;
+
+    private QueryWrapper queryWrapper;
 
     ImageLoader imageLoader;
 
@@ -65,6 +72,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             image = (Image) getArguments().getSerializable(ARG_IMAGE);
         }
 
+        queryWrapper = new QueryWrapper();
+
         imageLoader = ImageLoader.getInstance();
 
         setHasOptionsMenu(true);
@@ -81,6 +90,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
         imageView = (ImageView)header.findViewById(R.id.list_header_image);
         imageLoader.displayImage("http://54.65.1.56:3639"+image.origin, imageView);
+
+        ((TextView) header.findViewById(R.id.list_header_address)).setText(image.address);
 
         list.addHeaderView(header);
 
@@ -170,7 +181,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         if(tag == null) return false;
         if(tag.trim().equals("")) return false;
         if(tag.trim().contains(" ")) return false;
-        if(adapter.getTags().contains(tag)) return false;
+        if(adapter.getTags() != null && adapter.getTags().contains(tag)) return false;
 
         return true;
     }
@@ -179,11 +190,33 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     public void onClick(View v) {
         switch(v.getId()) {
             case R.id.fragment_item_btn:
-                String tag = edit.getText().toString();
+                final String tag = edit.getText().toString();
                 if(checkTag(tag) == true) {
+                    // add to edittext
                     adapter.addTag(tag.trim());
+                    // add to pref
+                    addTag();// TODO: list가 아니라 낱개로 바꾸는게 나을듯 하다.
+                    // send to server
+                    AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            List<String> tags = new ArrayList<String>();
+                            tags.add(tag);
 
-                    addTag();
+                            queryWrapper.tagImage(image.id, tags);
+
+                            return null;
+                        }
+
+                        @Override
+                        protected void onPostExecute(Void unused) {
+                            super.onPostExecute(unused);
+                        }
+                    };
+
+                    // 11부터는 serial이 default라서.
+                    if(Build.VERSION.SDK_INT< Build.VERSION_CODES.HONEYCOMB) task.execute();
+                    else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } else {
                     Toast.makeText(getActivity(), "Type right tag format", Toast.LENGTH_SHORT).show();
                 }

@@ -102,13 +102,6 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         // 다른 정보를 더 받아와야 되는 등, 점점더 골치아파진다.(왜냐하면 이 home frag는 한번 실행되면 계속 남아있으므로 pref도 그대로일 것이기 때문.)
         final List<String> tags = mActivity != null ? mActivity.getFilters() : null;
         // get images from server with tags.
-        /*
-        List<String> list = new ArrayList<String>();
-        list.add("tag0");
-        Image image = new Image(19, "http://54.65.1.56:3639/media/origin/img1_jTUpfOP.jpg", "http://54.65.1.56:3639/media/thumbnail/img1_FjdDYrJ.jpg", "2014-12-12T19:31:41.533835Z", "address10", 300, list);
-        List<Image> images = new ArrayList<Image>();
-        images.add(image);
-        */
         AsyncTask<Void, Void, List<Image>> task = new AsyncTask<Void, Void, List<Image>>() {
             @Override
             protected List<Image> doInBackground(Void... params) {

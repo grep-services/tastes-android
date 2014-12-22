@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,18 +21,21 @@ import android.widget.Toast;
 
 import com.instamenu.R;
 import com.instamenu.util.LogWrapper;
+import com.instamenu.util.QueryWrapper;
 import com.instamenu.widget.TagAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DisplayFragment extends Fragment implements Button.OnClickListener {
 
-    // lat, lng 될 수도 있으므로 일단 남겨둔다.
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_LATITUDE = "latitude";
+    private static final String ARG_LONGITUDE = "longitude";
 
-    private String mParam1;
-    private String mParam2;
+    private double latitude;
+    private double longitude;
+
+    private QueryWrapper queryWrapper;
 
     static byte[] imageToShow = null;
 
@@ -44,11 +49,11 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
 
     private DisplayFragmentCallbacks mCallbacks;
 
-    public static DisplayFragment newInstance(String param1, String param2) {
+    public static DisplayFragment newInstance(double latitude, double longitude) {
         DisplayFragment fragment = new DisplayFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putDouble(ARG_LATITUDE, latitude);
+        args.putDouble(ARG_LONGITUDE, longitude);
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,9 +68,11 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
         setHasOptionsMenu(true);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            latitude = getArguments().getDouble(ARG_LATITUDE);
+            longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
+
+        queryWrapper = new QueryWrapper();
     }
 
     @Override
@@ -169,7 +176,27 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
 
                 break;
             case R.id.action_ok:
-                actionOKClicked();
+                // send to server
+                AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        queryWrapper.addImage(imageToShow, "addr", latitude, longitude, adapter.getTags());
+
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void unused) {
+                        super.onPostExecute(unused);
+
+                        // add to pref, move to home.
+                        actionOKClicked();
+                    }
+                };
+
+                // 11부터는 serial이 default라서.
+                if(Build.VERSION.SDK_INT< Build.VERSION_CODES.HONEYCOMB) task.execute();
+                else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                 break;
         }
@@ -181,7 +208,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener 
         if(tag == null) return false;
         if(tag.trim().equals("")) return false;
         if(tag.trim().contains(" ")) return false;
-        if(adapter.getTags().contains(tag)) return false;
+        if(adapter.getTags() != null && adapter.getTags().contains(tag)) return false;
 
         return true;
     }

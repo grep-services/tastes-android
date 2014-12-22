@@ -139,7 +139,7 @@ public class QueryWrapper {
                 String distString = imageObject.getString("dist");
                 long dist = Math.round(Double.valueOf(distString.replace("m", "").trim()));
 
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), dist, tags);
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), dist, tags_);
 
                 if(images == null) {
                     images = new ArrayList<Image>();

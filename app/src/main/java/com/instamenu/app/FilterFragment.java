@@ -163,7 +163,7 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         if(tag == null) return false;
         if(tag.trim().equals("")) return false;
         if(tag.trim().contains(" ")) return false;
-        if(adapter.getTags().contains(tag)) return false;
+        if(adapter.getTags() != null && adapter.getTags().contains(tag)) return false;
 
         return true;
     }

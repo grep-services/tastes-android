@@ -295,7 +295,7 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
             cameraFragment.restartPreview();
 
             DisplayFragment.imageToShow = image;
-            addFragment(DisplayFragment.newInstance("", ""));
+            addFragment(DisplayFragment.newInstance(latitude, longitude));
         }
 
         @Override
@@ -379,7 +379,7 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         // add to pref.
         addPreferences(tags, switches);
         // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
-        homeFragment.setView();
+        //homeFragment.setView();
 
         viewPagerFragment.setCurrentPage(1);
 
