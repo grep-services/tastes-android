@@ -376,7 +376,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
                     @Override
                     protected Void doInBackground(Void... params) {
-                        queryWrapper.addImage(imageToShow, address, latitude, longitude, tags);
+                        queryWrapper.addImage(imageToShow, address, latitude, longitude, tags, positions);
 
                         return null;
                     }

@@ -51,7 +51,7 @@ public class QueryWrapper {
     }
 
     // add image.(create)
-    public void addImage(byte[] file, String address, double latitude, double longitude, List<String> tags) {
+    public void addImage(byte[] file, String address, double latitude, double longitude, List<String> tags, List<String> positions) {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
@@ -59,6 +59,7 @@ public class QueryWrapper {
         parameters.add(new BasicNameValuePair("latitude", String.valueOf(latitude)));
         parameters.add(new BasicNameValuePair("longitude", String.valueOf(longitude)));
         parameters.add(new BasicNameValuePair("tag", getString(tags)));
+        parameters.add(new BasicNameValuePair("positions", getString(positions)));
         // get result
         String response = networkProcessor.getResponse(PATH_ADD_IMAGE, parameters, file);
         // parse
@@ -98,7 +99,9 @@ public class QueryWrapper {
                 tags.add(tagObject.getString("name"));
             }
 
-            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), distance, tags);
+            List<String> positions = getList(imageObject.getString("positions"));
+
+            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), distance, tags, positions);
         } catch (JSONException e) {
             LogWrapper.e("JSON", e.getMessage());
         }
@@ -140,7 +143,9 @@ public class QueryWrapper {
                 String distString = imageObject.getString("dist");
                 long dist = Math.round(Double.valueOf(distString.replace("m", "").trim()));
 
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), dist, tags_);
+                List<String> positions = getList(imageObject.getString("positions"));
+
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), dist, tags_, positions);
 
                 if(images == null) {
                     images = new ArrayList<Image>();
