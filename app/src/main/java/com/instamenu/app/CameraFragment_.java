@@ -27,14 +27,16 @@ zoom ==> 일단 배제. 이건 boolean으로 다룰 만한 것도 아니다.
 
 toggle되는 설정들 없으므로 아직 host customize하진 않고 simple에서의 builder 설정으로 바로 가도록 한다.
 */
-public class CameraFragment_ extends CameraFragment implements Button.OnClickListener{
+public class CameraFragment_ extends CameraFragment {
+
+    private View tools;// for splash
 
     private CameraView cameraView;
 
     private CameraFragmentCallbacks mCallbacks = null;// callback. 변경 ui는 fragment에 있고, 변경 대상 vars는 activity에 있다. activity가 implement하게 하고, 그 method를 call한다.
     // 근데 이거 그런방법은 없는가? callback 그대로 쓰는 등...
     private MainActivity mActivity = null;// 쓰일 곳이 한군데이긴 하지만, attatch에 붙여서 사용하는게 더 정리되어 보인다.
-    private Button shotButton, homeButton;
+    private Button shotButton;
 
     public static CameraFragment_ newInstance() {
         CameraFragment_ fragment = new CameraFragment_();
@@ -56,19 +58,25 @@ public class CameraFragment_ extends CameraFragment implements Button.OnClickLis
         setHost(mActivity.getCameraHost());
     }
 
+    public void setToolsVisible(boolean visible) {
+        if(tools != null) {
+            tools.setVisibility(visible == true ? View.VISIBLE : View.GONE);
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_camera_, container, false);
 
-        /*CameraView */cameraView = (CameraView)view.findViewById(R.id.fragment_camera_preview);
+        cameraView = (CameraView)view.findViewById(R.id.fragment_camera_preview);
+
+        tools = view.findViewById(R.id.fragment_camera_toolbars);
+
+        if(mActivity.isSplashViewing()) setToolsVisible(false);// 해제는 splash에서 한다.
 
         setCameraView(cameraView);
 
         shotButton = (Button) view.findViewById(R.id.fragment_camera_shot);
-        shotButton.setOnClickListener(this);
-
-        homeButton = (Button) view.findViewById(R.id.fragment_camera_home);
-        homeButton.setOnClickListener(this);
 
         return view;
     }
@@ -99,74 +107,12 @@ public class CameraFragment_ extends CameraFragment implements Button.OnClickLis
         // false일 때가 티가 나도 되지만, 기능만 disable되어도 상관없다. 순식간인데 괜히 button back 바뀌면 혼란스럽기만 할 수도 있다.
     }
 
-    public void initActionBar() {
-        if (mCallbacks != null) {
-            mCallbacks.onCameraInitActionBar();
-        }
-    }
-
-    public void actionNavClicked() {
-        if (mCallbacks != null) {
-            mCallbacks.onCameraActionNavClicked();
-        }
-    }
-
-    public void takeSimplePicture() {
-        if (mCallbacks != null) {
-            mCallbacks.onCameraTakeSimplePicture();
-        }
-    }
-
-    public void homeClicked() {
-        if (mCallbacks != null) {
-            mCallbacks.onCameraHomeClicked();
-        }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        initActionBar();
-
-        //menu.clear();
-        //inflater.inflate(R.menu.camera, menu);
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        if(item.getItemId() == android.R.id.home) {
-            actionNavClicked();
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch(v.getId()) {
-            case R.id.fragment_camera_shot:
-                takeSimplePicture();
-
-                break;
-            case R.id.fragment_camera_home:
-                homeClicked();
-
-                break;
-        }
-    }
-
     /*
     사실 현재는 button의 listener 자체가 activity에 구현되어 있기 때문에 이런 callback 방식이 필요없으나
     구조상 이런게 쓰일 곳이 있을거고 activity reference를 받아두기 위해서(host set할 때) attatch당시를 catch하려 했던 용도도 있다.
      */
     public interface CameraFragmentCallbacks {
 
-        public void onCameraInitActionBar();
-        public void onCameraActionNavClicked();
         public void onFlashModeChanged(String mode_flash);
-        public void onCameraTakeSimplePicture();
-        public void onCameraHomeClicked();
     }
 }

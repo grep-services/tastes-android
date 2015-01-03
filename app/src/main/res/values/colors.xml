@@ -3,8 +3,8 @@
 
     <!-- basic colors - 파스텔 톤 느낌으로 -->
     <color name="transparent">@android:color/transparent</color><!-- 00000000 과 같을것임. 사실 00ff0000이 언제나 투명이라고 하긴 함. -->
-    <color name="overlay">#905d5d5d</color>
     <color name="white">#fff7f7f7</color>
+    <color name="white_overlay">#80f7f7f7</color>
     <color name="gray">#ff3f3f3f</color>
     <color name="gray_dark">#ff353535</color>
     <color name="black">#ff2b2b2b</color>
@@ -16,6 +16,10 @@
 
     <!-- text colors -->
     <color name="text">@color/gray</color>
+
+    <!-- button colors -->
+    <color name="button">@color/gray</color>
+    <color name="button_pressed">@color/gray_dark</color>
 
     <!-- listview colors -->
     <color name="list_divider">@color/gray</color>

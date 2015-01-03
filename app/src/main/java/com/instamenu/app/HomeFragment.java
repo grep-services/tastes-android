@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 
@@ -30,7 +31,7 @@ import org.apache.http.message.BasicNameValuePair;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment implements GridView.OnItemClickListener {
+public class HomeFragment extends Fragment implements GridView.OnItemClickListener, Button.OnClickListener {
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
 
@@ -90,9 +91,17 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         grid.setAdapter(adapter);
         grid.setOnItemClickListener(this);
 
+        ((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
+
         setView();
 
         return view;
+    }
+
+    // splash가 activity가 아닌 상황에서는 home이 먼저 등록될 수 있다.(웬만하면) 구조를 통째로 바꾸기보다 일단 method하나만 만든다.
+    public void setLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public void setView() {
@@ -141,47 +150,10 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         mCallbacks = null;
     }
 
-    public void initActionBar() {
-        if(mCallbacks != null) {
-            mCallbacks.onHomeInitActionBar();
-        }
-    }
-
-    public void actionHomeClicked() {
-        if(mCallbacks != null) {
-            mCallbacks.onHomeActionHomeClicked();
-        }
-    }
-
     public void actionFilterClicked() {
         if(mCallbacks != null) {
             mCallbacks.onHomeActionFilterClicked();
         }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-        inflater.inflate(R.menu.home, menu);
-
-        initActionBar();
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                actionHomeClicked();
-
-                break;
-            case R.id.action_filter:
-                actionFilterClicked();
-
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -191,9 +163,17 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        switch(v.getId()) {
+            case R.id.fragment_home_filter:
+                actionFilterClicked();
+
+                break;
+        }
+    }
+
     public interface HomeFragmentCallbacks {
-        public void onHomeInitActionBar();
-        public void onHomeActionHomeClicked();
         public void onHomeActionFilterClicked();
         public void onHomeItemClicked(Image image);
     }

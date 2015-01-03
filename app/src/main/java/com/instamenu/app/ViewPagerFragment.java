@@ -74,7 +74,7 @@ public class ViewPagerFragment extends Fragment {
         mViewPager = (ViewPager) view.findViewById(R.id.pager);
 
         mViewPager.setAdapter(mSectionsPagerAdapter);
-/*
+
         mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -83,9 +83,10 @@ public class ViewPagerFragment extends Fragment {
         });
 
         // for init flag of activity.
-        mViewPager.setCurrentItem(0);
-        mOnPageSelected(0);
-*/
+        //mViewPager.setCurrentItem(0);
+        //mOnPageSelected(0);
+        setCurrentPage(0);
+
         return view;
     }
 
@@ -93,13 +94,13 @@ public class ViewPagerFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
     }
-/*
+
     public void mOnPageSelected(int position) {
         if (mCallbacks != null) {
             mCallbacks.onViewPagerPageSelected(position);
         }
     }
-*/
+
     public void setFragments() {
         if (mCallbacks != null) {
             mCallbacks.onSetFragments();
@@ -125,6 +126,7 @@ public class ViewPagerFragment extends Fragment {
 
     public void setCurrentPage(int index) {
         mViewPager.setCurrentItem(index);
+        mOnPageSelected(index);
     }
 
     public CameraFragment_ getCameraFragment() {
@@ -152,12 +154,10 @@ public class ViewPagerFragment extends Fragment {
 
             switch(position) {
                 case 0:
-                    //fragment = CameraFragment_.newInstance();
                     fragment = cameraFragment;
 
                     break;
                 case 1:
-                    //fragment = HomeFragment.newInstance("", "");
                     fragment = homeFragment;
 
                     break;
@@ -173,7 +173,7 @@ public class ViewPagerFragment extends Fragment {
     }
 
     public interface ViewPagerFragmentCallbacks {
-        //public void onViewPagerPageSelected(int position);
+        public void onViewPagerPageSelected(int position);
         public void onSetFragments();
     }
 }

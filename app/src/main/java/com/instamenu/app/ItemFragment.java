@@ -105,8 +105,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
         edit = (EditText) view.findViewById(R.id.fragment_item_edit);
 
-        btn = (Button) view.findViewById(R.id.fragment_item_btn);
-        btn.setOnClickListener(this);
+        ((Button) view.findViewById(R.id.fragment_item_share)).setOnClickListener(this);
+        ((Button) view.findViewById(R.id.fragment_item_add)).setOnClickListener(this);
 
         return view;
     }
@@ -127,18 +127,6 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         mCallbacks = null;
     }
 
-    public void initActionBar() {
-        if (mCallbacks != null) {
-            mCallbacks.onItemInitActionBar();
-        }
-    }
-
-    public void actionHomeClicked() {
-        if (mCallbacks != null) {
-            mCallbacks.onItemActionHomeClicked();
-        }
-    }
-
     public void actionShareClicked() {
         if (mCallbacks != null) {
             mCallbacks.onItemActionShareClicked();
@@ -149,31 +137,6 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         if (mCallbacks != null) {
             mCallbacks.onItemAddTag(adapter.getTags_(), adapter.getSwitches());
         }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        initActionBar();
-
-        menu.clear();
-        inflater.inflate(R.menu.item, menu);
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                actionHomeClicked();
-
-                break;
-            case R.id.action_share:
-                actionShareClicked();
-
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     // doesn't check duplication, only format.
@@ -189,7 +152,11 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.fragment_item_btn:
+            case R.id.fragment_item_share:
+                actionShareClicked();
+
+                break;
+            case R.id.fragment_item_add:
                 final String tag = edit.getText().toString();
                 if(checkTag(tag) == true) {
                     // add to edittext
@@ -226,8 +193,6 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     }
 
     public interface ItemFragmentCallbacks {
-        public void onItemInitActionBar();
-        public void onItemActionHomeClicked();
         public void onItemActionShareClicked();
         public void onItemAddTag(List<String> tags, List<String> switches);
     }

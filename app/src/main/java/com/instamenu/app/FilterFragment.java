@@ -39,7 +39,6 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     ListView list;
     TagAdapter adapter;
     EditText edit;
-    Button btn;
 
     private FilterFragmentCallbacks mCallbacks;
 
@@ -59,8 +58,6 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
-
         if (getArguments() != null) {
             tags = getArguments().getStringArrayList(ARG_TAGS);
             switches = getArguments().getStringArrayList(ARG_SWITCHES);
@@ -79,19 +76,11 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
 
-        btn = (Button) view.findViewById(R.id.fragment_filter_btn);
-        btn.setOnClickListener(this);
+        ((Button) view.findViewById(R.id.fragment_filter_ok)).setOnClickListener(this);
+        ((Button) view.findViewById(R.id.fragment_filter_add)).setOnClickListener(this);
 
         return view;
     }
-
-    /*
-    public void onButtonPressed(Uri uri) {
-        if (mCallbacks != null) {
-            mCallbacks.onFragmentInteraction(uri);
-        }
-    }
-    */
 
     @Override
     public void onAttach(Activity activity) {
@@ -109,18 +98,6 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         mCallbacks = null;
     }
 
-    public void initActionBar() {
-        if (mCallbacks != null) {
-            mCallbacks.onFilterInitActionBar();
-        }
-    }
-
-    public void actionHomeClicked() {
-        if (mCallbacks != null) {
-            mCallbacks.onFilterActionHomeClicked();
-        }
-    }
-
     public void actionOKClicked() {
         if (mCallbacks != null) {
             mCallbacks.onFilterActionOKClicked(adapter.getTags(), adapter.getSwitches());
@@ -131,31 +108,6 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         if (mCallbacks != null) {
             mCallbacks.onHideKeyboard(edit);
         }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        initActionBar();
-
-        menu.clear();
-        inflater.inflate(R.menu.filter, menu);
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case android.R.id.home:
-                actionHomeClicked();
-
-                break;
-            case R.id.action_ok:
-                actionOKClicked();
-
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     // doesn't check duplication, only format.
@@ -171,7 +123,11 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.fragment_filter_btn:
+            case R.id.fragment_filter_ok:
+                actionOKClicked();
+
+                break;
+            case R.id.fragment_filter_add:
                 String tag = edit.getText().toString();
                 if(checkTag(tag) == true) {
                     adapter.addTag(tag.trim());
@@ -186,8 +142,6 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     }
 
     public interface FilterFragmentCallbacks {
-        public void onFilterInitActionBar();
-        public void onFilterActionHomeClicked();
         public void onFilterActionOKClicked(List<String> tags, List<String> switches);
         public void onHideKeyboard(View view);
     }

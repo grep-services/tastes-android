@@ -54,7 +54,8 @@ public class QueryWrapper {
     public void addImage(byte[] file, String address, double latitude, double longitude, List<String> tags) {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
-        parameters.add(new BasicNameValuePair("address", address));
+        // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
+        //parameters.add(new BasicNameValuePair("address", address));
         parameters.add(new BasicNameValuePair("latitude", String.valueOf(latitude)));
         parameters.add(new BasicNameValuePair("longitude", String.valueOf(longitude)));
         parameters.add(new BasicNameValuePair("tag", getString(tags)));

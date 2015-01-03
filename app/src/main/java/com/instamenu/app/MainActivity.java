@@ -6,7 +6,6 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -29,16 +28,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity implements ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
-
-    private Toolbar toolbar;
+public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private SharedPreferences preferences;
     private List<String> tags;
     private List<String> switches;
     private String strTags;
     private String strSwitches;
+    private boolean mLocationUpdates;
 
+    private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
 
     private ViewPagerFragment viewPagerFragment;
@@ -53,17 +52,14 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     private boolean use_fullbleed = true;
     private String mode_flash = null;
 
-    // for home (gps)
-    private double latitude = 37.5129273;
-    private double longitude = 126.9247538;
+    // location
+    private double latitude;
+    private double longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         // init preferences
         initPreferences();
@@ -75,6 +71,9 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         // initalization - set viewpager including camera, home
         viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
         replaceFragment(viewPagerFragment);
+
+        Fragment fragment = SplashFragment.newInstance(true, mLocationUpdates);
+        addFragment(fragment);
     }
 
     public void replaceFragment(Fragment fragment) {
@@ -94,6 +93,14 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         fragmentTransaction.addToBackStack(null);// name 필요없다.
 
         fragmentTransaction.commit();
+    }
+
+    public void popFragment() {
+        FragmentManager fragmentManager = getFragmentManager();
+
+        if(fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack();
+        }
     }
 
     //---- pref - 일단 분리해서 만들어둔다.
@@ -140,6 +147,8 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     public void initPreferences() {
         preferences = getSharedPreferences("instamenu", Context.MODE_PRIVATE);
 
+        mLocationUpdates = preferences.getBoolean("LocationUpdates", false);
+
         strTags = preferences.getString("Tags", null);
         tags = getList(strTags);
 
@@ -166,6 +175,16 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         }
 
         //LogWrapper.e("SET PREF", strTags+","+strSwitches);
+    }
+
+    public void setPreferences(boolean locationUpdates) {
+        mLocationUpdates = locationUpdates;// local에는 보관할 필요 없지만, 그냥 해둔다.
+
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putBoolean("LocationUpdates", locationUpdates);
+
+        editor.commit();
     }
 
     public void addPreferences(List<String> tags, List<String> switches) {
@@ -213,7 +232,42 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         //LogWrapper.e("ADD PREF", strTags+","+strSwitches);
     }
 
+    //---- splash
+    public boolean isSplashViewing() {
+        return flag_fragment_splash;
+    }
+    @Override
+    public void onSplashLocationUpdated(double latitude, double longitude) {
+        // 위경도 설정부터 하고
+        this.latitude = latitude;
+        this.longitude = longitude;
+
+        // 닫기 전에 flag부터 false로 해준다.
+        flag_fragment_splash = false;
+
+        // camera도 tools 복귀시켜준다.
+        cameraFragment.setToolsVisible(true);
+
+        // home도 location set 해준다.
+        homeFragment.setLocation(latitude, longitude);
+        homeFragment.setView();// swipe할 때 해주자니 사실 1번 이후로는 필요없기 때문에 여기서 하는게 맞다고 생각했다.
+
+        // fragment닫아야 한다.
+        popFragment();
+    }
+
+    @Override
+    public void onSplashLocationAgreed() {
+        // 일단 debug동안은 disable.
+        //setPreferences(true);
+    }
+
     //---- vp
+    @Override
+    public void onViewPagerPageSelected(int position) {
+        flag_fragment_home = position == 1 ? true : false;
+    }
+
     @Override
     public void onSetFragments() {
         // vp에서 저 fragment들을 설정하는 시각을 여기서 정확히 예측하느니, callback으로 이렇게 한다.
@@ -295,7 +349,7 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
             cameraFragment.restartPreview();
 
             DisplayFragment.imageToShow = image;
-            addFragment(DisplayFragment.newInstance(latitude, longitude));
+            addFragment(DisplayFragment.newInstance(null, latitude, longitude));
         }
 
         @Override
@@ -330,56 +384,20 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     }
 
     @Override
-    public void onCameraInitActionBar() {
-        toolbar.setNavigationIcon(R.drawable.cancel);
-        toolbar.setTitle(R.string.title_fragment_camera);
-
-        flag_fragment_home = false;
-    }
-
-    @Override
-    public void onCameraActionNavClicked() {
-        onBackPressed();
-    }
-
-    @Override
     public void onFlashModeChanged(String mode_flash) {
         // 현재 안되는데, 아마도 Camera class deprecated된거 때문에 그런거 아닌지. 나중에 version별로 갈라준다.
         // 그런데 ffc 등도 안되는걸 보면, preview restart나 host reset 등이 필요한 것일수도 있다. cameraview를 다시 setting해주는 것도 봤는데, 뭐가 있을지 알아보기.
         this.mode_flash = mode_flash;
     }
 
-    @Override
-    public void onCameraTakeSimplePicture() {
-        takeSimplePicture();
-    }
-
-    @Override
-    public void onCameraHomeClicked() {
-        viewPagerFragment.setCurrentPage(1);
-    }
-
     //---- display
-    @Override
-    public void onDisplayInitActionBar() {
-        toolbar.setNavigationIcon(R.drawable.cancel);
-        toolbar.setTitle(R.string.title_fragment_display);
-
-        flag_fragment_home = false;
-    }
-
-    @Override
-    public void onDisplayActionHomeClicked() {
-        onBackPressed();
-    }
-
     @Override
     public void onDisplayActionOKClicked(List<String> tags, List<String> switches) {
         // send to server.
         // add to pref.
         addPreferences(tags, switches);
         // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
-        //homeFragment.setView();
+        homeFragment.setView();
 
         viewPagerFragment.setCurrentPage(1);
 
@@ -387,19 +405,6 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     }
 
     //---- home
-    @Override
-    public void onHomeInitActionBar() {
-        toolbar.setNavigationIcon(R.drawable.camera);
-        toolbar.setTitle(R.string.title_fragment_home);
-
-        flag_fragment_home = true;
-    }
-
-    @Override
-    public void onHomeActionHomeClicked() {
-        onBackPressed();
-    }
-
     @Override
     public void onHomeActionFilterClicked() {
         Fragment fragment = FilterFragment.newInstance(tags, switches);
@@ -413,19 +418,6 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     }
 
     //---- filter
-    @Override
-    public void onFilterInitActionBar() {
-        toolbar.setNavigationIcon(R.drawable.cancel);
-        toolbar.setTitle(R.string.title_fragment_filter);
-
-        flag_fragment_home = false;
-    }
-
-    @Override
-    public void onFilterActionHomeClicked() {
-        onBackPressed();
-    }
-
     @Override
     public void onFilterActionOKClicked(List<String> tags, List<String> switches) {
         // set to pref.
@@ -445,19 +437,6 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
 
     //---- item
     @Override
-    public void onItemInitActionBar() {
-        toolbar.setNavigationIcon(R.drawable.back);
-        toolbar.setTitle(R.string.title_fragment_item);
-
-        flag_fragment_home = false;
-    }
-
-    @Override
-    public void onItemActionHomeClicked() {
-        onBackPressed();
-    }
-
-    @Override
     public void onItemActionShareClicked() {
 
     }
@@ -471,7 +450,11 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
     public void onBackPressed() {
         FragmentManager fragmentManager = getFragmentManager();
         if(fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
+            if(flag_fragment_splash == true) {
+                finish();
+            } else {
+                fragmentManager.popBackStack();
+            }
         } else {
             if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
                 viewPagerFragment.setCurrentPage(0);
@@ -481,17 +464,29 @@ public class MainActivity extends ActionBarActivity implements ViewPagerFragment
         }
     }
 
-    /*
-    // 나중에는 menu item들도 activity에서 fragment별로 묶고, 이렇게 button들은 callback 굳이 쓰지 말고 이렇게 바로 오도록 한다.
     public void mOnClick(View view) {
         switch(view.getId()) {
+            case R.id.fragment_camera_flash:
+                break;
+            case R.id.fragment_camera_switch:
+                break;
+            case R.id.fragment_camera_video:
+                break;
             case R.id.fragment_camera_shot:
                 takeSimplePicture();
 
                 break;
             case R.id.fragment_camera_home:
+                viewPagerFragment.setCurrentPage(1);
+
+                break;
+            case R.id.fragment_display_cancel:
+            case R.id.fragment_home_camera:
+            case R.id.fragment_item_back:
+            case R.id.fragment_filter_cancel:
+                onBackPressed();
+
                 break;
         }
     }
-    */
 }

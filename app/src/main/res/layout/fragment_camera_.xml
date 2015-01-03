@@ -9,43 +9,63 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/><!-- 둘다 match로 해놔야 가로 세로 모두에서 길이 받아낼 수 있다. -->
 
-    <LinearLayout
+    <RelativeLayout
+        android:id="@+id/fragment_camera_toolbars"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <com.instamenu.widget.SquareView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
 
         <android.support.v7.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:minHeight="?attr/actionBarSize"
-            android:background="?attr/colorPrimary">
+            android:background="@color/transparent">
+            <Button
+                android:id="@+id/fragment_camera_flash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:background="@drawable/flash_on"
+                android:onClick="mOnClick"/>
+            <Button
+                android:id="@+id/fragment_camera_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:onClick="mOnClick"/>
         </android.support.v7.widget.Toolbar>
 
         <android.support.v7.widget.Toolbar
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:minHeight="?attr/actionBarSize"
-            android:background="?attr/colorPrimaryDark">
+            android:background="@color/transparent">
+            <Button
+                android:id="@+id/fragment_camera_video"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="left|center_vertical"
+                android:layout_marginLeft="24dp"
+                android:background="@drawable/video"
+                android:onClick="mOnClick"/>
             <Button
                 android:id="@+id/fragment_camera_shot"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:background="@drawable/camera_shot"/>
+                android:background="@drawable/camera_shot"
+                android:onClick="mOnClick"/>
             <Button
                 android:id="@+id/fragment_camera_home"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
                 android:layout_gravity="right|center_vertical"
                 android:layout_marginRight="24dp"
-                android:background="@drawable/grid"/>
+                android:background="@drawable/grid"
+                android:onClick="mOnClick"/>
         </android.support.v7.widget.Toolbar>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </FrameLayout>

@@ -5,6 +5,27 @@
     android:orientation="vertical"
     tools:context="com.instamenu.app.FilterFragment">
 
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:minHeight="?attr/actionBarSize"
+        android:background="?attr/colorPrimary">
+        <Button
+            android:id="@+id/fragment_filter_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:background="@drawable/cancel"
+            android:onClick="mOnClick"/>
+        <Button
+            android:id="@+id/fragment_filter_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@drawable/ok"/>
+    </android.support.v7.widget.Toolbar>
+
     <ListView
         android:id="@+id/fragment_filter_list"
         android:layout_width="match_parent"
@@ -46,7 +67,7 @@
                 android:layout_weight="1"/>
 
             <Button
-                android:id="@+id/fragment_filter_btn"
+                android:id="@+id/fragment_filter_add"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
