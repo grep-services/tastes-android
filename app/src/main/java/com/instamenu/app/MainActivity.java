@@ -441,10 +441,12 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
 
     }
 
+    /*
     @Override
     public void onItemAddTag(List<String> tags, List<String> switches) {
         addPreferences(tags, switches);
     }
+    */
 
     @Override
     public void onBackPressed() {

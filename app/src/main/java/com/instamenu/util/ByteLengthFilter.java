@@ -31,8 +31,7 @@ public class ByteLengthFilter implements InputFilter {
         mMaxBytes = maxBytes;
     }
 
-    public CharSequence filter(CharSequence source, int start, int end,
-                               Spanned dest, int dstart, int dend) {
+    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
         int srcByteCount = 0;
         // count UTF-8 bytes in source substring
         for (int i = start; i < end; i++) {

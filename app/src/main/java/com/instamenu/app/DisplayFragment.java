@@ -203,7 +203,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         }
     }
 
-    public int addTag(String tag, int left, int top) { // margin 또는 좌표가 될 수 있어서 left, top 까지만 적었다.
+    public int addTag(String tag, float ratioX, float ratioY) {
         if(tags == null) tags = new ArrayList<String>();
 
         tags.add(tag);
@@ -214,7 +214,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         if(positions == null) positions = new ArrayList<String>();
 
-        positions.add(left+"|"+top);
+        positions.add(ratioX+"|"+ratioY);
 
         return tags.indexOf(tag);
     }
@@ -242,6 +242,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             String string = edit.getText().subSequence(HEADER.length(), edit.getText().length()).toString();
             int leftMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).leftMargin;
             int topMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).topMargin;
+            float ratioX = leftMargin / (float) container_.getMeasuredWidth();
+            float ratioY = topMargin / (float) container_.getMeasuredHeight();
 
             if(string != null) {
                 if(string.isEmpty()) {
@@ -254,9 +256,18 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     return false;
                 } else if(checkTag(string)) {
                     // 같은 태그가 있다면 tag 자체를 list에서 삭제하거나 기존 view를 삭제할 필요는 없고 그냥 focusedView만 지워지게 false return한다.
+                    // 다만 자기가 자기를 클릭했다가 지워지면 안된다. 그걸 해결하려면, checkTag 자체가 이미 tag를 갖고 있다는 말이고 다시말해 index를 알 수 있다는 것을 이용한다.
+                    if(focusedView.getTag() != null) { // null 이면 검사할 필요도 없다. 그냥 다른 것이다.
+                        int index = (Integer) focusedView.getTag();
+                        if(tags.indexOf(string) == index) { // index가 같으면 자기이므로 true 넘긴다.(분명 다를수도 있다. 이미 있는 것을 특정 tag(이미 존재하는)로 똑같이 바꿀 수도 있기 때문이다.)
+                            return true;
+                        }
+                    }
+
                     return false;
                 } else {
-                    int index = addTag(string, leftMargin, topMargin);
+                    //int index = addTag(string, leftMargin, topMargin);
+                    int index = addTag(string, ratioX, ratioY);
                     focusedView.setTag(index); // for removing later.
 
                     return true;
@@ -314,7 +325,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         edit.setInputType(InputType.TYPE_CLASS_TEXT); // 왜그런진 몰라도 setText앞에 와야 한다.
         edit.setHint("Instamenu");
         edit.setText(HEADER);
-        edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(9)});
+        //edit.setEms(HEADER.length());
+        edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */HEADER), new ByteLengthFilter(20)});
         edit.setTextSize(24);
         edit.setTextColor(getResources().getColor(android.R.color.white));
         edit.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
@@ -372,6 +384,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                     break;
                 }
+                // disable button. 다시 복구할 필요 없다. 어차피 다시 터치할 경우들은 전송 조건 안됐을 때들이고 그것들은 위에서 다 braek 걸려서 나간다. 만약 나중에 전송실패도 생긴다면 그때는 enabled해준다.
+                v.setEnabled(false);
                 // send to server
                 AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
                     @Override
@@ -441,6 +455,14 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         requestViewFocused(edit);
                     } else {
                         if(isMoving == true) {// move : focused null이지만, et 선택했을 때. 그리고 move true일 때.
+                            // position 수정해준다.
+                            int index = (Integer) v.getTag();
+                            int leftMargin = ((RelativeLayout.LayoutParams) v.getLayoutParams()).leftMargin;
+                            int topMargin = ((RelativeLayout.LayoutParams) v.getLayoutParams()).topMargin;
+                            float ratioX = leftMargin / (float) container_.getMeasuredWidth();
+                            float ratioY = topMargin / (float) container_.getMeasuredHeight();
+                            positions.set(index, new String(ratioX+"|"+ratioY));
+
                             isMoving = false;
                         } else { // select : focused null이지만, et 선택했을 때. 그리고 move false일 때.
                             requestViewFocused(v);

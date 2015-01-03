@@ -5,21 +5,30 @@ import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.instamenu.R;
 import com.instamenu.content.Image;
+import com.instamenu.util.ByteLengthFilter;
+import com.instamenu.util.DefaultFilter;
 import com.instamenu.util.QueryWrapper;
 import com.instamenu.widget.TagAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -43,13 +52,16 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
     ImageLoader imageLoader;
 
+    ViewGroup container_;
     ImageView imageView;
 
-    ListView list;
-    TagAdapter adapter;
+    private final String HEADER = "# ";
 
-    Button btn;
-    EditText edit;
+    //ListView list;
+    //TagAdapter adapter;
+
+    //Button btn;
+    //EditText edit;
 
     private ItemFragmentCallbacks mCallbacks;
 
@@ -79,10 +91,70 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         setHasOptionsMenu(true);
     }
 
+    public int getPixel(int dp) {
+        DisplayMetrics dm = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+        float density = dm.density;
+
+        return (int)(dp * density);
+    }
+
+    public TextView getText(String tag, int left, int top) {
+        TextView text = new TextView(getActivity());
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = left;
+        layoutParams.topMargin = top;
+        text.setLayoutParams(layoutParams);
+        int p = getPixel(16);
+        text.setPadding(p, p, p, p);
+        text.setText(HEADER + tag);
+        text.setTextSize(24);
+        text.setTextColor(getResources().getColor(android.R.color.white));
+        text.setSingleLine(true);
+        text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        text.setId(R.id.fragment_item_tag);
+        text.setOnClickListener(this);
+
+        return text;
+    }
+
+    public void fillContainer(ViewGroup container, Image image) {
+        // TODO: 일단 image not null일 것이기 때문에 그냥 간다. 하지만 확실히 query wrapper까지 확인해서 null 가능성 확인해보도록 한다.
+        for(int i = 0; i < image.tags.size(); i++) {
+            String position = image.positions.get(i);
+            float ratioX = Float.valueOf(position.split("\\|")[0]);
+            float ratioY = Float.valueOf(position.split("\\|")[1]);
+            TextView text = getText(image.tags.get(i), (int)(container.getMeasuredWidth() * ratioX), (int)(container.getMeasuredHeight() * ratioY));
+            container.addView(text);
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
+        // set image
+        imageView = (ImageView) view.findViewById(R.id.fragment_item_image);
+        imageLoader.displayImage("http://54.65.1.56:3639"+image.origin, imageView);
+
+        // set container
+        container_ = (ViewGroup) view.findViewById(R.id.fragment_item_container);
+        container_.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if(container_.getWidth() > 0 && container_.getHeight() > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        container_.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    } else {
+                        container_.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    }
+
+                    fillContainer(container_, image);
+                }
+            }
+        });
+        //fillContainer(container_, image);
+        /*
         list = (ListView) view.findViewById(R.id.fragment_item_list);
 
         // setting header
@@ -107,7 +179,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
         ((Button) view.findViewById(R.id.fragment_item_share)).setOnClickListener(this);
         ((Button) view.findViewById(R.id.fragment_item_add)).setOnClickListener(this);
-
+        */
         return view;
     }
 
@@ -133,6 +205,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
+    /*
     public void addTag() {
         if (mCallbacks != null) {
             mCallbacks.onItemAddTag(adapter.getTags_(), adapter.getSwitches());
@@ -148,6 +221,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
         return true;
     }
+    */
 
     @Override
     public void onClick(View v) {
@@ -156,6 +230,11 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 actionShareClicked();
 
                 break;
+            case R.id.fragment_item_tag:
+                Toast.makeText(getActivity(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();
+
+                break;
+            /*
             case R.id.fragment_item_add:
                 final String tag = edit.getText().toString();
                 if(checkTag(tag) == true) {
@@ -189,11 +268,12 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 }
 
                 break;
+            */
         }
     }
 
     public interface ItemFragmentCallbacks {
         public void onItemActionShareClicked();
-        public void onItemAddTag(List<String> tags, List<String> switches);
+        //public void onItemAddTag(List<String> tags, List<String> switches);
     }
 }
