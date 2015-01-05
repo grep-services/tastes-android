@@ -428,8 +428,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     //---- home
     @Override
     public void onHomeActionFilterClicked() {
-        Fragment fragment = FilterFragment.newInstance(tags, switches);
-        addFragment(fragment);
+        //Fragment fragment = FilterFragment.newInstance(tags, switches);
+        //addFragment(fragment);
+        filterFragment.toggleDrawer();
     }
 
     @Override
@@ -445,13 +446,6 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         setPreferences(tags, switches);
         // update home
         homeFragment.setView();
-    }
-
-    @Override
-    public void onHideKeyboard(View view) {
-        // 그런데 아직 안됨...
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromInputMethod(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     //---- item

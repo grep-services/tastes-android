@@ -2,26 +2,39 @@ package com.instamenu.app;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.text.InputFilter;
+import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.TranslateAnimation;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.instamenu.R;
+import com.instamenu.util.ByteLengthFilter;
+import com.instamenu.util.DefaultFilter;
 import com.instamenu.widget.TagAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilterFragment extends Fragment implements Button.OnClickListener {
+public class FilterFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     private static final String ARG_TAGS = "tags";
     private static final String ARG_SWITCHES = "switches";
@@ -32,6 +45,7 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
 
     private float lastTranslate = 0.0f;
 
+    // 처음 받는 용이다. adpater와 계속 동기화되긴 솔직히 힘들다.(switch 변경까지 생각해보면 안된다고 생각하는게 맞다.)
     private List<String> tags;
     private List<String> switches;
 
@@ -40,6 +54,8 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     ListView list;
     TagAdapter adapter;
     EditText edit;
+
+    private final String HEADER = "# ";
 
     private FilterFragmentCallbacks mCallbacks;
 
@@ -74,8 +90,34 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         // setting adapter
         adapter = new TagAdapter(inflater, tags, switches);
         list.setAdapter(adapter);
+        //list.setOnItemClickListener(this);
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
+        edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(20)});
+        edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_DONE:
+                        confirmTag();
+
+                        return true;
+                }
+
+                return false;
+            }
+        });
+        /*
+        edit.setOnFocusChangeListener(new EditText.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus == true) {
+                    showKeyboard();
+                } else {
+                    hideKeyboard();
+                }
+            }
+        });*/
 
         ((Button) view.findViewById(R.id.fragment_filter_add)).setOnClickListener(this);
 
@@ -112,8 +154,6 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
             @Override
             public void onDrawerClosed(View view) {
                 closeFilter();
-
-                //setViewing(false);
             }
 
             @Override
@@ -183,46 +223,53 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
-    public void hideKeyboard() {
-        if (mCallbacks != null) {
-            mCallbacks.onHideKeyboard(edit);
-        }
+    public void showKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        //imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        imm.showSoftInput(edit, 0);
     }
 
-    // doesn't check duplication, only format.
-    public boolean checkTag(String tag) {
-        if(tag == null) return false;
-        if(tag.trim().equals("")) return false;
-        if(tag.trim().contains(" ")) return false;
-        if(adapter.getTags() != null && adapter.getTags().contains(tag)) return false;
-
-        return true;
+    public void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
     }
 
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            /*
-            case R.id.fragment_filter_ok:
-                actionOKClicked();
-
-                break;*/
             case R.id.fragment_filter_add:
-                String tag = edit.getText().toString();
-                if(checkTag(tag) == true) {
-                    adapter.addTag(tag.trim());
-
-                    hideKeyboard();
-                } else {
-                    Toast.makeText(getActivity(), "Type right tag format", Toast.LENGTH_SHORT).show();
-                }
+                confirmTag();
 
                 break;
         }
     }
 
+    public void confirmTag() {
+        String tag = edit.getText().subSequence(HEADER.length(), edit.length()).toString();
+
+        if(tag == null || tag.isEmpty()) {
+            Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
+        } else if(adapter.getTags() != null && adapter.getTags().contains(tag)) {
+            Toast.makeText(getActivity(), "이미 존재하는 이름입니다.", Toast.LENGTH_SHORT).show();
+        } else {
+            adapter.addTag(tag);
+
+            hideKeyboard();
+
+            edit.getText().replace(HEADER.length(), edit.length(), "", 0, 0);
+            edit.clearFocus();
+
+            list.setSelection(adapter.getCount());
+        }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // 차라리 이걸 switch랑 연결시켜서 쓸까
+        adapter.toggleTag(position);
+    }
+
     public interface FilterFragmentCallbacks {
         public void onCloseFilter(List<String> tags, List<String> switches);
-        public void onHideKeyboard(View view);
     }
 }

@@ -1,15 +1,27 @@
 package com.instamenu.widget;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.SwitchCompat;
+import android.text.InputFilter;
+import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.instamenu.R;
+import com.instamenu.util.ByteLengthFilter;
+import com.instamenu.util.DefaultFilter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,6 +104,23 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
         notifyDataSetChanged();// 되는지 보기.
     }
 
+    public void toggleTag(int index) {
+        if(switches.get(index).equals("true")) {
+            switches.set(index, "false");
+        } else {
+            switches.set(index, "true");
+        }
+
+        notifyDataSetChanged();
+    }
+
+    public void removeTag(int index) { // index 있다는 말은 null check 필요없다는 말이다.
+        tags.remove(index);
+        switches.remove(index);
+
+        notifyDataSetChanged();
+    }
+
     public List<String> getTags() {
         return tags;
     }
@@ -142,6 +171,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
             viewHolder = new ViewHolder();
             viewHolder.tag = (TextView) convertView.findViewById(R.id.list_row_tag);
+
             if(switch_ == true) {
                 viewHolder.switch_ = (SwitchCompat) convertView.findViewById(R.id.list_row_switch);
                 viewHolder.switch_.setVisibility(View.VISIBLE);

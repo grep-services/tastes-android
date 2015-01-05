@@ -3,13 +3,29 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/margin"
-    android:gravity="center_vertical">
-
+    android:gravity="center_vertical"
+    android:focusableInTouchMode="true"
+    android:focusable="true"
+    android:clickable="true">
+    <!--
+    <EditText
+        android:id="@+id/list_row_edit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:padding="16dp"
+        android:inputType="text"
+        android:hint="Instamenu"
+        android:text="# "
+        android:textSize="24sp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/darker_gray"
+        android:imeOptions="actionDone"/>-->
     <TextView
         android:id="@+id/list_row_tag_mark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_marginRight="@dimen/margin"
         android:textSize="@dimen/text"
         android:textColor="@color/text"
