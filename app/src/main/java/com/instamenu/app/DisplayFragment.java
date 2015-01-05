@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -61,12 +62,16 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     List<String> switches;
     List<String> positions;// x|y형태로 저장해서 나중에 comma로 다시 연결한다.
 
+    private GestureDetector gestureDetector;
+
     ViewGroup container_;
 
     View focusedView = null;
+    View focusedView_ = null;// for gesture detector. view 전달할 수가 없어서 이렇게 했다.
     float originX, originY;
     float X, Y;
     boolean isMoving = false;
+    boolean isMoving_ = false;// for gesture detector. onTouch에서 set되지만 gesture detector에서 해제된다.
     boolean isKeyboard = false;
 
     private final String HEADER = "# ";
@@ -146,6 +151,28 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
             */
             ((Button) view.findViewById(R.id.fragment_display_ok)).setOnClickListener(this);
+
+            gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent e) { // double tap과 tap 구별 가능한 method.
+                    if(focusedView == null) { // 일단 null이어야 한다. 즉, 입력중이 아니어야 한다. 그래야 자신도, 남도 선택 안할 수 있다.(onTouch와 구조 같음)
+                        if(!isMoving_) { // null일 경우에도 moving은 제외해야 한다.
+                            Toast.makeText(getActivity(), "clicked "+((EditText) focusedView_).getText().toString(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            isMoving_ = false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    requestViewFocused(focusedView_);// 이렇게 하면 focusedView_가 진짜 focusedView가 된다.
+
+                    return true;
+                }
+            });
 
             container_ = (ViewGroup) view.findViewById(R.id.fragment_display_container);
             container_.setOnTouchListener(this);
@@ -334,9 +361,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                switch(actionId) {
+                switch (actionId) {
                     case EditorInfo.IME_ACTION_DONE:
-                        if(confirmView()) {
+                        if (confirmView()) {
                             clearFocusedView();
                         } else {
                             removeFocusedView();
@@ -436,6 +463,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                         if(Math.abs(difX) > 20 || Math.abs(difY) > 20) {
                             isMoving = true;
+                            isMoving_ = true;// gesture에서 해제하기 위한 set.
 
                             setPosition(v, X + difX, Y + difY);
                         }
@@ -464,9 +492,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                             positions.set(index, new String(ratioX+"|"+ratioY));
 
                             isMoving = false;
-                        } else { // select : focused null이지만, et 선택했을 때. 그리고 move false일 때.
-                            requestViewFocused(v);
-                        }
+                        }// else가 select(focused null이지만, et 선택했을 때. 그리고 move false일 때.)이지만 gesture에서 처리한다.(double tap 위해서.)
                     }
                 } else {
                     if(v != focusedView) {// cancel : focused not null일 경우 어디를 누르든 cancel. 자기자신을 눌렀을 경우만 빼고.
@@ -479,6 +505,11 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 }
 
                 break;
+        }
+
+        if(v instanceof EditText) {// up에서 처리하니깐 안되서 여기서 하기로 했다.
+            focusedView_ = v;
+            gestureDetector.onTouchEvent(event);
         }
 
         return true;

@@ -122,8 +122,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         // TODO: 일단 image not null일 것이기 때문에 그냥 간다. 하지만 확실히 query wrapper까지 확인해서 null 가능성 확인해보도록 한다.
         for(int i = 0; i < image.tags.size(); i++) {
             String position = image.positions.get(i);
-            float ratioX = Float.valueOf(position.split("\\|")[0]);
-            float ratioY = Float.valueOf(position.split("\\|")[1]);
+            // str null이다. 윗단에서 고치려다가, 여러 태그 중 위치 없는 태그도 있을 수 있단 생각에 이런 null이 더 나을거라 생각해서 그대로 두기로 했다.
+            float ratioX = !position.equals("null") ? Float.valueOf(position.split("\\|")[0]) : 0;
+            float ratioY = !position.equals("null") ? Float.valueOf(position.split("\\|")[1]) : 0;
             TextView text = getText(image.tags.get(i), (int)(container.getMeasuredWidth() * ratioX), (int)(container.getMeasuredHeight() * ratioY));
             container.addView(text);
         }

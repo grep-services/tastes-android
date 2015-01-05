@@ -26,7 +26,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
     boolean add = false;
     List<String> tags_;// for only add.(item frag)(not used for representing list)
 
-    boolean switch_ = true;
+    boolean switch_ = false;
 
     LayoutInflater inflater;
 
@@ -109,8 +109,10 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        int index = (Integer) buttonView.getTag();
-        switches.set(index, isChecked ? "true" : "false");
+        if(buttonView.getTag() != null) {
+            int index = (Integer) buttonView.getTag();
+            switches.set(index, isChecked ? "true" : "false");
+        }
     }
 
     public static class ViewHolder {
@@ -128,7 +130,10 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
             viewHolder = new ViewHolder();
             viewHolder.tag = (TextView) convertView.findViewById(R.id.list_row_tag);
-            viewHolder.switch_ = (SwitchCompat) convertView.findViewById(R.id.list_row_switch);
+            if(switch_ == true) {
+                viewHolder.switch_ = (SwitchCompat) convertView.findViewById(R.id.list_row_switch);
+                viewHolder.switch_.setVisibility(View.VISIBLE);
+            }
 
             convertView.setTag(viewHolder);
         } else {
@@ -136,11 +141,11 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
         }
 
         viewHolder.tag.setText(tags.get(position));
-        if(switch_ == true) {
-            viewHolder.switch_.setChecked(switches.get(position).equals("true") ? true : false);
-            viewHolder.switch_.setOnCheckedChangeListener(this);// 굳이 fragment까지 갈 필요 없다. 여기서 switch list 제어해주면 되므로.
+        if(switch_ == true) { // 아직 scroll시 움직임은 남아있다. 하지만 아직 답이 없으므로 그대로 간다.
             viewHolder.switch_.setTag(position);// for accessing to switch list.
-            viewHolder.switch_.setVisibility(View.VISIBLE);
+            viewHolder.switch_.setOnCheckedChangeListener(null);// programmatically checked는 굳이 switch list change 해줄 필요 없으므로 이렇게 간다.
+            viewHolder.switch_.setChecked(switches.get(position).equals("true"));
+            viewHolder.switch_.setOnCheckedChangeListener(this);// 굳이 fragment까지 갈 필요 없다. 여기서 switch list 제어해주면 되므로.
         }
 
         return convertView;
