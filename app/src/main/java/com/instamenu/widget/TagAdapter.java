@@ -46,11 +46,23 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
     public TagAdapter(LayoutInflater inflater, List<String> tags, List<String> switches) {
         this.inflater = inflater;
+
+        initTags(tags, switches);
+    }
+
+    // noti 할 필요 없어서 이렇게 했다.
+    public void initTags(List<String> tags, List<String> switches) {
         // ref 그대로 갖고오면 main activity의 list들까지 변하게 된다. 이렇게 복제한다.
         this.tags = tags != null ? new ArrayList<String>(tags) : null;
         this.switches = switches != null ? new ArrayList<String>(switches) : null;
 
         switch_ = true;
+    }
+
+    public void setTags(List<String> tags, List<String> switches) {
+        initTags(tags, switches);
+
+        notifyDataSetChanged();// 되는지 보기.
     }
 
     public void addTag(String tag) {

@@ -2,16 +2,14 @@ package com.instamenu.app;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -21,15 +19,18 @@ import com.instamenu.R;
 import com.instamenu.widget.TagAdapter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.StringTokenizer;
 
 public class FilterFragment extends Fragment implements Button.OnClickListener {
 
     private static final String ARG_TAGS = "tags";
     private static final String ARG_SWITCHES = "switches";
+
+    private DrawerLayout mDrawerLayout;
+    private ViewGroup mFrame;
+    private View mFragmentContainerView;
+
+    private float lastTranslate = 0.0f;
 
     private List<String> tags;
     private List<String> switches;
@@ -76,10 +77,88 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
 
-        ((Button) view.findViewById(R.id.fragment_filter_ok)).setOnClickListener(this);
         ((Button) view.findViewById(R.id.fragment_filter_add)).setOnClickListener(this);
 
         return view;
+    }
+
+    public void setUp(int fragmentId, DrawerLayout drawerLayout, int frameId) {
+        mFragmentContainerView = getActivity().findViewById(fragmentId);
+        mDrawerLayout = drawerLayout;
+        mFrame = (ViewGroup) getActivity().findViewById(frameId);
+
+        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View view, float v) {
+                float moveFactor = mFragmentContainerView.getWidth() * v * -1;// rtl
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    mFrame.setTranslationX(moveFactor);
+                } else {
+                    TranslateAnimation anim = new TranslateAnimation(lastTranslate, moveFactor, 0.0f, 0.0f);
+                    anim.setDuration(0);
+                    anim.setFillAfter(true);
+                    mFrame.startAnimation(anim);
+
+                    lastTranslate = moveFactor;
+                }
+            }
+
+            @Override
+            public void onDrawerOpened(View view) {
+                // 사실 fragment가 create, destroy되면 필요하겠지만 현재는 필요없다.
+            }
+
+            @Override
+            public void onDrawerClosed(View view) {
+                closeFilter();
+
+                //setViewing(false);
+            }
+
+            @Override
+            public void onDrawerStateChanged(int i) {
+
+            }
+        });
+
+        // set a custom shadow that overlays the main content when the drawer opens
+        //mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.END);
+    }
+
+    public boolean isDrawerOpen() {
+        return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
+    }
+
+    public void openDrawer() {
+        mDrawerLayout.openDrawer(mFragmentContainerView);
+    }
+
+    public void closeDrawer() {
+        mDrawerLayout.closeDrawer(mFragmentContainerView);
+    }
+
+    public void toggleDrawer() {
+        if(isDrawerOpen()) {
+            closeDrawer();
+        } else {
+            openDrawer();
+        }
+    }
+
+    public void setTags(List<String> tags, List<String> switches) {
+        this.tags = tags;
+        this.switches = switches;
+
+        adapter.setTags(tags, switches);
+    }
+
+    public void setDrawerLocked(boolean locked) {
+        if(locked) {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        } else {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        }
     }
 
     @Override
@@ -98,9 +177,9 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
         mCallbacks = null;
     }
 
-    public void actionOKClicked() {
+    public void closeFilter() {
         if (mCallbacks != null) {
-            mCallbacks.onFilterActionOKClicked(adapter.getTags(), adapter.getSwitches());
+            mCallbacks.onCloseFilter(adapter.getTags(), adapter.getSwitches());
         }
     }
 
@@ -123,10 +202,11 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
+            /*
             case R.id.fragment_filter_ok:
                 actionOKClicked();
 
-                break;
+                break;*/
             case R.id.fragment_filter_add:
                 String tag = edit.getText().toString();
                 if(checkTag(tag) == true) {
@@ -142,7 +222,7 @@ public class FilterFragment extends Fragment implements Button.OnClickListener {
     }
 
     public interface FilterFragmentCallbacks {
-        public void onFilterActionOKClicked(List<String> tags, List<String> switches);
+        public void onCloseFilter(List<String> tags, List<String> switches);
         public void onHideKeyboard(View view);
     }
 }

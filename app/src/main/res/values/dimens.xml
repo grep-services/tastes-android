@@ -17,5 +17,6 @@
 
     <!-- listview -->
     <dimen name="list_divider">1px</dimen>
+    <dimen name="navigation_drawer_width">300dp</dimen>
 
 </resources>

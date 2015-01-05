@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.instamenu.app.FilterFragment">
-
+<!--
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,7 +25,7 @@
             android:layout_gravity="right"
             android:background="@drawable/ok"/>
     </android.support.v7.widget.Toolbar>
-
+-->
     <ListView
         android:id="@+id/fragment_filter_list"
         android:layout_width="match_parent"

@@ -6,6 +6,7 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, NavigationDrawerFragment.NavigationDrawerCallbacks, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private SharedPreferences preferences;
     private List<String> tags;
@@ -40,6 +41,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
 
+    private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
     private CameraFragment_ cameraFragment;
     private HomeFragment homeFragment;
@@ -68,7 +70,11 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this).build();
         ImageLoader.getInstance().init(configuration);
 
-        // initalization - set viewpager including camera, home
+        // initalization - set filter(drawer), viewpager including camera, home
+        filterFragment = (FilterFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
+        filterFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), R.id.container);
+        filterFragment.setTags(tags, switches);
+
         viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
         replaceFragment(viewPagerFragment);
 
@@ -262,10 +268,25 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         //setPreferences(true);
     }
 
+    //---- nav drawer
+
     //---- vp
     @Override
     public void onViewPagerPageSelected(int position) {
-        flag_fragment_home = position == 1 ? true : false;
+        switch(position) {
+            case 0:// Camera
+                flag_fragment_home = false;
+
+                filterFragment.setDrawerLocked(true);
+
+                break;
+            case 1:// Home
+                flag_fragment_home = true;
+
+                filterFragment.setDrawerLocked(false);
+
+                break;
+        }
     }
 
     @Override
@@ -419,13 +440,11 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
 
     //---- filter
     @Override
-    public void onFilterActionOKClicked(List<String> tags, List<String> switches) {
+    public void onCloseFilter(List<String> tags, List<String> switches) {
         // set to pref.
         setPreferences(tags, switches);
         // update home
         homeFragment.setView();
-        // and then, back.
-        onBackPressed();
     }
 
     @Override
@@ -459,7 +478,11 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
             }
         } else {
             if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
-                viewPagerFragment.setCurrentPage(0);
+                if(filterFragment.isDrawerOpen() == false) { // 일반적인 home의 경우.
+                    viewPagerFragment.setCurrentPage(0);
+                } else { // home인데 drawer 열려있을 경우
+                    filterFragment.closeDrawer();
+                }
             } else {
                 finish();
             }
@@ -485,7 +508,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
             case R.id.fragment_display_cancel:
             case R.id.fragment_home_camera:
             case R.id.fragment_item_back:
-            case R.id.fragment_filter_cancel:
+            //case R.id.fragment_filter_cancel:
                 onBackPressed();
 
                 break;
