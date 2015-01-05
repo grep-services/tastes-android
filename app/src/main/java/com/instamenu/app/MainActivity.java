@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, NavigationDrawerFragment.NavigationDrawerCallbacks, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private SharedPreferences preferences;
     private List<String> tags;
@@ -267,8 +267,6 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         // 일단 debug동안은 disable.
         //setPreferences(true);
     }
-
-    //---- nav drawer
 
     //---- vp
     @Override

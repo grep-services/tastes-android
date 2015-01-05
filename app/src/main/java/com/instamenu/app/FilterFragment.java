@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.ViewDragHelper;
 import android.text.InputFilter;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -29,8 +30,10 @@ import android.widget.Toast;
 import com.instamenu.R;
 import com.instamenu.util.ByteLengthFilter;
 import com.instamenu.util.DefaultFilter;
+import com.instamenu.widget.SwipeDismissListViewTouchListener;
 import com.instamenu.widget.TagAdapter;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +57,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     ListView list;
     TagAdapter adapter;
     EditText edit;
+    Button button;
 
     private final String HEADER = "# ";
 
@@ -88,9 +92,24 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         list = (ListView) view.findViewById(R.id.fragment_filter_list);
 
         // setting adapter
-        adapter = new TagAdapter(inflater, tags, switches);
+        adapter = new TagAdapter(this, inflater, tags, switches);
         list.setAdapter(adapter);
-        //list.setOnItemClickListener(this);
+        list.setOnItemClickListener(this);
+        SwipeDismissListViewTouchListener touchListener =
+                new SwipeDismissListViewTouchListener(
+                        list,
+                        new SwipeDismissListViewTouchListener.OnDismissCallback() {
+                            @Override
+                            public void onDismiss(ListView listView, int[] reverseSortedPositions) {
+                                for (int position : reverseSortedPositions) {
+                                    //adapter.remove(adapter.getItem(position));
+                                    adapter.removeTag(position);
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+        list.setOnTouchListener(touchListener);
+        list.setOnScrollListener(touchListener.makeScrollListener());
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
         edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(20)});
@@ -107,19 +126,9 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 return false;
             }
         });
-        /*
-        edit.setOnFocusChangeListener(new EditText.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus == true) {
-                    showKeyboard();
-                } else {
-                    hideKeyboard();
-                }
-            }
-        });*/
 
-        ((Button) view.findViewById(R.id.fragment_filter_add)).setOnClickListener(this);
+        button = (Button) view.findViewById(R.id.fragment_filter_add);
+        button.setOnClickListener(this);
 
         return view;
     }
@@ -164,6 +173,19 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
         // set a custom shadow that overlays the main content when the drawer opens
         //mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.END);
+
+        try {
+            Field mDragger = mDrawerLayout.getClass().getDeclaredField("mRightDragger");
+            mDragger.setAccessible(true);
+            ViewDragHelper draggerObj = (ViewDragHelper) mDragger.get(mDrawerLayout);
+
+            Field mEdgeSize = draggerObj.getClass().getDeclaredField("mEdgeSize");
+            mEdgeSize.setAccessible(true);
+            int edge = mEdgeSize.getInt(draggerObj);
+
+            mEdgeSize.setInt(draggerObj, edge * 5);
+        } catch (Exception e) {
+        }
     }
 
     public boolean isDrawerOpen() {
@@ -234,11 +256,21 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
     }
 
+    public void setButtonEnabled(boolean enabled) {
+        button.setEnabled(enabled);
+    }
+
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
             case R.id.fragment_filter_add:
+                setButtonEnabled(false);
+
                 confirmTag();
+
+                break;
+            case R.id.list_row_tag:
+                Toast.makeText(getActivity(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();
 
                 break;
         }
@@ -261,6 +293,8 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
             list.setSelection(adapter.getCount());
         }
+
+        setButtonEnabled(true);
     }
 
     @Override

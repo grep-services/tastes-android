@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:focusableInTouchMode="true"
-    android:focusable="true"
-    android:clickable="true">
+    android:descendantFocusability="blocksDescendants">
     <!--
     <EditText
         android:id="@+id/list_row_edit"
@@ -22,23 +20,22 @@
         android:background="@android:color/darker_gray"
         android:imeOptions="actionDone"/>-->
     <TextView
-        android:id="@+id/list_row_tag_mark"
+        android:id="@+id/list_row_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_marginRight="@dimen/margin"
         android:textSize="@dimen/text"
         android:textColor="@color/text"
-        android:text="#"/>
+        android:text="# "/>
 
-    <TextView
-        android:id="@+id/list_row_tag"
+    <CheckBox
+        android:id="@+id/list_row_check"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/list_row_tag_mark"
-        android:textSize="@dimen/text"
-        android:textColor="@color/text"/>
-
+        android:layout_alignParentRight="true"
+        android:visibility="gone"/>
+<!--
     <android.support.v7.widget.SwitchCompat
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/list_row_switch"
@@ -46,5 +43,5 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:visibility="gone"/>
-
+-->
 </RelativeLayout>
