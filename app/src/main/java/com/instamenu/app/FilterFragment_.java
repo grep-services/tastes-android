@@ -100,6 +100,7 @@ public class FilterFragment_ extends Fragment implements View.OnClickListener, A
                         });
         list.setOnTouchListener(touchListener);
         list.setOnScrollListener(touchListener.makeScrollListener());
+        list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
         edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(20)});

@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.instamenu.R;
 import com.instamenu.content.Image;
@@ -90,6 +91,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
         grid.setAdapter(adapter);
         grid.setOnItemClickListener(this);
+        grid.setEmptyView(view.findViewById(R.id.fragment_home_empty));
 
         ((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
 

@@ -34,4 +34,15 @@
         android:numColumns="3"
         android:stretchMode="columnWidth"/>
 
+    <TextView
+        android:id="@+id/fragment_home_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textSize="24sp"
+        android:textColor="@color/text"
+        android:text="검색된 내용이 없습니다."
+        android:visibility="gone"/><!-- gone 빼도 되지만 구조상 들어가있는게 더 안정적인듯 하다. -->
+
 </LinearLayout>
