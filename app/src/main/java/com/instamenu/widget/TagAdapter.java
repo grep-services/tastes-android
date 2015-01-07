@@ -44,7 +44,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
     LayoutInflater inflater;
     View.OnClickListener listener;
 
-    private final String HEADER = "# ";
+    private final String HEADER = "";
 
     public TagAdapter(LayoutInflater inflater) {
         this(null, inflater, null, null);

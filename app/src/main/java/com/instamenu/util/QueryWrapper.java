@@ -50,6 +50,17 @@ public class QueryWrapper {
         return string;
     }
 
+    public void testUtf(byte[] file, String string) {
+        // set params
+        List<NameValuePair> parameters = new ArrayList<NameValuePair>();
+        // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
+        //parameters.add(new BasicNameValuePair("address", address));
+        parameters.add(new BasicNameValuePair("string", string));
+        // get result
+        String response = networkProcessor.getResponse("/test/utf/", parameters, file);
+        // parse
+    }
+
     // add image.(create)
     public void addImage(byte[] file, String address, double latitude, double longitude, List<String> tags, List<String> positions) {
         // set params

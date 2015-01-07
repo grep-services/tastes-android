@@ -71,12 +71,14 @@ public class NetworkProcessor {
                 }
             } else {
                 // 이 부분도 상위 버전에서는 builder로 바꼈다고 함.
+                // 그리고 그냥 mode, charset 없이 해도 상관없긴 함.
                 MultipartEntity multipartEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE, null, Charset.forName(encoding));
 
                 multipartEntity.addPart(img_name, new ByteArrayBody(file, mime_type, file_name));
 
                 for(NameValuePair parameter:parameters) {
-                    multipartEntity.addPart(parameter.getName(), new StringBody(parameter.getValue()));
+                    // 여기에 encoding을 이렇게 넣어줘야 제대로 들어간다.
+                    multipartEntity.addPart(parameter.getName(), new StringBody(parameter.getValue(), Charset.forName(encoding)));
                 }
 
                 httpPost.setEntity(multipartEntity);// 이 method는 HttpPost에만 define되어있음..
@@ -84,7 +86,8 @@ public class NetworkProcessor {
 
             HttpResponse httpResponse = httpClient.execute(httpPost);
             HttpEntity httpEntity = httpResponse.getEntity();
-            response = EntityUtils.toString(httpEntity);// entity null이면 IllegalArgumentException 뜬다. null check 하지말고 필요하면 exception으로 처리한다.
+            // 여기에 이렇게 encoding을 넣어줘야 제대로 날아온다.
+            response = EntityUtils.toString(httpEntity, encoding);// entity null이면 IllegalArgumentException 뜬다. null check 하지말고 필요하면 exception으로 처리한다.
 
         } catch(Exception e) {// 나중에 connection refused(org.apache.http.conn.HttpHostConnectException) 설정해주기.
             LogWrapper.e("REQUEST", e.getMessage());
