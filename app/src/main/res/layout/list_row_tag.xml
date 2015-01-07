@@ -26,7 +26,7 @@
         android:layout_alignParentLeft="true"
         android:layout_marginRight="@dimen/margin"
         android:textSize="@dimen/text"
-        android:textColor="@color/text"
+        android:textColor="@color/text_inverse"
         android:text="# "/>
 
     <CheckBox

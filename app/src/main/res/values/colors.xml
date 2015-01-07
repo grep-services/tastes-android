@@ -13,9 +13,11 @@
 
     <!-- view colors -->
     <color name="view">@color/white</color>
+    <color name="view_inverse">@color/black</color>
 
     <!-- text colors -->
     <color name="text">@color/gray</color>
+    <color name="text_inverse">@color/white</color>
 
     <!-- button colors -->
     <color name="button">@color/gray</color>

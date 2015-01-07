@@ -121,24 +121,6 @@ public class FilterFragment_ extends Fragment implements View.OnClickListener, A
         button.setOnClickListener(this);
 
         return view;
-
-        // set a custom shadow that overlays the main content when the drawer opens
-        //mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.END);
-
-        /*
-        try {
-            Field mDragger = mDrawerLayout.getClass().getDeclaredField("mRightDragger");
-            mDragger.setAccessible(true);
-            ViewDragHelper draggerObj = (ViewDragHelper) mDragger.get(mDrawerLayout);
-
-            Field mEdgeSize = draggerObj.getClass().getDeclaredField("mEdgeSize");
-            mEdgeSize.setAccessible(true);
-            int edge = mEdgeSize.getInt(draggerObj);
-
-            mEdgeSize.setInt(draggerObj, edge * 5);
-        } catch (Exception e) {
-        }
-        */
     }
 
     public void setTags(List<String> tags, List<String> switches) {
