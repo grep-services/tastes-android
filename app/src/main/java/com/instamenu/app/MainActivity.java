@@ -515,8 +515,8 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     @Override
-    public void onHomeItemClicked(Image image) {
-        Fragment fragment = ItemFragment.newInstance(image);
+    public void onHomeItemClicked(List<Image> images, int position) {
+        Fragment fragment = ItemFragment.newInstance(images, position);
         addFragment(fragment);
     }
 

@@ -2,9 +2,13 @@ package com.instamenu.app;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -44,31 +48,29 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     obj를 intent로 serialization해서 받아온다.
     다만 새로고침을 할 수는 있게 해둔다.
      */
-    private static final String ARG_IMAGE = "image";
+    private static final String ARG_IMAGES = "images";
+    private static final String ARG_POSITION = "position";
 
-    private Image image;
+    //private Image image;
+    // 이제는 image list와 position을 받는다.
+    private List<Image> images;
+    private int position;
 
     private QueryWrapper queryWrapper;
 
     ImageLoader imageLoader;
 
-    ViewGroup container_;
-    ImageView imageView;
+    ViewPager pager;
 
     private final String HEADER = "";
 
-    //ListView list;
-    //TagAdapter adapter;
-
-    //Button btn;
-    //EditText edit;
-
     private ItemFragmentCallbacks mCallbacks;
 
-    public static ItemFragment newInstance(Image image) {
+    public static ItemFragment newInstance(List<Image> images, int position) {
         ItemFragment fragment = new ItemFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_IMAGE, image);
+        args.putSerializable(ARG_IMAGES, (ArrayList<Image>) images);
+        args.putInt(ARG_POSITION, position);
         fragment.setArguments(args);
         return fragment;
     }
@@ -81,14 +83,13 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            image = (Image) getArguments().getSerializable(ARG_IMAGE);
+            images = (ArrayList<Image>) getArguments().getSerializable(ARG_IMAGES);
+            position = getArguments().getInt(ARG_POSITION);
         }
 
         queryWrapper = new QueryWrapper();
 
         imageLoader = ImageLoader.getInstance();
-
-        setHasOptionsMenu(true);
     }
 
     public int getPixel(int dp) {
@@ -111,7 +112,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         text.setSingleLine(true);
         //text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
         text.setId(R.id.fragment_item_tag);
-        text.setOnClickListener(this);
+        //text.setOnClickListener(this);
 
         return text;
     }
@@ -137,54 +138,60 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
-        // set image
-        imageView = (ImageView) view.findViewById(R.id.fragment_item_image);
-        imageLoader.displayImage("http://54.65.1.56:3639"+image.origin, imageView);
+        // set pager
+        pager = (ViewPager) view.findViewById(R.id.fragment_item_pager);
+        pager.setAdapter(new PagerAdapter_());
 
-        // set container
-        container_ = (ViewGroup) view.findViewById(R.id.fragment_item_container);
-        container_.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if(container_.getWidth() > 0 && container_.getHeight() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        container_.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    } else {
-                        container_.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                    }
+        pager.setCurrentItem(position);
 
-                    fillContainer(container_, image);
-                }
-            }
-        });
-        //fillContainer(container_, image);
-        /*
-        list = (ListView) view.findViewById(R.id.fragment_item_list);
+        //((Button) view.findViewById(R.id.fragment_item_share)).setOnClickListener(this);
 
-        // setting header
-        View header = inflater.inflate(R.layout.list_header, null, false);
-
-        imageView = (ImageView)header.findViewById(R.id.list_header_image);
-        imageLoader.displayImage("http://54.65.1.56:3639"+image.origin, imageView);
-
-        ((TextView) header.findViewById(R.id.list_header_address)).setText(image.address);
-
-        list.addHeaderView(header);
-
-        // setting adapter
-        // *************** => adapter에 add한 것만 따로 보관하는걸 만들어야 한다. 왜냐면, item에서의 tags는 pref가 아니라 외부 tags들이므로.... 암튼 그렇다.
-        adapter = new TagAdapter(inflater, image.tags);
-        list.setAdapter(adapter);
-
-        // test
-        //adapter.addTag("i_am_tag_1");
-
-        edit = (EditText) view.findViewById(R.id.fragment_item_edit);
-
-        ((Button) view.findViewById(R.id.fragment_item_share)).setOnClickListener(this);
-        ((Button) view.findViewById(R.id.fragment_item_add)).setOnClickListener(this);
-        */
         return view;
+    }
+
+    private class PagerAdapter_ extends PagerAdapter {
+        @Override
+        public Object instantiateItem(ViewGroup container, final int position) {
+            View view = View.inflate(getActivity().getApplicationContext(), R.layout.pager_item, null);
+
+            ImageView image = (ImageView) view.findViewById(R.id.pager_item_image);
+            imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).origin, image);
+
+            final ViewGroup container_ = (ViewGroup) view.findViewById(R.id.pager_item_container);
+            container_.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if(container_.getWidth() > 0 && container_.getHeight() > 0) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            container_.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        } else {
+                            container_.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
+
+                        fillContainer(container_, images.get(position));
+                    }
+                }
+            });
+
+            container.addView(view);
+
+            return view;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        @Override
+        public int getCount() {
+            return images != null ? images.size() : 0;
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object o) {
+            return view == o;
+        }
     }
 
     @Override
@@ -209,24 +216,6 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
-    /*
-    public void addTag() {
-        if (mCallbacks != null) {
-            mCallbacks.onItemAddTag(adapter.getTags_(), adapter.getSwitches());
-        }
-    }
-
-    // doesn't check duplication, only format.
-    public boolean checkTag(String tag) {
-        if(tag == null) return false;
-        if(tag.trim().equals("")) return false;
-        if(tag.trim().contains(" ")) return false;
-        if(adapter.getTags() != null && adapter.getTags().contains(tag)) return false;
-
-        return true;
-    }
-    */
-
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
@@ -234,50 +223,10 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 actionShareClicked();
 
                 break;
-            case R.id.fragment_item_tag:
-                Toast.makeText(getActivity(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();
-
-                break;
-            /*
-            case R.id.fragment_item_add:
-                final String tag = edit.getText().toString();
-                if(checkTag(tag) == true) {
-                    // add to edittext
-                    adapter.addTag(tag.trim());
-                    // add to pref
-                    addTag();// TODO: list가 아니라 낱개로 바꾸는게 나을듯 하다.
-                    // send to server
-                    AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... params) {
-                            List<String> tags = new ArrayList<String>();
-                            tags.add(tag);
-
-                            queryWrapper.tagImage(image.id, tags);
-
-                            return null;
-                        }
-
-                        @Override
-                        protected void onPostExecute(Void unused) {
-                            super.onPostExecute(unused);
-                        }
-                    };
-
-                    // 11부터는 serial이 default라서.
-                    if(Build.VERSION.SDK_INT< Build.VERSION_CODES.HONEYCOMB) task.execute();
-                    else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                } else {
-                    Toast.makeText(getActivity(), "Type right tag format", Toast.LENGTH_SHORT).show();
-                }
-
-                break;
-            */
         }
     }
 
     public interface ItemFragmentCallbacks {
         public void onItemActionShareClicked();
-        //public void onItemAddTag(List<String> tags, List<String> switches);
     }
 }

@@ -159,7 +159,8 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if(mCallbacks != null) {
-            mCallbacks.onHomeItemClicked((Image) adapter.getItem(position));
+            //mCallbacks.onHomeItemClicked((Image) adapter.getItem(position));
+            mCallbacks.onHomeItemClicked(adapter.getImages(), position);
         }
     }
 
@@ -175,6 +176,6 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
     public interface HomeFragmentCallbacks {
         public void onHomeActionFilterClicked();
-        public void onHomeItemClicked(Image image);
+        public void onHomeItemClicked(List<Image> images, int position);
     }
 }

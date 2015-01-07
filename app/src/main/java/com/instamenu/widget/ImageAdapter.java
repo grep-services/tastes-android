@@ -55,6 +55,10 @@ public class ImageAdapter extends BaseAdapter {
         notifyDataSetChanged();// 되는지 보기.
     }
 
+    public List<Image> getImages() {
+        return images;
+    }
+
     @Override
     public int getCount() {
         return images.size();

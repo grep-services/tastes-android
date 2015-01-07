@@ -6,14 +6,8 @@
     android:clickable="true"
     tools:context="com.instamenu.app.ItemFragment">
 
-    <ImageView
-        android:id="@+id/fragment_item_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"/>
-
-    <RelativeLayout
-        android:id="@+id/fragment_item_container"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/fragment_item_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
