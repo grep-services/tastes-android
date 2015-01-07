@@ -32,7 +32,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:numColumns="3"
-        android:stretchMode="columnWidth"/>
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="@dimen/grid_divider"
+        android:horizontalSpacing="@dimen/grid_divider"/>
 
     <TextView
         android:id="@+id/fragment_home_empty"

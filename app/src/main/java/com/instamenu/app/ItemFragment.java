@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,7 +36,10 @@ import com.instamenu.util.ByteLengthFilter;
 import com.instamenu.util.DefaultFilter;
 import com.instamenu.util.QueryWrapper;
 import com.instamenu.widget.TagAdapter;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -155,9 +159,33 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             View view = View.inflate(getActivity().getApplicationContext(), R.layout.pager_item, null);
 
             ImageView image = (ImageView) view.findViewById(R.id.pager_item_image);
-            imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).origin, image);
-
             final ViewGroup container_ = (ViewGroup) view.findViewById(R.id.pager_item_container);
+            final View properties = view.findViewById(R.id.pager_item_properties);
+
+            DisplayImageOptions options = new DisplayImageOptions.Builder()
+                    .showImageOnLoading(R.drawable.stub_large)
+                    .showImageForEmptyUri(R.drawable.fail_large)
+                    .showImageOnFail(R.drawable.fail_large)
+                    //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
+                    .cacheInMemory(true)
+                    .cacheOnDisk(true)
+                    .imageScaleType(ImageScaleType.IN_SAMPLE_INT)// set to target size(original img won't scaled)(default : 1/2)
+                    .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다.
+                    .build();
+            imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).origin, image, options, new SimpleImageLoadingListener() {
+                @Override
+                public void onLoadingStarted(String imageUri, View view) { // 나중에 refresh를 할 때면 필요할 수도 있다.
+                    container_.setVisibility(View.GONE);
+                    properties.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    container_.setVisibility(View.VISIBLE);
+                    properties.setVisibility(View.VISIBLE);
+                }
+            });
+
             container_.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
@@ -172,6 +200,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                     }
                 }
             });
+
+            ((TextView) view.findViewById(R.id.pager_item_distance)).setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
+            ((TextView) view.findViewById(R.id.pager_item_date)).setText(images.get(position).date);
 
             container.addView(view);
 

@@ -70,7 +70,12 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         initPreferences();
 
         // init imageloader before other fragments' init.
-        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this).build();
+        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this)
+                //.threadPoolSize(3) Default
+                //.threadPriority(Thread.NORM_PRIORITY - 2) Default
+                .denyCacheImageMultipleSizesInMemory() // image size 변할 상황 없으므로 deny.
+                .writeDebugLogs()
+                .build();
         ImageLoader.getInstance().init(configuration);
 
         // initalization - set filter(drawer), viewpager including camera, home

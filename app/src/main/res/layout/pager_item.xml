@@ -13,13 +13,16 @@
     <RelativeLayout
         android:id="@+id/pager_item_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:visibility="gone"/><!-- 안해도 되긴 하지만 해두는게 더 안정적인 것 같다. -->
 
     <RelativeLayout
+        android:id="@+id/pager_item_properties"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:padding="@dimen/margin">
+        android:padding="@dimen/margin"
+        android:visibility="gone"><!-- 안해도 되긴 하지만 해두는게 더 안정적인 것 같다. -->
 
         <TextView
             android:id="@+id/pager_item_distance"

@@ -87,7 +87,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
         grid = (GridView) view.findViewById(R.id.fragment_home_grid);
 
-        adapter = new ImageAdapter(inflater, imageLoader);
+        adapter = new ImageAdapter(getActivity(), inflater, imageLoader);
 
         grid.setAdapter(adapter);
         grid.setOnItemClickListener(this);

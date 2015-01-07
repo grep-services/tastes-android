@@ -8,13 +8,19 @@
         android:id="@+id/grid_item_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/gray"
         android:scaleType="centerCrop"/>
 
     <TextView
         android:id="@+id/grid_item_distance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:gravity="right"/>
+        android:layout_alignParentBottom="true"
+        android:padding="4dp"
+        android:gravity="center"
+        android:background="@color/gray_overlay"
+        android:textSize="14sp"
+        android:textColor="@color/text_inverse"
+        android:visibility="gone"/><!-- 안해도 되긴 하지만 해두는게 더 안정적인 것 같다. -->
 
 </RelativeLayout>
