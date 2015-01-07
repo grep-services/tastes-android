@@ -37,7 +37,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:inputType="text"
-                android:text="# "
                 android:textSize="24sp"
                 android:imeOptions="actionDone"/>
 

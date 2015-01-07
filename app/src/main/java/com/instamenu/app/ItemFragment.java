@@ -55,7 +55,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     ViewGroup container_;
     ImageView imageView;
 
-    private final String HEADER = "# ";
+    private final String HEADER = "";
 
     //ListView list;
     //TagAdapter adapter;
@@ -99,11 +99,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         return (int)(dp * density);
     }
 
-    public TextView getText(String tag, int left, int top) {
+    public TextView getText(String tag) {
         TextView text = new TextView(getActivity());
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.leftMargin = left;
-        layoutParams.topMargin = top;
         text.setLayoutParams(layoutParams);
         int p = getPixel(16);
         text.setPadding(p, p, p, p);
@@ -111,7 +109,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         text.setTextSize(24);
         text.setTextColor(getResources().getColor(android.R.color.white));
         text.setSingleLine(true);
-        text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        //text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
         text.setId(R.id.fragment_item_tag);
         text.setOnClickListener(this);
 
@@ -125,8 +123,13 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             // str null이다. 윗단에서 고치려다가, 여러 태그 중 위치 없는 태그도 있을 수 있단 생각에 이런 null이 더 나을거라 생각해서 그대로 두기로 했다.
             float ratioX = !position.equals("null") ? Float.valueOf(position.split("\\|")[0]) : 0;
             float ratioY = !position.equals("null") ? Float.valueOf(position.split("\\|")[1]) : 0;
-            TextView text = getText(image.tags.get(i), (int)(container.getMeasuredWidth() * ratioX), (int)(container.getMeasuredHeight() * ratioY));
+
+            TextView text = getText(image.tags.get(i));
+
             container.addView(text);
+
+            text.setX((int)(container.getMeasuredWidth() * ratioX));
+            text.setY((int)(container.getMeasuredHeight() * ratioY));
         }
     }
 

@@ -20,14 +20,14 @@ android {
 }
 
 repositories {
-    maven {
-        url "https://repo.commonsware.com.s3.amazonaws.com"
-    }
+    maven { url "http://jzaccone.github.io/SlidingMenu-aar" }
+    maven { url "https://repo.commonsware.com.s3.amazonaws.com" }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.2'
+    compile 'com.jeremyfeinstein.slidingmenu:library:1.3@aar'
     //compile 'com.nineoldandroids:library:2.4.0+'
     //compile 'com.commonsware.cwac:camera:0.6.+'
     compile 'com.android.support:support-v13:21.0.2'

@@ -114,6 +114,9 @@ public class QueryWrapper {
     아직까지는 서버에서 좌표로 filtering해서 넘겨주기 때문에 좌표가 없으면 아무것도 받아오지 못한다.
      */
     public List<Image> getImages(List<String> tags, double latitude, double longitude) {
+
+        if(tags == null) return null;// 다 묶을 필요까지는 없고, 아무튼 filter null일 경우까지도 생각해야 된다는 말이다. 실제로 filter 다 지우면 exception 떴다.
+
         List<Image> images = null;
 
         // set params

@@ -22,6 +22,7 @@ import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.instamenu.R;
 import com.instamenu.content.Image;
 import com.instamenu.util.LogWrapper;
+import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment_.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private SharedPreferences preferences;
     private List<String> tags;
@@ -41,7 +42,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
 
-    private FilterFragment filterFragment;
+    private SlidingMenu slidingMenu;
+
+    private FilterFragment_ filterFragment;
     private ViewPagerFragment viewPagerFragment;
     private CameraFragment_ cameraFragment;
     private HomeFragment homeFragment;
@@ -71,22 +74,66 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         ImageLoader.getInstance().init(configuration);
 
         // initalization - set filter(drawer), viewpager including camera, home
+        /*
+        TODO : FILTER.
         filterFragment = (FilterFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
         filterFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), R.id.container);
         filterFragment.setTags(tags, switches);
+        */
+
+        setSlidingMenu();
+
+        filterFragment = FilterFragment_.newInstance(tags, switches);
+        replaceFragment(R.id.menu, filterFragment);
+
+        getFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                if(getFragmentManager().getBackStackEntryCount() == 0 && flag_fragment_home == true) {
+                    slidingMenu.setSlidingEnabled(true);
+                } else {
+                    slidingMenu.setSlidingEnabled(false);
+                }
+            }
+        });
 
         viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
-        replaceFragment(viewPagerFragment);
+        replaceFragment(R.id.container, viewPagerFragment);
 
         Fragment fragment = SplashFragment.newInstance(true, mLocationUpdates);
         addFragment(fragment);
     }
 
-    public void replaceFragment(Fragment fragment) {
+    public void setSlidingMenu() {
+        slidingMenu = new SlidingMenu(this);
+        slidingMenu.setMode(SlidingMenu.RIGHT);
+        slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+        slidingMenu.setBehindWidthRes(R.dimen.navigation_drawer_width);
+        slidingMenu.setFadeDegree(0.35f);
+        slidingMenu.attachToActivity(this, SlidingMenu.SLIDING_WINDOW);
+        slidingMenu.setMenu(R.layout.frame_menu);
+        slidingMenu.setOnOpenListener(new SlidingMenu.OnOpenListener() {
+            @Override
+            public void onOpen() {
+                // toolbar icon animation.
+            }
+        });
+        slidingMenu.setOnCloseListener(new SlidingMenu.OnCloseListener() {
+            @Override
+            public void onClose() {
+                // method가 filter의 것을 override한 형식이므로 filter의 것을 invoke해주는 방식으로 간다.(중간 단계)
+                // null check 해야될지도.
+                filterFragment.closeFilter();
+                // toolbar icon animation.
+            }
+        });
+    }
+
+    public void replaceFragment(int containerViewId, Fragment fragment) {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        fragmentTransaction.replace(R.id.container, fragment);// replace.
+        fragmentTransaction.replace(containerViewId, fragment);// replace.
 
         fragmentTransaction.commit();
     }
@@ -139,11 +186,13 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     public String getString(List<String> list) {
         String string = null;
 
-        for(String item : list) {
-            if(string == null) {
-                string = new String(item);
-            } else {
-                string += ("|" + item);
+        if(list != null) {
+            for(String item : list) {
+                if(string == null) {
+                    string = new String(item);
+                } else {
+                    string += ("|" + item);
+                }
             }
         }
 
@@ -165,20 +214,46 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     public void setPreferences(List<String> tags, List<String> switches) {
+        /*
         this.tags = tags;
         this.switches = switches;
 
         strTags = getString(this.tags);
         strSwitches = getString(this.switches);
+        */
 
+        SharedPreferences.Editor editor = preferences.edit();
+
+        // tag만으로 비교해도 된다.
+        if(tags != null) {
+            this.tags = tags;
+            this.switches = switches;
+            strTags = getString(this.tags);
+            strSwitches = getString(this.switches);
+            editor.putString("Tags", strTags);
+            editor.putString("Switches", strSwitches);
+        } else {
+            if(this.tags != null) {
+                strTags = null; // 삭제해주지 않아도 쓸 데는 없는것 같지만.
+                strSwitches = null; // 삭제해주지 않아도 쓸 데는 없는것 같지만.
+                editor.remove("Tags");
+                editor.remove("Switches");
+            }
+        }
+
+        editor.commit();
+
+        /*
         if(strTags != null && strSwitches != null) {
             SharedPreferences.Editor editor = preferences.edit();
 
             editor.putString("Tags", strTags);
+            editor.remove("Tags");
             editor.putString("Switches", strSwitches);
 
             editor.commit();
         }
+        */
 
         //LogWrapper.e("SET PREF", strTags+","+strSwitches);
     }
@@ -269,19 +344,22 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     //---- vp
+    //TODO : FILTER.
     @Override
     public void onViewPagerPageSelected(int position) {
         switch(position) {
             case 0:// Camera
                 flag_fragment_home = false;
 
-                filterFragment.setDrawerLocked(true);
+                //filterFragment.setDrawerLocked(true);
+                slidingMenu.setSlidingEnabled(false);
 
                 break;
             case 1:// Home
                 flag_fragment_home = true;
 
-                filterFragment.setDrawerLocked(false);
+                //filterFragment.setDrawerLocked(false);
+                slidingMenu.setSlidingEnabled(true);
 
                 break;
         }
@@ -420,6 +498,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
 
         viewPagerFragment.setCurrentPage(1);
 
+        //TODO : FILTER.
+        filterFragment.setTags(this.tags, this.switches); // filter가 이제 새로 뜨는게 아니라서 변경 생길 때마다 해줘야된다.(ok는 변경을 무조건 수반한다고 볼 수 있다.)
+
         onBackPressed();
     }
 
@@ -428,7 +509,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     public void onHomeActionFilterClicked() {
         //Fragment fragment = FilterFragment.newInstance(tags, switches);
         //addFragment(fragment);
-        filterFragment.toggleDrawer();
+        //TODO : FILTER.
+        //filterFragment.toggleDrawer();
+        slidingMenu.toggle();
     }
 
     @Override
@@ -470,11 +553,17 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
             }
         } else {
             if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
-                if(filterFragment.isDrawerOpen() == false) { // 일반적인 home의 경우.
+                //TODO : FILTER.
+                if(slidingMenu.isMenuShowing()) {
+                    slidingMenu.toggle();
+                } else {
                     viewPagerFragment.setCurrentPage(0);
-                } else { // home인데 drawer 열려있을 경우
-                    filterFragment.closeDrawer();
                 }
+                //if(filterFragment.isDrawerOpen() == false) { // 일반적인 home의 경우.
+                //    viewPagerFragment.setCurrentPage(0);
+                //} else { // home인데 drawer 열려있을 경우
+                //    filterFragment.closeDrawer();
+                //}
             } else {
                 finish();
             }

@@ -62,19 +62,19 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     List<String> switches;
     List<String> positions;// x|y형태로 저장해서 나중에 comma로 다시 연결한다.
 
-    private GestureDetector gestureDetector;
+    //private GestureDetector gestureDetector;
 
     ViewGroup container_;
 
     View focusedView = null;
-    View focusedView_ = null;// for gesture detector. view 전달할 수가 없어서 이렇게 했다.
+    //View focusedView_ = null;// for gesture detector. view 전달할 수가 없어서 이렇게 했다.
     float originX, originY;
     float X, Y;
     boolean isMoving = false;
-    boolean isMoving_ = false;// for gesture detector. onTouch에서 set되지만 gesture detector에서 해제된다.
+    //boolean isMoving_ = false;// for gesture detector. onTouch에서 set되지만 gesture detector에서 해제된다.
     boolean isKeyboard = false;
 
-    private final String HEADER = "# ";
+    private final String HEADER = "";
 
     private DisplayFragmentCallbacks mCallbacks;
 
@@ -151,7 +151,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
             */
             ((Button) view.findViewById(R.id.fragment_display_ok)).setOnClickListener(this);
-
+            /*
             gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onSingleTapConfirmed(MotionEvent e) { // double tap과 tap 구별 가능한 method.
@@ -173,7 +173,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     return true;
                 }
             });
-
+            */
             container_ = (ViewGroup) view.findViewById(R.id.fragment_display_container);
             container_.setOnTouchListener(this);
             // tree observer 이용한 visible view height(keyboard 위쪽) 재는 방식 쓰려 했으나 adjustPan일 경우 가능하고, 다시말해 view들이 움직이게 된다는 말이어서 실패했다.
@@ -246,6 +246,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         return tags.indexOf(tag);
     }
 
+    public void setTag(int index, String tag) {
+        tags.set(index, tag);
+    }
+
     public void removeTag(int index) { // index가 왔다는건 list도 있다는 것이다.
         tags.remove(index);
         switches.remove(index);
@@ -267,10 +271,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         if(focusedView != null) {
             EditText edit = (EditText) focusedView;
             String string = edit.getText().subSequence(HEADER.length(), edit.getText().length()).toString();
-            int leftMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).leftMargin;
-            int topMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).topMargin;
-            float ratioX = leftMargin / (float) container_.getMeasuredWidth();
-            float ratioY = topMargin / (float) container_.getMeasuredHeight();
+            //int leftMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).leftMargin;
+            //int topMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).topMargin;
+            float ratioX = focusedView.getX() / (float) container_.getMeasuredWidth();
+            float ratioY = focusedView.getY() / (float) container_.getMeasuredHeight();
 
             if(string != null) {
                 if(string.isEmpty()) {
@@ -293,9 +297,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                     return false;
                 } else {
-                    //int index = addTag(string, leftMargin, topMargin);
-                    int index = addTag(string, ratioX, ratioY);
-                    focusedView.setTag(index); // for removing later.
+                    if(focusedView.getTag() != null) { // 이건 그냥 다른것을 선택해서 뭔가를 입력한 경우.(check는 이미 되었다고 보면 된다.)
+                        // edit를 넣기. 그래야만 태그 편집했는데 기존 태그가 추가되는 것 같은 경우가 사라진다.
+                        int index = (Integer) focusedView.getTag();
+                        setTag(index, string);
+                    } else { // 이건 새로운 것을 입력한 경우.(이것도 check는 되었다고 보면 된다.)
+                        //int index = addTag(string, leftMargin, topMargin);
+                        int index = addTag(string, ratioX, ratioY);
+                        focusedView.setTag(index); // for removing later.
+                    }
 
                     return true;
                 }
@@ -334,13 +344,23 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         return (int)(dp * density);
     }
 
+    /*
+    이걸 쓰면, api11부터이므로 다른 계획들에도 영향을 미친다. 하지만 일단 이대로 간다.
+    먼저, margin이 안되는 이유는, 잘 모르겠지만 set x, y로 하면 해결이 된다.
+    하지만 x, y는 margin이 없어서 adjustpan에서 문제가 된다.
+    adjustpan을 막으면서 x, y를 쓰려면 생성시에 margin을 주면 될듯 했는데, 그것도 역시 다른건 되도 생성시 끄트머리 생성은 문제가 된다.
+    결국 api level 포기하면서 x, y를 써도, 사실 adjustpan이 좀 걸리긴 하지만 일단은 이정도에서 fix한다.
+     */
     public void setPosition(View view, float x, float y) {
-        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+        //RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
 
-        layoutParams.leftMargin = (int) x;
-        layoutParams.topMargin = (int) y;
+        //layoutParams.leftMargin = (int) x;
+        //layoutParams.topMargin = (int) y;
 
-        view.setLayoutParams(layoutParams);
+        //view.setLayoutParams(layoutParams);
+
+        view.setX(x);
+        view.setY(y);
     }
 
     public EditText getEdit() {
@@ -356,7 +376,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */HEADER), new ByteLengthFilter(20)});
         edit.setTextSize(24);
         edit.setTextColor(getResources().getColor(android.R.color.white));
-        edit.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        //edit.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
         edit.setImeOptions(EditorInfo.IME_ACTION_DONE);
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -449,8 +469,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         originX = event.getRawX();
                         originY = event.getRawY();
                         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) v.getLayoutParams();
-                        X = layoutParams.leftMargin;
-                        Y = layoutParams.topMargin;
+                        //X = layoutParams.leftMargin;
+                        //Y = layoutParams.topMargin;
+                        X = v.getX();
+                        Y = v.getY();
                     }
                 }
 
@@ -463,7 +485,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                         if(Math.abs(difX) > 20 || Math.abs(difY) > 20) {
                             isMoving = true;
-                            isMoving_ = true;// gesture에서 해제하기 위한 set.
+                            //isMoving_ = true;// gesture에서 해제하기 위한 set.
 
                             setPosition(v, X + difX, Y + difY);
                         }
@@ -485,14 +507,18 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         if(isMoving == true) {// move : focused null이지만, et 선택했을 때. 그리고 move true일 때.
                             // position 수정해준다.
                             int index = (Integer) v.getTag();
-                            int leftMargin = ((RelativeLayout.LayoutParams) v.getLayoutParams()).leftMargin;
-                            int topMargin = ((RelativeLayout.LayoutParams) v.getLayoutParams()).topMargin;
-                            float ratioX = leftMargin / (float) container_.getMeasuredWidth();
-                            float ratioY = topMargin / (float) container_.getMeasuredHeight();
+                            //int leftMargin = ((RelativeLayout.LayoutParams) v.getLayoutParams()).leftMargin;
+                            //int topMargin = ((RelativeLayout.LayoutParams) v.getLayoutParams()).topMargin;
+                            float ratioX = v.getX() / (float) container_.getMeasuredWidth();
+                            float ratioY = v.getY() / (float) container_.getMeasuredHeight();
                             positions.set(index, new String(ratioX+"|"+ratioY));
 
                             isMoving = false;
-                        }// else가 select(focused null이지만, et 선택했을 때. 그리고 move false일 때.)이지만 gesture에서 처리한다.(double tap 위해서.)
+                        } else { // else가 select(focused null이지만, et 선택했을 때. 그리고 move false일 때.)이지만 gesture에서 처리한다.(double tap 위해서.) => gesture는 일단 버리고, event 넘긴다.(not consumed)
+                            requestViewFocused(v);
+
+                            return false;// 그냥 true 되게 놔둬도 상관없는 것 같지만 이게 맞을 것 같으므로 이렇게 한다.
+                        }
                     }
                 } else {
                     if(v != focusedView) {// cancel : focused not null일 경우 어디를 누르든 cancel. 자기자신을 눌렀을 경우만 빼고.
@@ -501,16 +527,22 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         } else {
                             removeFocusedView();
                         }
+                    } else {// 자기 자신 click : event 넘긴다.
+                        return false;
                     }
                 }
 
                 break;
         }
 
+        /*
         if(v instanceof EditText) {// up에서 처리하니깐 안되서 여기서 하기로 했다.
             focusedView_ = v;
             gestureDetector.onTouchEvent(event);
-        }
+
+            return false;
+        } else
+        */
 
         return true;
     }

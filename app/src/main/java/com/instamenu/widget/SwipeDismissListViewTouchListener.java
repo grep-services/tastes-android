@@ -222,10 +222,13 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
                 if (Math.abs(deltaX) > mViewWidth / 2) {
                     dismiss = true;
                     dismissRight = deltaX > 0;
-                } else if (mMinFlingVelocity <= velocityX && velocityX <= mMaxFlingVelocity
-                        && velocityY < velocityX) {
-                    dismiss = true;
-                    dismissRight = mVelocityTracker.getXVelocity() > 0;
+                } else if (mMinFlingVelocity <= velocityX && velocityX <= mMaxFlingVelocity && velocityY < velocityX) {
+                    /*
+                    속도 가지고 하는것 같은데 일단 빼본다. 적당히 해줘도 되겠지만 일단 여긴 그렇게 item이 list로 나열될 만큼 많지는 않을 것 같고,
+                    drawer 닫을려는 시도나, list scroll 등 변수가 많아서.
+                     */
+                    //dismiss = true;
+                    //dismissRight = mVelocityTracker.getXVelocity() > 0;
                 }
                 if (dismiss) {
                     // dismiss
