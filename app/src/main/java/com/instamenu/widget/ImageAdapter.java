@@ -104,9 +104,9 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.stub_large)
-                .showImageForEmptyUri(R.drawable.fail_large)
-                .showImageOnFail(R.drawable.fail_large)
+                .showImageOnLoading(R.drawable.stub)
+                .showImageForEmptyUri(R.drawable.fail)
+                .showImageOnFail(R.drawable.fail)
                 //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
                 .cacheInMemory(true)
                 .cacheOnDisk(true)
