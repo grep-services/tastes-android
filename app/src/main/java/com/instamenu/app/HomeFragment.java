@@ -5,12 +5,14 @@ import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
@@ -43,6 +45,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
     ImageLoader imageLoader;
 
+    SwipeRefreshLayout refresh;
     GridView grid;
     ImageAdapter adapter;
 
@@ -85,6 +88,8 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_home_refresh);
+
         grid = (GridView) view.findViewById(R.id.fragment_home_grid);
 
         adapter = new ImageAdapter(getActivity(), inflater, imageLoader);
@@ -96,6 +101,15 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         ((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
 
         setView();
+
+        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
+                setView();
+            }
+        });
+        // 첫번째 색 말고는 안먹힘. 일단 빼둔다.
+        //refresh.setColorSchemeResources(R.color.orange, R.color.orange_dark, R.color.gray, R.color.gray_dark);
 
         return view;
     }
@@ -125,6 +139,9 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
                 // set to adapter.
                 adapter.setImages(images);
+
+                // refresh 해제.
+                refresh.setRefreshing(false);
             }
         };
 

@@ -26,25 +26,42 @@
             android:background="@drawable/filter"/>
     </android.support.v7.widget.Toolbar>
 
-    <GridView
-        android:id="@+id/fragment_home_grid"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/fragment_home_refresh"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:numColumns="3"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="@dimen/grid_divider"
-        android:horizontalSpacing="@dimen/grid_divider"/>
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/fragment_home_empty"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:textSize="24sp"
-        android:textColor="@color/text"
-        android:text="검색된 내용이 없습니다."
-        android:visibility="gone"/><!-- gone 빼도 되지만 구조상 들어가있는게 더 안정적인듯 하다. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <GridView
+                android:id="@+id/fragment_home_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:numColumns="3"
+                android:stretchMode="columnWidth"
+                android:verticalSpacing="@dimen/grid_divider"
+                android:horizontalSpacing="@dimen/grid_divider"/>
+
+            <ScrollView
+                android:id="@+id/fragment_home_empty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="24sp"
+                    android:textColor="@color/text"
+                    android:text="검색된 내용이 없습니다."/>
+
+            </ScrollView>
+
+        </FrameLayout>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>
