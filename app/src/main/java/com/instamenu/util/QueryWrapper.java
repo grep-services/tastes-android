@@ -10,9 +10,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class QueryWrapper {
     // query process까지 3단계로 하면, 그게 나중에 필요할진 몰라도, 구조는 좋아도, 헷까린다. 일단 간단하게 간다.
@@ -62,10 +65,12 @@ public class QueryWrapper {
     }
 
     // add image.(create)
-    public void addImage(byte[] file, String address, double latitude, double longitude, List<String> tags, List<String> positions) {
+    public void addImage(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions) {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
+        parameters.add(new BasicNameValuePair("time", String.valueOf(time)));
+        LogWrapper.e("TIME", ": "+time);
         //parameters.add(new BasicNameValuePair("address", address));
         parameters.add(new BasicNameValuePair("latitude", String.valueOf(latitude)));
         parameters.add(new BasicNameValuePair("longitude", String.valueOf(longitude)));
@@ -112,7 +117,14 @@ public class QueryWrapper {
 
             List<String> positions = getList(imageObject.getString("positions"));
 
-            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), distance, tags, positions);
+            String datetime = null;
+            if(imageObject.getString("time").equals("null") == false) {
+                long time = Long.valueOf(imageObject.getString("time"));// null인 것들은 exception 날 준비 한다.
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());// default locale이 어떤 영향을 미칠 지 확인해보기.
+                datetime = format.format(new Date(time));
+            }
+
+            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, imageObject.getString("address"), distance, tags, positions);
         } catch (JSONException e) {
             LogWrapper.e("JSON", e.getMessage());
         }
@@ -159,7 +171,14 @@ public class QueryWrapper {
 
                 List<String> positions = getList(imageObject.getString("positions"));
 
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("date"), imageObject.getString("address"), dist, tags_, positions);
+                String datetime = null;
+                if(imageObject.getString("time").equals("null") == false) {
+                    long time = Long.valueOf(imageObject.getString("time"));// null인 것들은 exception 날 준비 한다.
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());// default locale이 어떤 영향을 미칠 지 확인해보기.
+                    datetime = format.format(new Date(time));
+                }
+
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, imageObject.getString("address"), dist, tags_, positions);
 
                 if(images == null) {
                     images = new ArrayList<Image>();

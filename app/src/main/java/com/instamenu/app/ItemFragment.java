@@ -2,40 +2,24 @@ package com.instamenu.app;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.text.InputFilter;
-import android.text.InputType;
 import android.util.DisplayMetrics;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.instamenu.R;
 import com.instamenu.content.Image;
-import com.instamenu.util.ByteLengthFilter;
-import com.instamenu.util.DefaultFilter;
 import com.instamenu.util.QueryWrapper;
-import com.instamenu.widget.TagAdapter;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -202,7 +186,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             });
 
             ((TextView) view.findViewById(R.id.pager_item_distance)).setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
-            ((TextView) view.findViewById(R.id.pager_item_date)).setText(images.get(position).date);
+            ((TextView) view.findViewById(R.id.pager_item_datetime)).setText(images.get(position).datetime);// null이면 그냥 안보인다.
 
             container.addView(view);
 
