@@ -17,25 +17,38 @@
         android:focusable="true"
         android:focusableInTouchMode="true"/>
 
-    <android.support.v7.widget.Toolbar
+    <TextView
+        android:id="@+id/fragment_display_wait"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gray_overlay"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:textColor="@color/text_inverse"
+        android:text="Wait..."
+        android:visibility="gone"/>
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:minHeight="?attr/actionBarSize"
-        android:background="@color/transparent">
+        android:padding="@dimen/margin">
+
         <Button
-            android:id="@+id/fragment_display_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:background="@drawable/cancel"
+            android:id="@+id/fragment_display_close"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/close"
             android:onClick="mOnClick"/>
+
         <Button
             android:id="@+id/fragment_display_ok"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentRight="true"
             android:background="@drawable/ok"/>
-    </android.support.v7.widget.Toolbar>
+
+    </RelativeLayout>
 
 </FrameLayout>

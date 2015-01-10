@@ -6,12 +6,11 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
-import android.support.v4.widget.DrawerLayout;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.commonsware.cwac.camera.CameraHost;
@@ -21,7 +20,7 @@ import com.commonsware.cwac.camera.PictureTransaction;
 import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.instamenu.R;
 import com.instamenu.content.Image;
-import com.instamenu.util.LogWrapper;
+import com.instamenu.util.QueryWrapper;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -30,7 +29,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment_.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+
+    private QueryWrapper queryWrapper;
 
     private SharedPreferences preferences;
     private List<String> tags;
@@ -41,10 +42,11 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
 
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
+    private boolean flag_fragment_display = false;// 보낼 때 true가 된다.
 
     private SlidingMenu slidingMenu;
 
-    private FilterFragment_ filterFragment;
+    private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
     private CameraFragment_ cameraFragment;
     private HomeFragment homeFragment;
@@ -66,6 +68,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // init vars.
+        queryWrapper = new QueryWrapper();
+
         // init preferences
         initPreferences();
 
@@ -78,17 +83,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
                 .build();
         ImageLoader.getInstance().init(configuration);
 
-        // initalization - set filter(drawer), viewpager including camera, home
-        /*
-        TODO : FILTER.
-        filterFragment = (FilterFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        filterFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), R.id.container);
-        filterFragment.setTags(tags, switches);
-        */
-
         setSlidingMenu();
 
-        filterFragment = FilterFragment_.newInstance(tags, switches);
+        filterFragment = FilterFragment.newInstance(tags, switches);
         replaceFragment(R.id.menu, filterFragment);
 
         getFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
@@ -349,21 +346,18 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     //---- vp
-    //TODO : FILTER.
     @Override
     public void onViewPagerPageSelected(int position) {
         switch(position) {
             case 0:// Camera
                 flag_fragment_home = false;
 
-                //filterFragment.setDrawerLocked(true);
                 slidingMenu.setSlidingEnabled(false);
 
                 break;
             case 1:// Home
                 flag_fragment_home = true;
 
-                //filterFragment.setDrawerLocked(false);
                 slidingMenu.setSlidingEnabled(true);
 
                 break;
@@ -458,7 +452,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         public void onCameraFail(FailureReason reason) {
             super.onCameraFail(reason);
 
-            Toast.makeText(MainActivity.this, "Sorry, but you cannot use the camera now!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "You can't use the camera now", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -486,36 +480,53 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     @Override
-    public void onFlashModeChanged(String mode_flash) {
+    public void onFlashEnabled(boolean enabled) {
         // 현재 안되는데, 아마도 Camera class deprecated된거 때문에 그런거 아닌지. 나중에 version별로 갈라준다.
         // 그런데 ffc 등도 안되는걸 보면, preview restart나 host reset 등이 필요한 것일수도 있다. cameraview를 다시 setting해주는 것도 봤는데, 뭐가 있을지 알아보기.
-        this.mode_flash = mode_flash;
+        mode_flash = enabled ? Camera.Parameters.FLASH_MODE_ON : Camera.Parameters.FLASH_MODE_OFF;
     }
 
     //---- display
     @Override
-    public void onDisplayActionOKClicked(List<String> tags, List<String> switches) {
-        // send to server.
-        // add to pref.
-        addPreferences(tags, switches);
-        // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
-        homeFragment.setView();
+    public void onDisplayActionOKClicked(final byte[] file, final long time, final String address, final double latitude, final double longitude, final List<String> tags, final List<String> positions) {
+        // set flag
+        flag_fragment_display = true;
+        // send to server
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                queryWrapper.addImage(file, time, address, latitude, longitude, tags, positions);
 
-        viewPagerFragment.setCurrentPage(1);
+                return null;
+            }
 
-        //TODO : FILTER.
-        filterFragment.setTags(this.tags, this.switches); // filter가 이제 새로 뜨는게 아니라서 변경 생길 때마다 해줘야된다.(ok는 변경을 무조건 수반한다고 볼 수 있다.)
+            @Override
+            protected void onPostExecute(Void unused) {
+                super.onPostExecute(unused);
 
-        onBackPressed();
+                // add to pref.
+                addPreferences(tags, switches);
+                // set filter also.
+                filterFragment.setTags(MainActivity.this.tags, MainActivity.this.switches); // filter가 이제 새로 뜨는게 아니라서 변경 생길 때마다 해줘야된다.(ok는 변경을 무조건 수반한다고 볼 수 있다.)
+                // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
+                homeFragment.setView();
+
+                if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
+                    viewPagerFragment.setCurrentPage(1);
+
+                    onBackPressed();
+                }
+            }
+        };
+
+        // 11부터는 serial이 default라서.
+        if(Build.VERSION.SDK_INT< Build.VERSION_CODES.HONEYCOMB) task.execute();
+        else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     //---- home
     @Override
     public void onHomeActionFilterClicked() {
-        //Fragment fragment = FilterFragment.newInstance(tags, switches);
-        //addFragment(fragment);
-        //TODO : FILTER.
-        //filterFragment.toggleDrawer();
         slidingMenu.toggle();
     }
 
@@ -554,21 +565,19 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
             if(flag_fragment_splash == true) {
                 finish();
             } else {
+                if(flag_fragment_display == true) {
+                    flag_fragment_display = false;// 미리 false로 하고 pop한다.
+                }
+
                 fragmentManager.popBackStack();
             }
         } else {
             if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
-                //TODO : FILTER.
                 if(slidingMenu.isMenuShowing()) {
                     slidingMenu.toggle();
                 } else {
                     viewPagerFragment.setCurrentPage(0);
                 }
-                //if(filterFragment.isDrawerOpen() == false) { // 일반적인 home의 경우.
-                //    viewPagerFragment.setCurrentPage(0);
-                //} else { // home인데 drawer 열려있을 경우
-                //    filterFragment.closeDrawer();
-                //}
             } else {
                 finish();
             }
@@ -577,12 +586,16 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
 
     public void mOnClick(View view) {
         switch(view.getId()) {
+            /*
             case R.id.fragment_camera_flash:
                 break;
+                */
+            /*
             case R.id.fragment_camera_switch:
                 break;
             case R.id.fragment_camera_video:
                 break;
+                */
             case R.id.fragment_camera_shot:
                 takeSimplePicture();
 
@@ -591,9 +604,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
                 viewPagerFragment.setCurrentPage(1);
 
                 break;
-            case R.id.fragment_display_cancel:
+            case R.id.fragment_display_close:
             case R.id.fragment_home_camera:
-            case R.id.fragment_item_back:
+            case R.id.fragment_item_close:
             //case R.id.fragment_filter_cancel:
                 onBackPressed();
 

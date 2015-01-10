@@ -1,17 +1,23 @@
 package com.instamenu.app;
 
 import android.app.Activity;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 import com.commonsware.cwac.camera.CameraFragment;
 import com.commonsware.cwac.camera.CameraView;
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.instamenu.R;
 
 /*
@@ -27,7 +33,7 @@ zoom ==> 일단 배제. 이건 boolean으로 다룰 만한 것도 아니다.
 
 toggle되는 설정들 없으므로 아직 host customize하진 않고 simple에서의 builder 설정으로 바로 가도록 한다.
 */
-public class CameraFragment_ extends CameraFragment {
+public class CameraFragment_ extends CameraFragment implements View.OnTouchListener {
 
     private View tools;// for splash
 
@@ -36,7 +42,8 @@ public class CameraFragment_ extends CameraFragment {
     private CameraFragmentCallbacks mCallbacks = null;// callback. 변경 ui는 fragment에 있고, 변경 대상 vars는 activity에 있다. activity가 implement하게 하고, 그 method를 call한다.
     // 근데 이거 그런방법은 없는가? callback 그대로 쓰는 등...
     private MainActivity mActivity = null;// 쓰일 곳이 한군데이긴 하지만, attatch에 붙여서 사용하는게 더 정리되어 보인다.
-    private Button shotButton;
+    private Button shotButton, homeButton;
+    private CheckBox flashCheck;
 
     public static CameraFragment_ newInstance() {
         CameraFragment_ fragment = new CameraFragment_();
@@ -77,6 +84,21 @@ public class CameraFragment_ extends CameraFragment {
         setCameraView(cameraView);
 
         shotButton = (Button) view.findViewById(R.id.fragment_camera_shot);
+        homeButton = (Button) view.findViewById(R.id.fragment_camera_home);
+        //flashCheck = (CheckBox) view.findViewById(R.id.fragment_camera_flash);
+
+        //shotButton.setOnTouchListener(this);
+        //homeButton.setOnTouchListener(this);
+        //flashCheck.setOnTouchListener(this);
+
+        /*
+        flashCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                flashEnabled(isChecked);
+            }
+        });
+        */
 
         return view;
     }
@@ -101,10 +123,30 @@ public class CameraFragment_ extends CameraFragment {
         mCallbacks = null;
     }
 
+    public void flashEnabled(boolean enabled) {
+        if (mCallbacks != null) {
+            mCallbacks.onFlashEnabled(enabled);
+        }
+    }
+
     public void setShotButtonEnabled(boolean enabled) {
         shotButton.setEnabled(enabled);
 
         // false일 때가 티가 나도 되지만, 기능만 disable되어도 상관없다. 순식간인데 괜히 button back 바뀌면 혼란스럽기만 할 수도 있다.
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch(event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                YoYo.with(Techniques.Pulse)/*.duration(1000)*/.playOn(v);
+
+                break;
+            case MotionEvent.ACTION_UP:
+                break;
+        }
+
+        return false;
     }
 
     /*
@@ -112,7 +154,6 @@ public class CameraFragment_ extends CameraFragment {
     구조상 이런게 쓰일 곳이 있을거고 activity reference를 받아두기 위해서(host set할 때) attatch당시를 catch하려 했던 용도도 있다.
      */
     public interface CameraFragmentCallbacks {
-
-        public void onFlashModeChanged(String mode_flash);
+        public void onFlashEnabled(boolean enabled);
     }
 }

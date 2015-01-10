@@ -96,7 +96,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         text.setPadding(p, p, p, p);
         text.setText(HEADER + tag);
         text.setTextSize(24);
-        text.setTextColor(getResources().getColor(android.R.color.white));
+        text.setTextColor(getResources().getColor(R.color.text_inverse));
         text.setSingleLine(true);
         //text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
         text.setId(R.id.fragment_item_tag);
@@ -234,10 +234,12 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
+            /*
             case R.id.fragment_item_share:
                 actionShareClicked();
 
                 break;
+                */
         }
     }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Instamenu</string>
+    <string name="app_name">Memento</string>
 
     <string name="title_fragment_camera"></string>
     <string name="title_fragment_display"></string>
@@ -9,6 +9,6 @@
     <string name="title_fragment_filter">Filter</string>
     <string name="title_fragment_item">Menu</string>
 
-    <string name="distance_unit">미터 근처</string>
+    <string name="distance_unit">m</string>
 
 </resources>

@@ -18,29 +18,35 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
+            android:padding="@dimen/margin"
             android:minHeight="?attr/actionBarSize"
             android:background="@color/transparent">
-            <Button
+            <!--
+            <CheckBox
                 android:id="@+id/fragment_camera_flash"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:background="@drawable/flash_on"
-                android:onClick="mOnClick"/>
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:button="@null"
+                android:background="@drawable/selector_check_flash"/>
+                -->
+            <!--
             <Button
                 android:id="@+id/fragment_camera_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
                 android:onClick="mOnClick"/>
+                -->
         </android.support.v7.widget.Toolbar>
 
         <android.support.v7.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:padding="@dimen/margin"
             android:minHeight="?attr/actionBarSize"
             android:background="@color/transparent">
+            <!--
             <Button
                 android:id="@+id/fragment_camera_video"
                 android:layout_width="72dp"
@@ -49,21 +55,24 @@
                 android:layout_marginLeft="24dp"
                 android:background="@drawable/video"
                 android:onClick="mOnClick"/>
+                -->
             <Button
                 android:id="@+id/fragment_camera_shot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="99dp"
+                android:layout_height="99dp"
                 android:layout_gravity="center"
-                android:background="@drawable/camera_shot"
+                android:background="@drawable/shot"
                 android:onClick="mOnClick"/>
+
             <Button
                 android:id="@+id/fragment_camera_home"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
+                android:layout_width="39dp"
+                android:layout_height="39dp"
                 android:layout_gravity="right|center_vertical"
                 android:layout_marginRight="24dp"
                 android:background="@drawable/grid"
                 android:onClick="mOnClick"/>
+
         </android.support.v7.widget.Toolbar>
 
     </RelativeLayout>

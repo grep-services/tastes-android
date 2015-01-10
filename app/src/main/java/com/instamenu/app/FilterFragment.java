@@ -4,20 +4,12 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.ViewDragHelper;
 import android.text.InputFilter;
-import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -27,13 +19,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.instamenu.R;
 import com.instamenu.util.ByteLengthFilter;
 import com.instamenu.util.DefaultFilter;
 import com.instamenu.widget.SwipeDismissListViewTouchListener;
 import com.instamenu.widget.TagAdapter;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,10 +34,6 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     private static final String ARG_TAGS = "tags";
     private static final String ARG_SWITCHES = "switches";
-
-    private DrawerLayout mDrawerLayout;
-    private ViewGroup mFrame;
-    private View mFragmentContainerView;
 
     private float lastTranslate = 0.0f;
 
@@ -71,6 +60,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         fragment.setArguments(args);
         return fragment;
     }
+
     public FilterFragment() {
         // Required empty public constructor
     }
@@ -110,9 +100,10 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                         });
         list.setOnTouchListener(touchListener);
         list.setOnScrollListener(touchListener.makeScrollListener());
+        list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
-        edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(20)});
+        edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(50)});
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -133,96 +124,11 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         return view;
     }
 
-    public void setUp(int fragmentId, DrawerLayout drawerLayout, int frameId) {
-        mFragmentContainerView = getActivity().findViewById(fragmentId);
-        mDrawerLayout = drawerLayout;
-        mFrame = (ViewGroup) getActivity().findViewById(frameId);
-
-        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View view, float v) {
-                float moveFactor = mFragmentContainerView.getWidth() * v * -1;// rtl
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    mFrame.setTranslationX(moveFactor);
-                } else {
-                    TranslateAnimation anim = new TranslateAnimation(lastTranslate, moveFactor, 0.0f, 0.0f);
-                    anim.setDuration(0);
-                    anim.setFillAfter(true);
-                    mFrame.startAnimation(anim);
-
-                    lastTranslate = moveFactor;
-                }
-            }
-
-            @Override
-            public void onDrawerOpened(View view) {
-                // 사실 fragment가 create, destroy되면 필요하겠지만 현재는 필요없다.
-            }
-
-            @Override
-            public void onDrawerClosed(View view) {
-                closeFilter();
-            }
-
-            @Override
-            public void onDrawerStateChanged(int i) {
-
-            }
-        });
-
-        // set a custom shadow that overlays the main content when the drawer opens
-        //mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.END);
-
-        /*
-        try {
-            Field mDragger = mDrawerLayout.getClass().getDeclaredField("mRightDragger");
-            mDragger.setAccessible(true);
-            ViewDragHelper draggerObj = (ViewDragHelper) mDragger.get(mDrawerLayout);
-
-            Field mEdgeSize = draggerObj.getClass().getDeclaredField("mEdgeSize");
-            mEdgeSize.setAccessible(true);
-            int edge = mEdgeSize.getInt(draggerObj);
-
-            mEdgeSize.setInt(draggerObj, edge * 5);
-        } catch (Exception e) {
-        }
-        */
-    }
-
-    public boolean isDrawerOpen() {
-        return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(mFragmentContainerView);
-    }
-
-    public void openDrawer() {
-        mDrawerLayout.openDrawer(mFragmentContainerView);
-    }
-
-    public void closeDrawer() {
-        mDrawerLayout.closeDrawer(mFragmentContainerView);
-    }
-
-    public void toggleDrawer() {
-        if(isDrawerOpen()) {
-            closeDrawer();
-        } else {
-            openDrawer();
-        }
-    }
-
     public void setTags(List<String> tags, List<String> switches) {
         this.tags = tags;
         this.switches = switches;
 
         adapter.setTags(tags, switches);
-    }
-
-    public void setDrawerLocked(boolean locked) {
-        if(locked) {
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-        } else {
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-        }
     }
 
     @Override
@@ -281,10 +187,16 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     public void confirmTag() {
         String tag = edit.getText().subSequence(HEADER.length(), edit.length()).toString();
 
-        if(tag == null || tag.isEmpty()) {
-            Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
-        } else if(adapter.getTags() != null && adapter.getTags().contains(tag)) {
-            Toast.makeText(getActivity(), "이미 존재하는 이름입니다.", Toast.LENGTH_SHORT).show();
+        // 최대한 msg는 없앤다.
+        if(tag == null || tag.isEmpty()) { // 빈 내용이면 그냥 놔두면 된다.
+            YoYo.with(Techniques.Shake).playOn(edit);
+            //Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
+        } else if(adapter.getTags() != null && adapter.getTags().contains(tag)) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
+            // list scroll 해보기.
+            list.setSelection(adapter.getTags().indexOf(tag));
+
+            YoYo.with(Techniques.Shake).playOn(edit);
+            //Toast.makeText(getActivity(), "이미 존재하는 이름입니다.", Toast.LENGTH_SHORT).show();
         } else {
             adapter.addTag(tag);
 

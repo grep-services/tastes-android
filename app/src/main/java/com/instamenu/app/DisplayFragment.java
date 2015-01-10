@@ -32,6 +32,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.instamenu.R;
 import com.instamenu.util.ByteLengthFilter;
 import com.instamenu.util.DefaultFilter;
@@ -57,6 +59,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     static byte[] imageToShow = null;
 
     ImageView imageView;
+
+    Button buttonOk, buttonClose;
+
+    View waitView;
 
     List<String> tags;
     List<String> switches;
@@ -130,27 +136,16 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             //Bitmap square = Bitmap.createBitmap(origin, 0, 0, size, size);
             //imageView.setImageBitmap(square);
             imageView.setImageBitmap(BitmapFactory.decodeByteArray(imageToShow, 0, imageToShow.length, opts));
-/*
-            // setting list
-            list = (ListView) view.findViewById(R.id.fragment_display_list);
 
-            // setting header
-            //View header = inflater.inflate(R.layout.list_header, null, false);
-            View header = new View((Context) mCallbacks);
-            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            header.setLayoutParams(layoutParams);
-            header.setOnTouchListener(this);
+            waitView = view.findViewById(R.id.fragment_display_wait);
 
-            list.addHeaderView(header);
+            buttonOk = (Button) view.findViewById(R.id.fragment_display_ok);
+            buttonClose = (Button) view.findViewById(R.id.fragment_display_close);
 
-            // setting adapter
-            adapter = new TagAdapter(inflater);
-            list.setAdapter(adapter);
+            //buttonOk.setOnTouchListener(this);
+            //buttonClose.setOnTouchListener(this);
 
-            //edit = (EditText) view.findViewById(R.id.fragment_display_edit);
-
-            */
-            ((Button) view.findViewById(R.id.fragment_display_ok)).setOnClickListener(this);
+            buttonOk.setOnClickListener(this);
             /*
             gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
@@ -176,6 +171,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             */
             container_ = (ViewGroup) view.findViewById(R.id.fragment_display_container);
             container_.setOnTouchListener(this);
+            //view.setOnTouchListener(this);
+
             // tree observer 이용한 visible view height(keyboard 위쪽) 재는 방식 쓰려 했으나 adjustPan일 경우 가능하고, 다시말해 view들이 움직이게 된다는 말이어서 실패했다.
             container_.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { // 하지만 이렇게 사용하긴 하도록 한다.
                 @Override
@@ -224,9 +221,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         mCallbacks = null;
     }
 
-    public void actionOKClicked() {
+    // caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다.
+    public void actionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions) {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayActionOKClicked(tags, switches);
+            mCallbacks.onDisplayActionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions);
         }
     }
 
@@ -367,15 +365,17 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         EditText edit = new EditText(getActivity());
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         edit.setLayoutParams(layoutParams);
+        edit.setBackgroundDrawable(null);//TODO: 안되면 color transparent라도 한다.
         int p = getPixel(16);
         edit.setPadding(p, p, p, p);
         edit.setInputType(InputType.TYPE_CLASS_TEXT); // 왜그런진 몰라도 setText앞에 와야 한다.
-        edit.setHint("Instamenu");
+        edit.setHint("Tag");
+        edit.setHintTextColor(getResources().getColor(R.color.text_inverse));
         edit.setText(HEADER);
         //edit.setEms(HEADER.length());
-        edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */HEADER), new ByteLengthFilter(20)});
+        edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */HEADER), new ByteLengthFilter(50)});
         edit.setTextSize(24);
-        edit.setTextColor(getResources().getColor(android.R.color.white));
+        edit.setTextColor(getResources().getColor(R.color.text_inverse));
         //edit.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
         edit.setImeOptions(EditorInfo.IME_ACTION_DONE);
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -427,33 +427,16 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             case R.id.fragment_display_ok:
                 // check tag existence
                 if(tags == null) {
-                    Toast.makeText(getActivity(), "화면을 터치해서 태그를 달아주세요.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Add a tag", Toast.LENGTH_SHORT).show();
 
                     break;
                 }
-                // disable button. 다시 복구할 필요 없다. 어차피 다시 터치할 경우들은 전송 조건 안됐을 때들이고 그것들은 위에서 다 braek 걸려서 나간다. 만약 나중에 전송실패도 생긴다면 그때는 enabled해준다.
-                v.setEnabled(false);
-                // send to server
-                AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... params) {
-                        queryWrapper.addImage(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions);
 
-                        return null;
-                    }
+                buttonClose.setVisibility(View.GONE);// 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
+                buttonOk.setVisibility(View.GONE);
+                waitView.setVisibility(View.VISIBLE);
 
-                    @Override
-                    protected void onPostExecute(Void unused) {
-                        super.onPostExecute(unused);
-
-                        // add to pref, move to home.
-                        actionOKClicked();
-                    }
-                };
-
-                // 11부터는 serial이 default라서.
-                if(Build.VERSION.SDK_INT< Build.VERSION_CODES.HONEYCOMB) task.execute();
-                else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                actionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions);
 
                 break;
         }
@@ -461,9 +444,21 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if(v instanceof Button) {
+            return false;
+        }
+
         // x, y로 움직이는 것들은, layout parameters 설정이 제대로 안되어 있으면 adjustPan에 적용되지 않아서 일단 제외하고 margin 방식으로 갈아탔다.
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                /*
+                if(v instanceof Button) {
+                    YoYo.with(Techniques.Pulse).playOn(v);// duration 안해도 되는지 확인해보기.
+
+                    break;
+                }
+                */
+
                 if(focusedView == null) { // 키보드 떠있을때는 내려가고 다시 move 가능하게 하기위해 이렇게 한다.
                     if(v instanceof EditText) {
                         originX = event.getRawX();
@@ -493,7 +488,11 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 }
                 break;
             case MotionEvent.ACTION_UP:// make, moving, cancel(view를 선택해도 cancel일 수 있다.), select.
-
+                /*
+                if(v instanceof Button) {
+                    return false;// not consume
+                }
+                */
                 if(focusedView == null) { // make : 일단 focused null일 때. 그리고 viewgroup 선택했을 때.(not et)
                     if(!(v instanceof EditText)) {
                         EditText edit = getEdit();
@@ -548,6 +547,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public interface DisplayFragmentCallbacks {
-        public void onDisplayActionOKClicked(List<String> tags, List<String> switches);
+        public void onDisplayActionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions);
     }
 }
