@@ -22,6 +22,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -108,6 +111,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
 
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+
         queryWrapper = new QueryWrapper();
     }
 
@@ -131,11 +136,13 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             opts.inMutable=false;
             opts.inSampleSize=2;
 
-            //Bitmap origin = BitmapFactory.decodeByteArray(imageToShow, 0, imageToShow.length, opts);
+            Bitmap origin = BitmapFactory.decodeByteArray(imageToShow, 0, imageToShow.length, opts);
             //int size = Math.min(origin.getWidth(), origin.getHeight());
+            int w = origin.getWidth();
+            int h = origin.getHeight();
             //Bitmap square = Bitmap.createBitmap(origin, 0, 0, size, size);
             //imageView.setImageBitmap(square);
-            imageView.setImageBitmap(BitmapFactory.decodeByteArray(imageToShow, 0, imageToShow.length, opts));
+            imageView.setImageBitmap(origin);
 
             waitView = view.findViewById(R.id.fragment_display_wait);
 
@@ -186,14 +193,16 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     // 0.15 ratio is perhaps enough to determine keypad height.
                     if (keypadHeight > screenHeight * 0.15) {
                         isKeyboard = true;
-                    }
-                    else {
+                    } else {
                         if(isKeyboard == true) {
+                            /*
                             if(confirmView()) {
                                 clearFocusedView();
                             } else {
                                 removeFocusedView();
                             }
+                            */
+                            confirmView();
 
                             isKeyboard = false;
                         }
@@ -222,9 +231,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     // caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다.
-    public void actionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions) {
+    public void actionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches) {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayActionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions);
+            mCallbacks.onDisplayActionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
         }
     }
 
@@ -265,7 +274,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     // matcher가 있어도 empty 검사는 해야 한다.(지우는 유일한 수단이기도 하고.)
-    public boolean confirmView() {
+    public void confirmView() { // check 뿐만 아니라 처리까지 여기서 해야 중복 shake 등도 할 수 있다.
         if(focusedView != null) {
             EditText edit = (EditText) focusedView;
             String string = edit.getText().subSequence(HEADER.length(), edit.getText().length()).toString();
@@ -282,18 +291,25 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         removeTag((Integer) focusedView.getTag());
                     }
 
-                    return false;
+                    //return false;
+                    removeFocusedView();
                 } else if(checkTag(string)) {
                     // 같은 태그가 있다면 tag 자체를 list에서 삭제하거나 기존 view를 삭제할 필요는 없고 그냥 focusedView만 지워지게 false return한다.
                     // 다만 자기가 자기를 클릭했다가 지워지면 안된다. 그걸 해결하려면, checkTag 자체가 이미 tag를 갖고 있다는 말이고 다시말해 index를 알 수 있다는 것을 이용한다.
-                    if(focusedView.getTag() != null) { // null 이면 검사할 필요도 없다. 그냥 다른 것이다.
+                    if(focusedView.getTag() != null) { // null 이면 검사할 필요도 없다. 그냥 다른 것이다.(아직 입력 중인 view일 것이기 때문.)
                         int index = (Integer) focusedView.getTag();
                         if(tags.indexOf(string) == index) { // index가 같으면 자기이므로 true 넘긴다.(분명 다를수도 있다. 이미 있는 것을 특정 tag(이미 존재하는)로 똑같이 바꿀 수도 있기 때문이다.)
-                            return true;
+                            //return true;
+                            clearFocusedView();
+                        } else { // 다른 view를 고쳤는데 중복될 경우.
+                            alertFocusedView();
                         }
+                    } else { // 입력중인 view.
+                        alertFocusedView();
                     }
 
-                    return false;
+                    //return false;
+                    //alertFocusedView();
                 } else {
                     if(focusedView.getTag() != null) { // 이건 그냥 다른것을 선택해서 뭔가를 입력한 경우.(check는 이미 되었다고 보면 된다.)
                         // edit를 넣기. 그래야만 태그 편집했는데 기존 태그가 추가되는 것 같은 경우가 사라진다.
@@ -305,12 +321,13 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         focusedView.setTag(index); // for removing later.
                     }
 
-                    return true;
+                    //return true;
+                    clearFocusedView();
                 }
             }
         }
 
-        return false;
+        //return false;
     }
 
     public void requestViewFocused(View view) {
@@ -331,6 +348,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             ((EditText)focusedView).clearFocus();
             container_.removeView(focusedView);
             focusedView = null;
+        }
+    }
+
+    public void alertFocusedView() {
+        /* layout params가 set 되어 있지 않으면 안된다. */
+        if(focusedView != null) {
+            //YoYo.with(Techniques.Shake).playOn(focusedView);
+            Animation shake = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
+            focusedView.startAnimation(shake);
         }
     }
 
@@ -383,11 +409,14 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_DONE:
+                        /*
                         if (confirmView()) {
                             clearFocusedView();
                         } else {
                             removeFocusedView();
                         }
+                        */
+                        confirmView();
 
                         return true;
                 }
@@ -436,7 +465,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 buttonOk.setVisibility(View.GONE);
                 waitView.setVisibility(View.VISIBLE);
 
-                actionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions);
+                actionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
 
                 break;
         }
@@ -499,7 +528,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                         container_.addView(edit);
 
-                        setPosition(edit, event.getX(), event.getY() - edit.getHeight() / 2);
+                        // edit height는 아직 안나오는데, 구할 필요까지는 없을 것 같다.
+                        setPosition(edit, event.getX() - getPixel(16), event.getY() - getPixel(16));
 
                         requestViewFocused(edit);
                     } else {
@@ -521,11 +551,14 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     }
                 } else {
                     if(v != focusedView) {// cancel : focused not null일 경우 어디를 누르든 cancel. 자기자신을 눌렀을 경우만 빼고.
+                        /*
                         if(confirmView()) {
                             clearFocusedView();
                         } else {
                             removeFocusedView();
                         }
+                        */
+                        confirmView();
                     } else {// 자기 자신 click : event 넘긴다.
                         return false;
                     }
@@ -547,6 +580,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public interface DisplayFragmentCallbacks {
-        public void onDisplayActionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions);
+        public void onDisplayActionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches);
     }
 }

@@ -4,12 +4,17 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -84,6 +89,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         // setting adapter
         adapter = new TagAdapter(this, inflater, tags, switches);
         list.setAdapter(adapter);
+        list.setSelection(adapter.getCount());// 이건 말그대로 filter create시에만 한다. 나머지는 놔둔다.(reopen 등등.)
         list.setOnItemClickListener(this);
         SwipeDismissListViewTouchListener touchListener =
                 new SwipeDismissListViewTouchListener(
@@ -115,6 +121,14 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 }
 
                 return false;
+            }
+        });
+        edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(adapter.isEmpty() == false) {
+                    list.setSelection(hasFocus ? adapter.getCount() : 0);
+                }
             }
         });
 
@@ -177,25 +191,31 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 confirmTag();
 
                 break;
+            /*
             case R.id.list_row_tag:
                 Toast.makeText(getActivity(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();
 
                 break;
+                */
         }
     }
 
     public void confirmTag() {
         String tag = edit.getText().subSequence(HEADER.length(), edit.length()).toString();
 
+        Animation shake = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
+
         // 최대한 msg는 없앤다.
         if(tag == null || tag.isEmpty()) { // 빈 내용이면 그냥 놔두면 된다.
-            YoYo.with(Techniques.Shake).playOn(edit);
+            //YoYo.with(Techniques.Shake).playOn(edit);
+            edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
         } else if(adapter.getTags() != null && adapter.getTags().contains(tag)) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
             // list scroll 해보기.
             list.setSelection(adapter.getTags().indexOf(tag));
 
-            YoYo.with(Techniques.Shake).playOn(edit);
+            //YoYo.with(Techniques.Shake).playOn(edit);
+            edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "이미 존재하는 이름입니다.", Toast.LENGTH_SHORT).show();
         } else {
             adapter.addTag(tag);

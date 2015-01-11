@@ -9,7 +9,7 @@
     <dimen name="margin">12dp</dimen> <!-- default margin that can be used for any view. -->
 
     <!-- text -->
-    <dimen name="text">24sp</dimen>
+    <dimen name="text">18sp</dimen>
 
     <!-- button -->
     <dimen name="button_width">32dp</dimen>

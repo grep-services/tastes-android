@@ -5,25 +5,26 @@
     android:orientation="vertical"
     tools:context="com.instamenu.app.HomeFragment">
 
-    <android.support.v7.widget.Toolbar
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:gravity="center_vertical"
-        android:background="?attr/colorPrimary">
+        android:padding="@dimen/margin"
+        android:background="@color/gray">
 
         <Button
             android:id="@+id/fragment_home_camera"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_gravity="left"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
             android:background="@drawable/camera"
             android:onClick="mOnClick"/>
         
         <ImageView
             android:layout_width="99dp"
             android:layout_height="36dp"
-            android:layout_gravity="center_horizontal"
+            android:layout_centerInParent="true"
             android:src="@drawable/title"
             android:scaleType="centerInside"/>
 
@@ -31,10 +32,11 @@
             android:id="@+id/fragment_home_filter"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_gravity="right"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:background="@drawable/filter"/>
 
-    </android.support.v7.widget.Toolbar>
+    </RelativeLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/fragment_home_refresh"

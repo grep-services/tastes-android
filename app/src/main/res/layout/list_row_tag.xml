@@ -3,20 +3,21 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
     android:paddingLeft="@dimen/margin"
     android:paddingRight="@dimen/margin"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
-    android:descendantFocusability="blocksDescendants">
+    android:descendantFocusability="blocksDescendants"><!-- for item click event. -->
 
     <TextView
         android:id="@+id/list_row_tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginRight="@dimen/margin"
         android:layout_centerVertical="true"
+        android:layout_marginRight="@dimen/margin"
+        android:singleLine="true"
+        android:ellipsize="marquee"
         android:textSize="18sp"
         android:textColor="@color/text_inverse"/>
 
@@ -29,13 +30,5 @@
         android:button="@null"
         android:background="@drawable/selector_check"
         android:visibility="gone"/>
-<!--
-    <android.support.v7.widget.SwitchCompat
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/list_row_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:visibility="gone"/>
--->
+
 </RelativeLayout>

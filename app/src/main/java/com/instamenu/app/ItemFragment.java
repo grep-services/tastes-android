@@ -153,7 +153,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                     //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
                     .cacheInMemory(true)
                     .cacheOnDisk(true)
-                    .imageScaleType(ImageScaleType.IN_SAMPLE_INT)// set to target size(original img won't scaled)(default : 1/2)
+                    //.imageScaleType(ImageScaleType.IN_SAMPLE_INT)// set to target size(original img won't scaled)(default : 1/2)
                     .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다.
                     .build();
             imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).origin, image, options, new SimpleImageLoadingListener() {

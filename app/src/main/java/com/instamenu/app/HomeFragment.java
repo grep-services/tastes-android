@@ -97,6 +97,20 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         grid.setAdapter(adapter);
         grid.setOnItemClickListener(this);
         grid.setEmptyView(view.findViewById(R.id.fragment_home_empty));
+        grid.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if(firstVisibleItem == 0) {
+                    refresh.setEnabled(true);
+                } else {
+                    refresh.setEnabled(false);
+                }
+            }
+        });
 
         ((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
 

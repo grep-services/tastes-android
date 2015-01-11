@@ -11,6 +11,7 @@ import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.commonsware.cwac.camera.CameraHost;
@@ -117,6 +118,8 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         slidingMenu.setOnOpenListener(new SlidingMenu.OnOpenListener() {
             @Override
             public void onOpen() {
+                // change input mode.(display mode will be changed at there.)
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 // toolbar icon animation.
             }
         });
@@ -488,7 +491,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
 
     //---- display
     @Override
-    public void onDisplayActionOKClicked(final byte[] file, final long time, final String address, final double latitude, final double longitude, final List<String> tags, final List<String> positions) {
+    public void onDisplayActionOKClicked(final byte[] file, final long time, final String address, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> switches) {
         // set flag
         flag_fragment_display = true;
         // send to server
@@ -591,7 +594,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
                 break;
                 */
             /*
-            case R.id.fragment_camera_switch:
+            case R.id.fragment_camera_flip:
                 break;
             case R.id.fragment_camera_video:
                 break;

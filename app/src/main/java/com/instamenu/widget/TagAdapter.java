@@ -180,7 +180,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
             viewHolder = new ViewHolder();
             viewHolder.tag = (TextView) convertView.findViewById(R.id.list_row_tag);
-            viewHolder.tag.setOnClickListener(listener);
+            //viewHolder.tag.setOnClickListener(listener);
 
             if(switch_ == true) {
                 //viewHolder.switch_ = (SwitchCompat) convertView.findViewById(R.id.list_row_switch);

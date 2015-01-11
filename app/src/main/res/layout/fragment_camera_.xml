@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,40 +13,31 @@
     <RelativeLayout
         android:id="@+id/fragment_camera_toolbars"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:padding="@dimen/margin">
 
-        <android.support.v7.widget.Toolbar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <CheckBox
+            android:id="@+id/fragment_camera_flash"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:padding="@dimen/margin"
-            android:minHeight="?attr/actionBarSize"
-            android:background="@color/transparent">
-            <!--
-            <CheckBox
-                android:id="@+id/fragment_camera_flash"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:button="@null"
-                android:background="@drawable/selector_check_flash"/>
-                -->
-            <!--
-            <Button
-                android:id="@+id/fragment_camera_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:onClick="mOnClick"/>
-                -->
-        </android.support.v7.widget.Toolbar>
+            android:button="@null"
+            android:background="@drawable/selector_check_flash"/>
 
-        <android.support.v7.widget.Toolbar
+        <Button
+            android:id="@+id/fragment_camera_flip"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/flip"
+            android:onClick="mOnClick"/>
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:padding="@dimen/margin"
-            android:minHeight="?attr/actionBarSize"
-            android:background="@color/transparent">
+            android:layout_alignParentBottom="true">
             <!--
             <Button
                 android:id="@+id/fragment_camera_video"
@@ -60,7 +52,7 @@
                 android:id="@+id/fragment_camera_shot"
                 android:layout_width="99dp"
                 android:layout_height="99dp"
-                android:layout_gravity="center"
+                android:layout_centerInParent="true"
                 android:background="@drawable/shot"
                 android:onClick="mOnClick"/>
 
@@ -68,12 +60,12 @@
                 android:id="@+id/fragment_camera_home"
                 android:layout_width="39dp"
                 android:layout_height="39dp"
-                android:layout_gravity="right|center_vertical"
-                android:layout_marginRight="24dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:background="@drawable/grid"
                 android:onClick="mOnClick"/>
 
-        </android.support.v7.widget.Toolbar>
+        </RelativeLayout>
 
     </RelativeLayout>
 

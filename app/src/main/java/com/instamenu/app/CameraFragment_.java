@@ -59,8 +59,6 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
-
         // null 처리 해줄 수도 있지만, null 되면 어차피 finish밖에 답이 없고(exception 처리도 어차피 연속으로 문제 발생시킬 여지 있음), 따라서 not null 보장하고 가는게 최선이다.
         setHost(mActivity.getCameraHost());
     }
