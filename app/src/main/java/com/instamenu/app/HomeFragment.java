@@ -104,10 +104,10 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if(firstVisibleItem == 0) {
-                    refresh.setEnabled(true);
-                } else {
+                if(grid.getChildCount() > 0 && grid.getChildAt(0).getTop() < 0) {
                     refresh.setEnabled(false);
+                } else {
+                    refresh.setEnabled(true);
                 }
             }
         });

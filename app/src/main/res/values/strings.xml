@@ -9,6 +9,6 @@
     <string name="title_fragment_filter">Filter</string>
     <string name="title_fragment_item">Menu</string>
 
-    <string name="distance_unit">&#160;m</string>
+    <string name="distance_unit">m</string><!-- &#160; to insert space. -->
 
 </resources>

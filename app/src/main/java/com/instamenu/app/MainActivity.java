@@ -1,11 +1,14 @@
 package com.instamenu.app;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
@@ -17,6 +20,7 @@ import android.widget.Toast;
 import com.commonsware.cwac.camera.CameraHost;
 import com.commonsware.cwac.camera.CameraHostProvider;
 import com.commonsware.cwac.camera.CameraUtils;
+import com.commonsware.cwac.camera.DeviceProfile;
 import com.commonsware.cwac.camera.PictureTransaction;
 import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.instamenu.R;
@@ -30,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, CameraHostProvider, CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends ActionBarActivity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private QueryWrapper queryWrapper;
 
@@ -219,20 +223,13 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     public void setPreferences(List<String> tags, List<String> switches) {
-        /*
-        this.tags = tags;
-        this.switches = switches;
-
-        strTags = getString(this.tags);
-        strSwitches = getString(this.switches);
-        */
-
         SharedPreferences.Editor editor = preferences.edit();
 
         // tag만으로 비교해도 된다.
         if(tags != null) {
-            this.tags = tags;
-            this.switches = switches;
+            // 그냥 했더니 filter의 tag adapter의 lists 변할때마다 같이 변해서 일이 안된다.
+            this.tags = new ArrayList<String>(tags);
+            this.switches = new ArrayList<String>(switches);
             strTags = getString(this.tags);
             strSwitches = getString(this.switches);
             editor.putString("Tags", strTags);
@@ -247,20 +244,6 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         }
 
         editor.commit();
-
-        /*
-        if(strTags != null && strSwitches != null) {
-            SharedPreferences.Editor editor = preferences.edit();
-
-            editor.putString("Tags", strTags);
-            editor.remove("Tags");
-            editor.putString("Switches", strSwitches);
-
-            editor.commit();
-        }
-        */
-
-        //LogWrapper.e("SET PREF", strTags+","+strSwitches);
     }
 
     public void setPreferences(boolean locationUpdates) {
@@ -375,12 +358,13 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     //---- camera
-    public void takeSimplePicture() {
 
+    @Override
+    public void onTakePicture(String mode_flash) {
         // =====> button disabled하는 code 필요.
         cameraFragment.setShotButtonEnabled(false);
 
-        PictureTransaction pictureTransaction=new PictureTransaction(cameraFragment.getHost());
+        PictureTransaction pictureTransaction = new PictureTransaction(cameraFragment.getHost());
 
         // 음... 근데 이건 flash on 해도 자동으로 안켜지는 방식인가... 나중에 찾아보기.(근데 갤5로 보면 default camera나 snapchat도 그렇다.)
         pictureTransaction.flashMode(mode_flash);
@@ -389,104 +373,20 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     @Override
-    public CameraHost getCameraHost() {
+    public void onSaveImage(byte[] image) {
+        // 필요한지 test 한번 해봤는데, 필요하다. ㅡㅡ... 꼭 해봐야 아는가...
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // ====> shot button 때 필요할수도....
+                cameraFragment.setShotButtonEnabled(true);
+            }
+        });
 
-        SimpleCameraHost.Builder builder = new SimpleCameraHost.Builder(new CameraHost_(this));
+        cameraFragment.restartPreview();
 
-        return builder.build();
-    }
-
-    class CameraHost_ extends SimpleCameraHost {
-
-        public CameraHost_(Context context) {
-            super(context);
-        }
-
-        @Override
-        public boolean useFrontFacingCamera() {
-            return use_ffc;// 나중엔 toggle 될수도.
-        }
-
-        @Override
-        public void onAutoFocus(boolean success, Camera camera) {
-            super.onAutoFocus(success, camera);
-
-            // 나중에 쓸 일이 있을듯. autofocus square 만들 때 등.
-        }
-
-        @Override
-        public void autoFocusAvailable() {
-            super.autoFocusAvailable();
-
-            use_autofocus = true;
-        }
-
-        @Override
-        public void autoFocusUnavailable() {
-            super.autoFocusUnavailable();
-
-            use_autofocus = false;
-        }
-
-        @Override
-        public boolean useSingleShotMode() {
-            return use_singleshot;// default false.
-        }
-
-        @Override
-        public void saveImage(PictureTransaction pictureTransaction, byte[] image) {
-
-            // 필요한지 test 한번 해봤는데, 필요하다. ㅡㅡ... 꼭 해봐야 아는가...
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // ====> shot button 때 필요할수도....
-                    cameraFragment.setShotButtonEnabled(true);
-                }
-            });
-
-            cameraFragment.restartPreview();
-
-            DisplayFragment.imageToShow = image;
-            addFragment(DisplayFragment.newInstance(null, latitude, longitude));
-        }
-
-        @Override
-        public void onCameraFail(FailureReason reason) {
-            super.onCameraFail(reason);
-
-            Toast.makeText(MainActivity.this, "You can't use the camera now", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public boolean useFullBleedPreview() {
-            return use_fullbleed;// test는 해보기. 되는지.
-        }
-
-        @Override
-        public Camera.Parameters adjustPreviewParameters(Camera.Parameters parameters) {
-            // deprecated되었다고 나오는데, 이건 camera2 쓰라는 말이다(v21),
-            // 직접 정해줄수도 있지만(위에서) 나중에는 이렇게 가야 될 것 같아서 여기서 해준다.
-
-            //mode_flash = CameraUtils.findBestFlashModeMatch(parameters,
-            //        Camera.Parameters.FLASH_MODE_RED_EYE,
-            //        Camera.Parameters.FLASH_MODE_AUTO,
-            //        Camera.Parameters.FLASH_MODE_ON);
-
-            // 나중에 flash 기능 사용할 때면, 여기 때문에 항상 refresh될건데 fragment의 flash ui 제대로 refresh되는지 확인한다.
-            mode_flash = CameraUtils.findBestFlashModeMatch(parameters, Camera.Parameters.FLASH_MODE_OFF);
-
-            parameters.setFocusMode(mode_focus);
-
-            return super.adjustPreviewParameters(parameters);
-        }
-    }
-
-    @Override
-    public void onFlashEnabled(boolean enabled) {
-        // 현재 안되는데, 아마도 Camera class deprecated된거 때문에 그런거 아닌지. 나중에 version별로 갈라준다.
-        // 그런데 ffc 등도 안되는걸 보면, preview restart나 host reset 등이 필요한 것일수도 있다. cameraview를 다시 setting해주는 것도 봤는데, 뭐가 있을지 알아보기.
-        mode_flash = enabled ? Camera.Parameters.FLASH_MODE_ON : Camera.Parameters.FLASH_MODE_OFF;
+        //DisplayFragment.imageToShow = image;
+        addFragment(DisplayFragment.newInstance(image, null, latitude, longitude));
     }
 
     //---- display
@@ -540,12 +440,51 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     //---- filter
+    public boolean isTagsChanged(List<String> tags, List<String> switches) {
+        boolean result = false;
+
+        if(tags == null || (tags != null && tags.isEmpty())) { // filter 비었을 때
+            if(this.tags == null || (this.tags != null && this.tags.isEmpty())) { // pref도 비었으면 not changed
+                result = false;
+            } else { // pref는 안비었으면 filter를 지운거고 changed.
+                result = true;
+            }
+        } else { // filter 안비었을 때
+            if(this.tags == null || (this.tags != null && this.tags.isEmpty())) { // tag 비었으면 filter 추가된거고 changed.
+                result = true;
+            } else { // tag도 안비었으면
+                if(tags.size() != this.tags.size()) { // size 다르면 자세히 비교할 필요도 없이 changed.
+                    result = true;
+                } else { // size 같으면 일단 비교.(filter에서 추가 삭제 반복하면 내용만 다를수도 있다.)
+                    for(int i = 0; i < tags.size(); i++) {
+                        if(tags.get(i).equals(this.tags.get(i)) == false) { // tag 하나라도 다르면 바로 changed.
+                            result = true;
+
+                            break;
+                        } else { // tag 같아도 switch 다르면 changed.
+                            if(switches.get(i).equals(this.switches.get(i)) == false) {
+                                result = true;
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     @Override
     public void onCloseFilter(List<String> tags, List<String> switches) {
-        // set to pref.
-        setPreferences(tags, switches);
-        // update home
-        homeFragment.setView();
+        // 나중에는 변경된 사항들만 변화시킬 수 있는 logic을 생각해보도록 한다.
+        if(isTagsChanged(tags, switches) == true) { // updates preferences, homefragment when only changes exist.
+            // set to pref.
+            setPreferences(tags, switches);
+            // update home
+            homeFragment.setView();
+        }
     }
 
     //---- item
@@ -599,10 +538,6 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
             case R.id.fragment_camera_video:
                 break;
                 */
-            case R.id.fragment_camera_shot:
-                takeSimplePicture();
-
-                break;
             case R.id.fragment_camera_home:
                 viewPagerFragment.setCurrentPage(1);
 

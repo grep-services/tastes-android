@@ -43,12 +43,17 @@ import com.instamenu.util.DefaultFilter;
 import com.instamenu.util.LogWrapper;
 import com.instamenu.util.QueryWrapper;
 import com.instamenu.widget.TagAdapter;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DisplayFragment extends Fragment implements Button.OnClickListener, View.OnTouchListener {
 
+    private static final String ARG_IMAGE = "image";
     private static final String ARG_ADDRESS = "address";
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
@@ -59,7 +64,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     private QueryWrapper queryWrapper;
 
-    static byte[] imageToShow = null;
+    private byte[] image = null;
 
     ImageView imageView;
 
@@ -71,25 +76,22 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     List<String> switches;
     List<String> positions;// x|y형태로 저장해서 나중에 comma로 다시 연결한다.
 
-    //private GestureDetector gestureDetector;
-
     ViewGroup container_;
 
     View focusedView = null;
-    //View focusedView_ = null;// for gesture detector. view 전달할 수가 없어서 이렇게 했다.
     float originX, originY;
     float X, Y;
     boolean isMoving = false;
-    //boolean isMoving_ = false;// for gesture detector. onTouch에서 set되지만 gesture detector에서 해제된다.
     boolean isKeyboard = false;
 
     private final String HEADER = "";
 
     private DisplayFragmentCallbacks mCallbacks;
 
-    public static DisplayFragment newInstance(String address, double latitude, double longitude) {
+    public static DisplayFragment newInstance(byte[] image, String address, double latitude, double longitude) {
         DisplayFragment fragment = new DisplayFragment();
         Bundle args = new Bundle();
+        args.putByteArray(ARG_IMAGE, image);
         args.putString(ARG_ADDRESS, address);
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
@@ -106,6 +108,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
+            image = getArguments().getByteArray(ARG_IMAGE);
             address = getArguments().getString(ARG_ADDRESS);
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
@@ -120,10 +123,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_display, container, false);
 
-        if(imageToShow == null) {
+        if(image == null) {
             Toast.makeText(getActivity(), "There is no image.", Toast.LENGTH_SHORT).show();
 
-            //getActivity().finish();
             ((MainActivity) getActivity()).onBackPressed();// 일단 이렇게 해본다.
         } else { // 굳이 else 써야되는진 몰겠지만 finish 확실히 sync한지 모르므로. 나중에는 test도 해본다.
             // setting image
@@ -131,18 +133,21 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
             BitmapFactory.Options opts=new BitmapFactory.Options();
 
-            opts.inPurgeable=true;
-            opts.inInputShareable=true;
-            opts.inMutable=false;
-            opts.inSampleSize=2;
+            opts.inPurgeable = true;
+            opts.inInputShareable = true;
+            opts.inMutable = false;
+            //opts.inSampleSize = 2; // 해보고 좀 아니다 싶으면 뺀다. -> 일단 별 차이 없어서 놔뒀다.
 
-            Bitmap origin = BitmapFactory.decodeByteArray(imageToShow, 0, imageToShow.length, opts);
+            //Bitmap origin = BitmapFactory.decodeByteArray(imageToShow, 0, imageToShow.length, opts);
+            Bitmap origin = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
             //int size = Math.min(origin.getWidth(), origin.getHeight());
             int w = origin.getWidth();
             int h = origin.getHeight();
+            LogWrapper.e("DISPLAY", "size : "+w+", "+h);
             //Bitmap square = Bitmap.createBitmap(origin, 0, 0, size, size);
             //imageView.setImageBitmap(square);
             imageView.setImageBitmap(origin);
+
 
             waitView = view.findViewById(R.id.fragment_display_wait);
 
@@ -153,29 +158,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             //buttonClose.setOnTouchListener(this);
 
             buttonOk.setOnClickListener(this);
-            /*
-            gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onSingleTapConfirmed(MotionEvent e) { // double tap과 tap 구별 가능한 method.
-                    if(focusedView == null) { // 일단 null이어야 한다. 즉, 입력중이 아니어야 한다. 그래야 자신도, 남도 선택 안할 수 있다.(onTouch와 구조 같음)
-                        if(!isMoving_) { // null일 경우에도 moving은 제외해야 한다.
-                            Toast.makeText(getActivity(), "clicked "+((EditText) focusedView_).getText().toString(), Toast.LENGTH_SHORT).show();
-                        } else {
-                            isMoving_ = false;
-                        }
-                    }
 
-                    return true;
-                }
-
-                @Override
-                public boolean onDoubleTap(MotionEvent e) {
-                    requestViewFocused(focusedView_);// 이렇게 하면 focusedView_가 진짜 focusedView가 된다.
-
-                    return true;
-                }
-            });
-            */
             container_ = (ViewGroup) view.findViewById(R.id.fragment_display_container);
             container_.setOnTouchListener(this);
             //view.setOnTouchListener(this);
@@ -195,13 +178,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         isKeyboard = true;
                     } else {
                         if(isKeyboard == true) {
-                            /*
-                            if(confirmView()) {
-                                clearFocusedView();
-                            } else {
-                                removeFocusedView();
-                            }
-                            */
                             confirmView();
 
                             isKeyboard = false;
@@ -233,7 +209,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     // caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다.
     public void actionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches) {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayActionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
+            mCallbacks.onDisplayActionOKClicked(file, time, address, latitude, longitude, tags, positions, switches);
         }
     }
 
@@ -291,7 +267,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         removeTag((Integer) focusedView.getTag());
                     }
 
-                    //return false;
                     removeFocusedView();
                 } else if(checkTag(string)) {
                     // 같은 태그가 있다면 tag 자체를 list에서 삭제하거나 기존 view를 삭제할 필요는 없고 그냥 focusedView만 지워지게 false return한다.
@@ -299,7 +274,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     if(focusedView.getTag() != null) { // null 이면 검사할 필요도 없다. 그냥 다른 것이다.(아직 입력 중인 view일 것이기 때문.)
                         int index = (Integer) focusedView.getTag();
                         if(tags.indexOf(string) == index) { // index가 같으면 자기이므로 true 넘긴다.(분명 다를수도 있다. 이미 있는 것을 특정 tag(이미 존재하는)로 똑같이 바꿀 수도 있기 때문이다.)
-                            //return true;
                             clearFocusedView();
                         } else { // 다른 view를 고쳤는데 중복될 경우.
                             alertFocusedView();
@@ -307,9 +281,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     } else { // 입력중인 view.
                         alertFocusedView();
                     }
-
-                    //return false;
-                    //alertFocusedView();
                 } else {
                     if(focusedView.getTag() != null) { // 이건 그냥 다른것을 선택해서 뭔가를 입력한 경우.(check는 이미 되었다고 보면 된다.)
                         // edit를 넣기. 그래야만 태그 편집했는데 기존 태그가 추가되는 것 같은 경우가 사라진다.
@@ -321,13 +292,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         focusedView.setTag(index); // for removing later.
                     }
 
-                    //return true;
                     clearFocusedView();
                 }
             }
         }
-
-        //return false;
     }
 
     public void requestViewFocused(View view) {
@@ -400,7 +368,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         edit.setText(HEADER);
         //edit.setEms(HEADER.length());
         edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */HEADER), new ByteLengthFilter(50)});
-        edit.setTextSize(24);
+        edit.setTextSize(18);
         edit.setTextColor(getResources().getColor(R.color.text_inverse));
         //edit.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
         edit.setImeOptions(EditorInfo.IME_ACTION_DONE);
@@ -409,13 +377,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 switch (actionId) {
                     case EditorInfo.IME_ACTION_DONE:
-                        /*
-                        if (confirmView()) {
-                            clearFocusedView();
-                        } else {
-                            removeFocusedView();
-                        }
-                        */
                         confirmView();
 
                         return true;
@@ -465,7 +426,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 buttonOk.setVisibility(View.GONE);
                 waitView.setVisibility(View.VISIBLE);
 
-                actionOKClicked(imageToShow, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
+                actionOKClicked(image, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
 
                 break;
         }

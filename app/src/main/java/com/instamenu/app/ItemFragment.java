@@ -95,7 +95,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         int p = getPixel(16);
         text.setPadding(p, p, p, p);
         text.setText(HEADER + tag);
-        text.setTextSize(24);
+        text.setTextSize(18);
         text.setTextColor(getResources().getColor(R.color.text_inverse));
         text.setSingleLine(true);
         //text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
@@ -108,10 +108,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     public void fillContainer(ViewGroup container, Image image) {
         // TODO: 일단 image not null일 것이기 때문에 그냥 간다. 하지만 확실히 query wrapper까지 확인해서 null 가능성 확인해보도록 한다.
         for(int i = 0; i < image.tags.size(); i++) {
-            String position = image.positions.get(i);
-            // str null이다. 윗단에서 고치려다가, 여러 태그 중 위치 없는 태그도 있을 수 있단 생각에 이런 null이 더 나을거라 생각해서 그대로 두기로 했다.
-            float ratioX = !position.equals("null") ? Float.valueOf(position.split("\\|")[0]) : 0;
-            float ratioY = !position.equals("null") ? Float.valueOf(position.split("\\|")[1]) : 0;
+            float ratioX = image.positions != null ? Float.valueOf(image.positions.get(i).split("\\|")[0]) : 0;
+            float ratioY = image.positions != null ? Float.valueOf(image.positions.get(i).split("\\|")[1]) : 0;
 
             TextView text = getText(image.tags.get(i));
 
@@ -151,10 +149,10 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                     .showImageForEmptyUri(R.drawable.fail_large)
                     .showImageOnFail(R.drawable.fail_large)
                     //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
-                    .cacheInMemory(true)
-                    .cacheOnDisk(true)
-                    //.imageScaleType(ImageScaleType.IN_SAMPLE_INT)// set to target size(original img won't scaled)(default : 1/2)
-                    .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다.
+                    //.cacheInMemory(true)// -> memory 위해 해제할까 하다가 뜨는 시간 줄이려면 차라리 넣어 두는게 나을 것 같았다.(대신 img 저장할 때 size 자체를 줄인다.)
+                    //.cacheOnDisk(true)
+                    .imageScaleType(ImageScaleType.EXACTLY_STRETCHED)
+                    .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
                     .build();
             imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).origin, image, options, new SimpleImageLoadingListener() {
                 @Override
@@ -186,7 +184,26 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             });
 
             ((TextView) view.findViewById(R.id.pager_item_distance)).setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
-            ((TextView) view.findViewById(R.id.pager_item_datetime)).setText(images.get(position).datetime);// null이면 그냥 안보인다.
+
+            String datetime = null;
+            String strTime = images.get(position).time;
+            long time = strTime != null ? (strTime.equals("null") == false ? Long.valueOf(images.get(position).time) : -1) : -1;
+            long sec = time != -1 ? (System.currentTimeMillis() - time) / 1000 : 0;// 물론 time이 0인지로 비교해도 되지만 아예 없는 걸 하기 위해 -1로 했다.
+
+            if(sec < 60) { // 초 단위(1분 미만)
+                datetime = sec + "second" + (sec > 1 ? "s" : "") + " ago";
+            } else if(sec < 60 * 60) { // 분 단위(1시간 미만)
+                datetime = sec / 60 + "minute" + ((sec / 60) > 1 ? "s" : "") + " ago";
+            } else if(sec < 60 * 60 * 24) { // 시 단위(24시간 미만)
+                datetime = sec / (60 * 60) + "hour" + ((sec / (60 * 60)) > 1 ? "s" : "") + " ago";
+            } else { // 일 단위(나머지 전부)
+                datetime = sec / (60 * 60 * 24) + "day" + ((sec / (60 * 60 * 24)) > 1 ? "s" : "") + " ago";
+            }
+
+            //SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());// default locale이 어떤 영향을 미칠 지 확인해보기.
+            //datetime = format.format(new Date(time));
+
+            ((TextView) view.findViewById(R.id.pager_item_datetime)).setText(datetime);// null이면 그냥 안보인다.
 
             container.addView(view);
 

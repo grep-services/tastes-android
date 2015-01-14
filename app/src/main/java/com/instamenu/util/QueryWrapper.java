@@ -32,7 +32,7 @@ public class QueryWrapper {
     }
 
     public ArrayList<String> getList(String string) {
-        if(string != null) {
+        if(string != null && string.equals("null") == false) {
             return new ArrayList<String>(Arrays.asList(string.split("\\,")));
         } else {
             return null;
@@ -154,16 +154,18 @@ public class QueryWrapper {
             JSONArray imageArray = new JSONArray(response);
             for(int i = 0; i < imageArray.length(); i++) {
                 JSONObject imageObject = imageArray.getJSONObject(i);
-                JSONArray tagArray = imageObject.getJSONArray("tag");
-                List<String> tags_ = null;
-                for(int j = 0; j < tagArray.length(); j++) {
-                    JSONObject tagObject = tagArray.getJSONObject(j);
+                List<String> tags_ = getList(imageObject.getString("tag_str"));
+                if(tags_ == null) { // 일단 이렇게 중첩으로 간다. 이유는 기존의 것들은 tag_str 없고, 이 밑의 if 해두는 이유는 나중에라도 tag parameter가 필요할 수 있기 때문에.(edit 등.)
+                    JSONArray tagArray = imageObject.getJSONArray("tag");
+                    for(int j = 0; j < tagArray.length(); j++) {
+                        JSONObject tagObject = tagArray.getJSONObject(j);
 
-                    if(tags_ == null) {
-                        tags_ = new ArrayList<String>();
+                        if(tags_ == null) {
+                            tags_ = new ArrayList<String>();
+                        }
+
+                        tags_.add(tagObject.getString("name"));
                     }
-
-                    tags_.add(tagObject.getString("name"));
                 }
 
                 String distString = imageObject.getString("dist");
@@ -171,14 +173,7 @@ public class QueryWrapper {
 
                 List<String> positions = getList(imageObject.getString("positions"));
 
-                String datetime = null;
-                if(imageObject.getString("time").equals("null") == false) {
-                    long time = Long.valueOf(imageObject.getString("time"));// null인 것들은 exception 날 준비 한다.
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());// default locale이 어떤 영향을 미칠 지 확인해보기.
-                    datetime = format.format(new Date(time));
-                }
-
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, imageObject.getString("address"), dist, tags_, positions);
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), imageObject.getString("address"), dist, tags_, positions);
 
                 if(images == null) {
                     images = new ArrayList<Image>();

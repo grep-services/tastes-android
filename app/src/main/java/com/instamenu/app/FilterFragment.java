@@ -35,6 +35,7 @@ import com.instamenu.widget.TagAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: tag가 내용 포함할지는 몰라도, 변경된 사항들 중(tag 추가, 삭제, switch 변경) 실제적인 true가 없을 경우는 refresh에서 제외하는 기능도 추가하도록 한다.
 public class FilterFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     private static final String ARG_TAGS = "tags";
