@@ -26,5 +26,6 @@
 
     <!-- listview colors -->
     <color name="list_divider">@color/gray</color>
+    <color name="list_pressed">@color/gray</color>
 
 </resources>

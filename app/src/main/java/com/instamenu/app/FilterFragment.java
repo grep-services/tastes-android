@@ -19,6 +19,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -124,6 +125,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 return false;
             }
         });
+        /* 버벅거리는 것이 있는데 이것 때문인지... 빼본다.
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -132,6 +134,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 }
             }
         });
+        */
 
         button = (Button) view.findViewById(R.id.fragment_filter_add);
         button.setOnClickListener(this);
@@ -234,8 +237,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // 차라리 이걸 switch랑 연결시켜서 쓸까
-        adapter.toggleTag(position);
+        adapter.toggleTag(view);
     }
 
     public interface FilterFragmentCallbacks {

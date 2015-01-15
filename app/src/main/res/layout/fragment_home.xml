@@ -48,10 +48,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <!-- 갤5에서 어떻게 해도 안없어져서 minus padding으로라도 해결해야 했다. 진짜로 넓어진다 보면 되므로
+            딱 맞게 보이는 폰들에서는 각 사이드 이미지들이 1px씩은 잘릴 것이지만 어쩔 수 없다. 무시한다. -->
             <GridView
                 android:id="@+id/fragment_home_grid"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:paddingLeft="@dimen/grid_padding"
+                android:paddingRight="@dimen/grid_padding"
                 android:numColumns="3"
                 android:stretchMode="columnWidth"
                 android:verticalSpacing="@dimen/grid_divider"

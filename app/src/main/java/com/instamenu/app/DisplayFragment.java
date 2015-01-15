@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -13,6 +14,7 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
@@ -29,6 +32,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -48,16 +52,19 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DisplayFragment extends Fragment implements Button.OnClickListener, View.OnTouchListener {
 
+    private static final String ARG_MIRROR = "mirror";// for ffc
     private static final String ARG_IMAGE = "image";
     private static final String ARG_ADDRESS = "address";
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
 
+    private boolean mirror;
     private String address;
     private double latitude;
     private double longitude;
@@ -76,21 +83,23 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     List<String> switches;
     List<String> positions;// x|y형태로 저장해서 나중에 comma로 다시 연결한다.
 
-    ViewGroup container_;
+    ViewGroup toolbar, container_;
 
     View focusedView = null;
     float originX, originY;
     float X, Y;
     boolean isMoving = false;
     boolean isKeyboard = false;
+    int mSlop;
 
     private final String HEADER = "";
 
     private DisplayFragmentCallbacks mCallbacks;
 
-    public static DisplayFragment newInstance(byte[] image, String address, double latitude, double longitude) {
+    public static DisplayFragment newInstance(boolean mirror, byte[] image, String address, double latitude, double longitude) {
         DisplayFragment fragment = new DisplayFragment();
         Bundle args = new Bundle();
+        args.putBoolean(ARG_MIRROR, mirror);
         args.putByteArray(ARG_IMAGE, image);
         args.putString(ARG_ADDRESS, address);
         args.putDouble(ARG_LATITUDE, latitude);
@@ -108,6 +117,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
+            mirror = getArguments().getBoolean(ARG_MIRROR);
             image = getArguments().getByteArray(ARG_IMAGE);
             address = getArguments().getString(ARG_ADDRESS);
             latitude = getArguments().getDouble(ARG_LATITUDE);
@@ -117,6 +127,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
         queryWrapper = new QueryWrapper();
+
+        ViewConfiguration vc = ViewConfiguration.get(getActivity());
+        mSlop = (int)(vc.getScaledTouchSlop() * 0.5); // 50퍼센트 정도가 적당하다. 대략 16dp 로 계산되는거 같다만...
     }
 
     @Override
@@ -138,16 +151,33 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             opts.inMutable = false;
             //opts.inSampleSize = 2; // 해보고 좀 아니다 싶으면 뺀다. -> 일단 별 차이 없어서 놔뒀다.
 
-            //Bitmap origin = BitmapFactory.decodeByteArray(imageToShow, 0, imageToShow.length, opts);
             Bitmap origin = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
-            //int size = Math.min(origin.getWidth(), origin.getHeight());
-            int w = origin.getWidth();
-            int h = origin.getHeight();
-            LogWrapper.e("DISPLAY", "size : "+w+", "+h);
-            //Bitmap square = Bitmap.createBitmap(origin, 0, 0, size, size);
-            //imageView.setImageBitmap(square);
-            imageView.setImageBitmap(origin);
+            int width = origin.getWidth();
+            int height = origin.getHeight();
+            LogWrapper.e("DISPLAY", "size : " + width + ", " + height);
 
+            if(mirror) {
+                // mirrorffc가 안되니깐 이렇게라도 해야된다.
+                Matrix matrix = new Matrix();
+                matrix.setScale(-1, 1);
+                Bitmap inversed = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
+                //origin.recycle(); 일단 activity, fragment cycle 속에서 확실히 no references 유지될지 모르므로 빼둔다. 알아서 gc 한다고 하니깐(근데 잘 안한다고 하던데...)
+
+                imageView.setImageBitmap(inversed);
+
+                /*
+                이게 되기 전에 ok 버튼이 눌리지 않을지 check해봐야 한다. 안되면 on/off로.
+                사실 tag도 한개 입력해야 되고 하기 때문에 안될수가 없긴 하다.
+                어차피 안되면 그냥 image가 보내질 것이기 때문에 일단 그냥 가고
+                저런 반전 안되는 case 생기면 그때가서 다시 분석해본다.
+                (그래도 아마 ok 빨리 눌러서이진 않겠지만, 나중에라도 태그 없이 올린다던가 편집중 바로 ok 할 수 있는 ui 될 경우도 생길 수 있기 때문에.)
+                 */
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                inversed.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
+                image = stream.toByteArray();
+            } else {
+                imageView.setImageBitmap(origin);
+            }
 
             waitView = view.findViewById(R.id.fragment_display_wait);
 
@@ -158,6 +188,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             //buttonClose.setOnTouchListener(this);
 
             buttonOk.setOnClickListener(this);
+            buttonClose.setOnClickListener(this);
+
+            toolbar = (ViewGroup) view.findViewById(R.id.fragment_display_toolbar);
 
             container_ = (ViewGroup) view.findViewById(R.id.fragment_display_container);
             container_.setOnTouchListener(this);
@@ -298,13 +331,31 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         }
     }
 
+    public void setToolbarEnabled(boolean enabled) {
+        /*
+        toolbar touch 막아도 되겠지만 복잡하고, 거기다가 있어서 좋을 것도 없이 헷갈린다.
+        생각해보니 안없애면 태그 입력 취소/확인 이라고 생각할 수도 있다. 어떻게든 없앤다.
+        버튼만 없애도 안되고 background 바꾸고 listener 취소해도 click안되는 문제 또 생기고
+        api level 생각 버리고 xy translation 하려 해도 안되고 결국은 margin으로 해결했다.
+        이런 방법까지 써야 되는지...
+         */
+
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) toolbar.getLayoutParams();
+        layoutParams.topMargin = enabled ? 0 : (int)(toolbar.getHeight() * -1);// 해보니 여백 있어서 그냥 딱 1배만큼 올려도 된다.
+        toolbar.setLayoutParams(layoutParams);
+    }
+
     public void requestViewFocused(View view) {
+        setToolbarEnabled(false);
+
         ((EditText) view).requestFocus();
         focusedView = view;
     }
 
     public void clearFocusedView() {
         if(focusedView != null) {
+            setToolbarEnabled(true);
+
             ((EditText)focusedView).clearFocus();
             focusedView = null;
         }
@@ -313,6 +364,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     // clear와 같지만 viewgroup에서 삭제해준다.
     public void removeFocusedView() {
         if(focusedView != null) {
+            setToolbarEnabled(true);
+
             ((EditText)focusedView).clearFocus();
             container_.removeView(focusedView);
             focusedView = null;
@@ -422,11 +475,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     break;
                 }
 
-                buttonClose.setVisibility(View.GONE);// 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
-                buttonOk.setVisibility(View.GONE);
+                // 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
+                toolbar.setVisibility(View.GONE);
                 waitView.setVisibility(View.VISIBLE);
 
                 actionOKClicked(image, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
+
+                break;
+            case R.id.fragment_display_close:
+                ((MainActivity) getActivity()).onBackPressed();// adjustpan 때문에 disable 등등 다 안돼서 background로라도 처리해야 했고 그러려면 listener도 frag에서 처리해야 했다.
 
                 break;
         }
@@ -468,7 +525,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         float difX = event.getRawX() - originX;
                         float difY = event.getRawY() - originY;
 
-                        if(Math.abs(difX) > 20 || Math.abs(difY) > 20) {
+                        //if(Math.abs(difX) > 20 || Math.abs(difY) > 20) {
+                        if(Math.abs(difX) > mSlop || Math.abs(difY) > mSlop) {
                             isMoving = true;
                             //isMoving_ = true;// gesture에서 해제하기 위한 set.
 

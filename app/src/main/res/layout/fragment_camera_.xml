@@ -11,10 +11,24 @@
         android:layout_height="match_parent"/>--><!-- 둘다 match로 해놔야 가로 세로 모두에서 길이 받아낼 수 있다. -->
 
     <RelativeLayout
+        android:id="@+id/fragment_camera_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/fragment_camera_focus"
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/focus"
+            android:visibility="invisible"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/fragment_camera_toolbars"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="@dimen/margin">
+        android:layout_height="match_parent">
 
         <CheckBox
             android:id="@+id/fragment_camera_flash"
@@ -22,6 +36,8 @@
             android:layout_height="36dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
+            android:layout_marginTop="@dimen/margin"
+            android:layout_marginLeft="@dimen/margin"
             android:button="@null"
             android:background="@drawable/selector_check_flash"/>
 
@@ -31,6 +47,8 @@
             android:layout_height="36dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
+            android:layout_marginTop="@dimen/margin"
+            android:layout_marginRight="@dimen/margin"
             android:background="@drawable/flip"
             android:onClick="mOnClick"/>
 
@@ -38,7 +56,8 @@
             android:layout_width="match_parent"
             android:layout_height="99dp"
             android:layout_alignParentBottom="true"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/margin">
             <!--
             <Button
                 android:id="@+id/fragment_camera_video"

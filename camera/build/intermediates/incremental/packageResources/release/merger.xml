@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="2" >
+
+    <dataSet config="main" >
+        <source path="D:\작업\ATS\ho\app\Instamenu\camera\res" >
+            <file
+                name="cwac_camera_profile_htc_htc_mecha"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_htc_htc_mecha.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_htc_m7"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_htc_m7.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_motorola_xt910_rtanz"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_motorola_xt910_rtanz.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_corsicadd"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_corsicadd.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_d2att"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_d2att.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_d2spr"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_d2spr.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_d2tmo"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_d2tmo.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_d2uc"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_d2uc.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_d2vzw"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_d2vzw.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_gd1wifiue"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_gd1wifiue.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_ja3gxx"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_ja3gxx.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_jflteuc"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_jflteuc.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_kyleproxx"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_kyleproxx.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_nevispxx"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_nevispxx.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="cwac_camera_profile_samsung_yakju"
+                path="D:\작업\ATS\ho\app\Instamenu\camera\res\xml\cwac_camera_profile_samsung_yakju.xml"
+                qualifiers=""
+                type="xml" />
+        </source>
+        <source path="D:\작업\ATS\ho\app\Instamenu\camera\build\generated\res\rs\release" />
+        <source path="D:\작업\ATS\ho\app\Instamenu\camera\build\generated\res\generated\release" />
+    </dataSet>
+    <dataSet config="release" >
+        <source path="D:\작업\ATS\ho\app\Instamenu\camera\build-types\release\res" />
+    </dataSet>
+
+</merger>

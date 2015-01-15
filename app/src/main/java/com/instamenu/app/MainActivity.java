@@ -48,6 +48,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
     private boolean flag_fragment_display = false;// 보낼 때 true가 된다.
+    private boolean flag_taking_camera = false;// fragment 관련이 아니라, cam frag에서 taking 중일 때만 true되어서 back을 막아주는 역할을 하는 flag이다.
 
     private SlidingMenu slidingMenu;
 
@@ -55,14 +56,6 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     private ViewPagerFragment viewPagerFragment;
     private CameraFragment_ cameraFragment;
     private HomeFragment homeFragment;
-
-    private boolean use_ffc = false;
-    // 일단, continuous가 대세다. 이걸 더 발전시킨다. take전에 autofocus는 답답함 늘릴 수 있다. 차라리 tap to autofocus나 추가한다.
-    private boolean use_autofocus = false;
-    private String mode_focus = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;// 이건 거의 바뀔 일 없을듯.
-    private boolean use_singleshot = true;
-    private boolean use_fullbleed = true;
-    private String mode_flash = null;
 
     // location
     private double latitude;
@@ -358,22 +351,29 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     }
 
     //---- camera
-
     @Override
     public void onTakePicture(String mode_flash) {
+        flag_taking_camera = true;
+
         // =====> button disabled하는 code 필요.
         cameraFragment.setShotButtonEnabled(false);
 
         PictureTransaction pictureTransaction = new PictureTransaction(cameraFragment.getHost());
 
-        // 음... 근데 이건 flash on 해도 자동으로 안켜지는 방식인가... 나중에 찾아보기.(근데 갤5로 보면 default camera나 snapchat도 그렇다.)
         pictureTransaction.flashMode(mode_flash);
 
         cameraFragment.takePicture(pictureTransaction);
+
+        /*
+        찍기 전에 started 상태가 되어야 된다는 말이, 어차피 초기에는 started이므로 찍은 후 restart하면 되는건데, onSave에서 했더니 flash 등에서의 term에서 back시 npe 생긴다.
+        여기서 한다 하더라도 back시 display가 뜨시 않은 상태일 수 있고 다시말해 cam frag만 있는 상태에서 finish 될 수도 있지만, 이걸 아직 막을 수 있는 방법이...
+        예를 들어 찍는 순간 flag 켜고, onBack에서 그거 보고서 막고, onSave때 끈다면 가능은 할 것 같다.
+         */
+        //cameraFragment.stopPreview_();
     }
 
     @Override
-    public void onSaveImage(byte[] image) {
+    public void onSaveImage(boolean mirror, byte[] image) {
         // 필요한지 test 한번 해봤는데, 필요하다. ㅡㅡ... 꼭 해봐야 아는가...
         runOnUiThread(new Runnable() {
             @Override
@@ -383,10 +383,17 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
             }
         });
 
+        /*
+        take는 했는데 save 전에 back 하면(flash가 길어서 그럴 수 있다.) restart 중에 npe 나서 take에다가 restart를 넣었었다.
+        그런데 s3는 되고 s5는 preview stop되어 있는걸 보니 안되겠어서 다시 여기로 옮겼다.
+        어차피 flag에 의해서 back은 안되므로 npe 걱정은 없을 것이다.(kill도 확인은 해보기.)
+         */
         cameraFragment.restartPreview();
 
         //DisplayFragment.imageToShow = image;
-        addFragment(DisplayFragment.newInstance(image, null, latitude, longitude));
+        addFragment(DisplayFragment.newInstance(mirror, image, null, latitude, longitude));
+
+        flag_taking_camera = false;// 최대한 늦게 하는게, 답답할 수도 있겠지만 잘못된 방향으로 흘러가는걸 막아줄 수 있다.
     }
 
     //---- display
@@ -520,8 +527,10 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
                 } else {
                     viewPagerFragment.setCurrentPage(0);
                 }
-            } else {
-                finish();
+            } else { // camera라 하더라도
+                if(flag_taking_camera == false) { // 사진 찍는 중은 skip한다.
+                    finish();
+                }
             }
         }
     }
@@ -542,7 +551,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
                 viewPagerFragment.setCurrentPage(1);
 
                 break;
-            case R.id.fragment_display_close:
+            //case R.id.fragment_display_close:
             case R.id.fragment_home_camera:
             case R.id.fragment_item_close:
             //case R.id.fragment_filter_cancel:

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Created by marine1079 on 2014-11-30.
  */
-public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener {
+public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
     List<String> tags;
     List<String> switches;
@@ -119,6 +119,12 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
         notifyDataSetChanged();
     }
 
+    public void toggleTag(View view) {
+        CheckBox switch_ = ((ViewHolder) view.getTag()).switch_;
+
+        switch_.setChecked(!switch_.isChecked());
+    }
+
     public void removeTag(int index) { // index 있다는 말은 null check 필요없다는 말이다.
         if(index < getCount()) {
             tags.remove(index);
@@ -164,6 +170,13 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        CheckBox switch_ = ((ViewHolder) v.getTag()).switch_;
+
+        switch_.setChecked(!switch_.isChecked());
+    }
+
     public static class ViewHolder {
         public TextView tag;
         //public SwitchCompat switch_;
@@ -190,6 +203,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
             }
 
             convertView.setTag(viewHolder);
+            //convertView.setOnClickListener(this);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
