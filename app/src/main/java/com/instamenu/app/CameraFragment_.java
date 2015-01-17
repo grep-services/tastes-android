@@ -183,7 +183,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
 
     public void saveImage_(byte[] image) {
         if (mCallbacks != null) {
-            mCallbacks.onSaveImage(mirror_ffc, image);
+            mCallbacks.onSaveImage(use_ffc, image);
         }
     }
 
@@ -197,6 +197,8 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     public boolean onTouch(View v, MotionEvent event) {
         if(v instanceof ViewGroup) {
             gestureDetector.onTouchEvent(event);
+
+            return true;
         } else { // 나중에 버튼 등.
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -207,7 +209,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
             }
         }
 
-        return true;
+        return false;// 필요한 곳에서만 consume하면 된다.(그래야 not consume해서 checkbox 등도 눌리고 한다.)
     }
 
     @Override

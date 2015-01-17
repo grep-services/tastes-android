@@ -92,6 +92,7 @@
     <orderEntry type="library" exported="" name="play-services-6.5.87" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-21.0.2" level="project" />
     <orderEntry type="module" module-name="camera" exported="" />
+    <orderEntry type="module" module-name="androidImageFilter" exported="" />
   </component>
 </module>
 

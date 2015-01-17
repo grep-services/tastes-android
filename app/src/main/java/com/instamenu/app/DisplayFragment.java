@@ -7,9 +7,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -56,6 +60,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.Ragnarok.BitmapFilter;
+
 public class DisplayFragment extends Fragment implements Button.OnClickListener, View.OnTouchListener {
 
     private static final String ARG_MIRROR = "mirror";// for ffc
@@ -69,11 +75,12 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     private double latitude;
     private double longitude;
 
-    private QueryWrapper queryWrapper;
-
     private byte[] image = null;
 
-    ImageView imageView;
+    Bitmap origin;
+    Bitmap reference; // 최신 링크를 갖고 있어야 image가 받아서 변환 가능하다.
+
+    ViewPager pager;
 
     Button buttonOk, buttonClose;
 
@@ -126,8 +133,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
-        queryWrapper = new QueryWrapper();
-
         ViewConfiguration vc = ViewConfiguration.get(getActivity());
         mSlop = (int)(vc.getScaledTouchSlop() * 0.5); // 50퍼센트 정도가 적당하다. 대략 16dp 로 계산되는거 같다만...
     }
@@ -141,17 +146,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
             ((MainActivity) getActivity()).onBackPressed();// 일단 이렇게 해본다.
         } else { // 굳이 else 써야되는진 몰겠지만 finish 확실히 sync한지 모르므로. 나중에는 test도 해본다.
-            // setting image
-            imageView = (ImageView) view.findViewById(R.id.fragment_display_image);
-
-            BitmapFactory.Options opts=new BitmapFactory.Options();
+            // setting bitmap first.
+            BitmapFactory.Options opts = new BitmapFactory.Options();
 
             opts.inPurgeable = true;
             opts.inInputShareable = true;
             opts.inMutable = false;
             //opts.inSampleSize = 2; // 해보고 좀 아니다 싶으면 뺀다. -> 일단 별 차이 없어서 놔뒀다.
 
-            Bitmap origin = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
+            origin = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
             int width = origin.getWidth();
             int height = origin.getHeight();
             LogWrapper.e("DISPLAY", "size : " + width + ", " + height);
@@ -160,24 +163,13 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 // mirrorffc가 안되니깐 이렇게라도 해야된다.
                 Matrix matrix = new Matrix();
                 matrix.setScale(-1, 1);
-                Bitmap inversed = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
-                //origin.recycle(); 일단 activity, fragment cycle 속에서 확실히 no references 유지될지 모르므로 빼둔다. 알아서 gc 한다고 하니깐(근데 잘 안한다고 하던데...)
-
-                imageView.setImageBitmap(inversed);
-
-                /*
-                이게 되기 전에 ok 버튼이 눌리지 않을지 check해봐야 한다. 안되면 on/off로.
-                사실 tag도 한개 입력해야 되고 하기 때문에 안될수가 없긴 하다.
-                어차피 안되면 그냥 image가 보내질 것이기 때문에 일단 그냥 가고
-                저런 반전 안되는 case 생기면 그때가서 다시 분석해본다.
-                (그래도 아마 ok 빨리 눌러서이진 않겠지만, 나중에라도 태그 없이 올린다던가 편집중 바로 ok 할 수 있는 ui 될 경우도 생길 수 있기 때문에.)
-                 */
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                inversed.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
-                image = stream.toByteArray();
-            } else {
-                imageView.setImageBitmap(origin);
+                origin = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
             }
+
+            // set pager
+            pager = (ViewPager) view.findViewById(R.id.fragment_display_pager);
+            pager.setAdapter(new PagerAdapter_());
+            pager.setCurrentItem(0);
 
             waitView = view.findViewById(R.id.fragment_display_wait);
 
@@ -221,6 +213,51 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         }
 
         return view;
+    }
+
+    private class PagerAdapter_ extends PagerAdapter {
+        @Override
+        public Object instantiateItem(ViewGroup container, final int position) {
+            reference = origin;
+
+            switch(position) {
+                case 0:
+                    break;
+                case 1:
+                    reference = BitmapFilter.changeStyle(origin, BitmapFilter.SOFT_GLOW_STYLE);
+
+                    break;
+                case 2:
+                    reference = BitmapFilter.changeStyle(origin, BitmapFilter.OLD_STYLE);
+
+                    break;
+            }
+
+            ImageView view = new ImageView(getActivity());
+            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            view.setLayoutParams(layoutParams);
+            view.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            view.setImageBitmap(reference);
+
+            container.addView(view);
+
+            return view;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        @Override
+        public int getCount() {
+            return 3;
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object o) {
+            return view == o;
+        }
     }
 
     @Override
@@ -464,13 +501,31 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager manager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mobile = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo wifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        return mobile.isConnected() || wifi.isConnected();
+    }
+
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
             case R.id.fragment_display_ok:
+                // check network first.
+                if(isNetworkAvailable() == false) {
+                    Toast toast = Toast.makeText(getActivity(), "Check your network status", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+
+                    break;
+                }
                 // check tag existence
                 if(tags == null) {
-                    Toast.makeText(getActivity(), "Add a tag", Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(getActivity(), "Add a tag", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
 
                     break;
                 }
@@ -478,6 +533,14 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 // 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
                 toolbar.setVisibility(View.GONE);
                 waitView.setVisibility(View.VISIBLE);
+
+                if(pager.getCurrentItem() > 0) { // 물론 size 0보다 크다는 가정 하에.
+                    // 반전이든 필터든 필요한 만큼 적용된다.
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    // origin은 아마 최신일 것이다.
+                    reference.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
+                    image = stream.toByteArray();
+                }
 
                 actionOKClicked(image, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
 
@@ -488,6 +551,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 break;
         }
     }
+
+    boolean isSwiping;
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -507,31 +572,34 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 */
 
                 if(focusedView == null) { // 키보드 떠있을때는 내려가고 다시 move 가능하게 하기위해 이렇게 한다.
+                    originX = event.getRawX();
+                    originY = event.getRawY();
+
                     if(v instanceof EditText) {
-                        originX = event.getRawX();
-                        originY = event.getRawY();
                         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) v.getLayoutParams();
                         //X = layoutParams.leftMargin;
                         //Y = layoutParams.topMargin;
                         X = v.getX();
                         Y = v.getY();
+                    } else {// vp도 포함될 수 있다.
+                        pager.onTouchEvent(event);
                     }
                 }
 
                 break;
             case MotionEvent.ACTION_MOVE:
                 if(focusedView == null) {
+                    float difX = event.getRawX() - originX;
+                    float difY = event.getRawY() - originY;
+
+                    if(Math.abs(difX) > mSlop || Math.abs(difY) > mSlop) {
+                        isMoving = true;
+                    }
+
                     if(v instanceof EditText) {
-                        float difX = event.getRawX() - originX;
-                        float difY = event.getRawY() - originY;
-
-                        //if(Math.abs(difX) > 20 || Math.abs(difY) > 20) {
-                        if(Math.abs(difX) > mSlop || Math.abs(difY) > mSlop) {
-                            isMoving = true;
-                            //isMoving_ = true;// gesture에서 해제하기 위한 set.
-
-                            setPosition(v, X + difX, Y + difY);
-                        }
+                        setPosition(v, X + difX, Y + difY);
+                    } else { // 빈 화면을 잡고 끌었을 경우(물론 focused view가 null인 경우 속에서(편집 중인 것이 없을 때)) swipe시켜줘야 한다.
+                        pager.onTouchEvent(event);
                     }
                 }
                 break;
@@ -543,14 +611,20 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 */
                 if(focusedView == null) { // make : 일단 focused null일 때. 그리고 viewgroup 선택했을 때.(not et)
                     if(!(v instanceof EditText)) {
-                        EditText edit = getEdit();
+                        if(isMoving == true) { // swipe.
+                            pager.onTouchEvent(event);
 
-                        container_.addView(edit);
+                            isMoving = false;
+                        } else {
+                            EditText edit = getEdit();
 
-                        // edit height는 아직 안나오는데, 구할 필요까지는 없을 것 같다.
-                        setPosition(edit, event.getX() - getPixel(16), event.getY() - getPixel(16));
+                            container_.addView(edit);
 
-                        requestViewFocused(edit);
+                            // edit height는 아직 안나오는데, 구할 필요까지는 없을 것 같다.
+                            setPosition(edit, event.getX() - getPixel(16), event.getY() - getPixel(16));
+
+                            requestViewFocused(edit);
+                        }
                     } else {
                         if(isMoving == true) {// move : focused null이지만, et 선택했을 때. 그리고 move true일 때.
                             // position 수정해준다.
@@ -570,13 +644,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     }
                 } else {
                     if(v != focusedView) {// cancel : focused not null일 경우 어디를 누르든 cancel. 자기자신을 눌렀을 경우만 빼고.
-                        /*
-                        if(confirmView()) {
-                            clearFocusedView();
-                        } else {
-                            removeFocusedView();
-                        }
-                        */
                         confirmView();
                     } else {// 자기 자신 click : event 넘긴다.
                         return false;
@@ -585,15 +652,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                 break;
         }
-
-        /*
-        if(v instanceof EditText) {// up에서 처리하니깐 안되서 여기서 하기로 했다.
-            focusedView_ = v;
-            gestureDetector.onTouchEvent(event);
-
-            return false;
-        } else
-        */
 
         return true;
     }

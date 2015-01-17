@@ -4,11 +4,10 @@
     android:layout_height="match_parent"
     tools:context="com.instamenu.app.DisplayFragment">
 
-    <ImageView
-        android:id="@+id/fragment_display_image"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/fragment_display_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"/>
+        android:layout_height="match_parent"/>
 
     <RelativeLayout
         android:id="@+id/fragment_display_container"

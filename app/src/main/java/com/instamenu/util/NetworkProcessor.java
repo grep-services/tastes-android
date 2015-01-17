@@ -90,6 +90,7 @@ public class NetworkProcessor {
             response = EntityUtils.toString(httpEntity, encoding);// entity null이면 IllegalArgumentException 뜬다. null check 하지말고 필요하면 exception으로 처리한다.
 
         } catch(Exception e) {// 나중에 connection refused(org.apache.http.conn.HttpHostConnectException) 설정해주기.
+            // 인터넷 연결 안되면 여기서도 connection refused 뜨지만 display ok 등에서 여기걸 사용한다 치면 filter에 이미 등록되어버리는 등 문제가 많다. 따라서 그전에 막고 여긴 일단 놔둔다.
             LogWrapper.e("REQUEST", e.getMessage());
         }
 

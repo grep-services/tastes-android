@@ -3,6 +3,8 @@ package com.instamenu.app;
 import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -24,14 +26,12 @@ import com.google.android.gms.location.LocationServices;
 import com.instamenu.R;
 
 public class SplashFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, Button.OnClickListener {
-    private static final String ARG_NETWORK = "network";
     private static final String ARG_LOCATION = "location";
 
     // layout
-    View layout_network, layout_location_agree, layout_location_retry;
+    View layout_location_agree, layout_location_retry;
 
     // network, location
-    private boolean mNetworkAvailable = false;// 동의 되어있어도 network는 항상 not available할 때도 있다.
     private GoogleApiClient mGoogleApiClient;
     private boolean mResolvingError = false;// connection 관련한건데 아직 안씀.
     private boolean mLocationUpdates = false;// 사실상 동의서다.(pref에 저장된 동의 여부이므로)
@@ -42,12 +42,14 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
     private double latitude;// = 37.5129273;
     private double longitude;// = 126.9247538;
 
+    private Handler mHandler;
+    private Runnable mRunnable;
+
     private SplashFragmentCallbakcs mCallbacks;
 
     public static SplashFragment newInstance(boolean network, boolean location) {
         SplashFragment fragment = new SplashFragment();
         Bundle args = new Bundle();
-        args.putBoolean(ARG_NETWORK, network);
         args.putBoolean(ARG_LOCATION, location);
         fragment.setArguments(args);
         return fragment;
@@ -62,7 +64,6 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
 
         // get from pref(정확히는 pref(main)->args(frag)->get here.
         if (getArguments() != null) {
-            mNetworkAvailable = getArguments().getBoolean(ARG_NETWORK);
             mLocationUpdates = getArguments().getBoolean(ARG_LOCATION);
         }
 
@@ -97,7 +98,6 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
     // 편의를 위해 이렇게 만들고 사용한다.
     public void switchView(View view) {
         // hide all the views.
-        layout_network.setVisibility(View.GONE);
         layout_location_agree.setVisibility(View.GONE);
         layout_location_retry.setVisibility(View.GONE);
 
@@ -135,8 +135,7 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
         // callback 같은거 특별히 없는듯. 그냥 handler 달고 해야될듯.
-        Handler mHandler = new Handler();
-        mHandler.postDelayed(new Runnable(){
+        mRunnable = new Runnable(){
             @Override
             public void run() {
                 if(mLocationUpdated == false) { // 물론 updated되고 나면 바로 updateUI로 가고 intent 실행되겠지만, 이거랑 시간이 비슷할 경우도 가정하지 않을 수 없다.
@@ -145,33 +144,22 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
                     stopLocationUpdates();
                 }
             }
-        }, 10000);
+        };
+
+        mHandler = new Handler();
+        mHandler.postDelayed(mRunnable, 10000);
     }
 
     protected void stopLocationUpdates() {
-        /* 위치 받는중 종료시 나오는 exception. 해결하기.
-        12-30 01:17:47.106    2826-2826/com.instamenu E/AndroidRuntime﹕ FATAL EXCEPTION: main
-    Process: com.instamenu, PID: 2826
-    java.lang.IllegalStateException: GoogleApiClient is not connected yet.
-            at com.google.android.gms.internal.jx.a(Unknown Source)
-            at com.google.android.gms.common.api.c.b(Unknown Source)
-            at com.google.android.gms.internal.nf.removeLocationUpdates(Unknown Source)
-            at com.instamenu.app.SplashFragment.stopLocationUpdates(SplashFragment.java:149)
-            at com.instamenu.app.SplashFragment$1.run(SplashFragment.java:142)
-            at android.os.Handler.handleCallback(Handler.java:733)
-            at android.os.Handler.dispatchMessage(Handler.java:95)
-            at android.os.Looper.loop(Looper.java:146)
-            at android.app.ActivityThread.main(ActivityThread.java:5698)
-            at java.lang.reflect.Method.invokeNative(Native Method)
-            at java.lang.reflect.Method.invoke(Method.java:515)
-            at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:1291)
-            at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1107)
-            at dalvik.system.NativeStart.main(Native Method)
-         */
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        if(mGoogleApiClient.isConnected()) { // 원래 이렇게 안에다 하는게 맞을 것 같으므로 여기다 했다.
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }// 그리고 나머지들에 대해서는 connected 검사 사실 할 필요 없으므로 이렇게 뺐다.
+
+        mHandler.removeCallbacks(mRunnable);
 
         mRequestingLocationUpdates = false;
 
+        // 사실 이것도 여러군데서 실행되겠지만 home일 경우 update를 안해주기 위해 connected 속에 집어넣으면 나중에 갑자기 인터넷 끊는 경우 등에 대처가 안된다.(나중에는 화면도 바꿔준다.)
         updateUI();
     }
 
@@ -243,8 +231,6 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.fragment_splash_network_btn:
-                break;
             case R.id.fragment_splash_location_agree_btn:
                 // set var and save it to pref.
                 mLocationUpdates = true;// callback으로 날려야 한다.
@@ -269,11 +255,9 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
         View view = inflater.inflate(R.layout.fragment_splash, container, false);
 
         // init layout
-        layout_network = view.findViewById(R.id.fragment_splash_network);
         layout_location_agree = view.findViewById(R.id.fragment_splash_location_agree);
         layout_location_retry = view.findViewById(R.id.fragment_splash_location_retry);
 
-        ((Button) view.findViewById(R.id.fragment_splash_network_btn)).setOnClickListener(this);
         ((Button) view.findViewById(R.id.fragment_splash_location_agree_btn)).setOnClickListener(this);
         ((Button) view.findViewById(R.id.fragment_splash_location_retry_btn)).setOnClickListener(this);
 

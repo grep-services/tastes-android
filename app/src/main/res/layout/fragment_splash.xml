@@ -36,18 +36,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:text="위치를 받아올 수 없습니다.\n설정을 확인하시고 재시도 해주세요."/>
+                android:padding="@dimen/margin"
+                android:gravity="bottom|center_horizontal"
+                android:textSize="18sp"
+                android:text="Cannot find your current location.\nCheck the settings and try again."/>
 
             <Button
                 android:id="@+id/fragment_splash_location_retry_btn"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@drawable/selector_button"
-                android:textColor="@color/white"
-                android:text="재시도"
+                android:textSize="18sp"
+                android:textColor="@color/text_inverse"
+                android:text="Retry"
                 android:onClick="mOnClick"/>
 
         </LinearLayout>
@@ -75,32 +76,6 @@
                 android:textSize="18sp"
                 android:textColor="@color/text_inverse"
                 android:text="OK"
-                android:onClick="mOnClick"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/fragment_splash_network"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:text="네트워크에 연결할 수 없습니다.\n설정을 확인하시고 재시도 해주세요."/>
-
-            <Button
-                android:id="@+id/fragment_splash_network_btn"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@drawable/selector_button"
-                android:textColor="@color/white"
-                android:text="재시도"
                 android:onClick="mOnClick"/>
 
         </LinearLayout>

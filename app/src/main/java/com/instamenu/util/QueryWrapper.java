@@ -149,6 +149,8 @@ public class QueryWrapper {
         parameters.add(new BasicNameValuePair("longitude", String.valueOf(longitude)));
         // get result
         String response = networkProcessor.getResponse(PATH_GET_IMAGES, parameters, null);
+
+        if(response == null) return null;// 보통 network 끊기면 여기서 걸릴 것이다.(splash든 refresh든)
         // parse
         try {
             JSONArray imageArray = new JSONArray(response);
