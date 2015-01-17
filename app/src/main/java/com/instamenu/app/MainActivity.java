@@ -307,8 +307,9 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         // 닫기 전에 flag부터 false로 해준다.
         flag_fragment_splash = false;
 
-        // camera도 tools 복귀시켜준다.
+        // camera도 tools 복귀시켜주고 flip도 해준다.
         cameraFragment.setToolsVisible(true);
+        cameraFragment.flip();// 느리면 더 앞으로 당긴다.
 
         // home도 location set 해준다.
         homeFragment.setLocation(latitude, longitude);

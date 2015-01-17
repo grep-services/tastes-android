@@ -54,7 +54,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     private View layerView;
     private View tools;// for splash
 
-    private boolean use_ffc = false;
+    private boolean use_ffc = true;
     private boolean mirror_ffc = true;
     // 일단, continuous가 대세다. 이걸 더 발전시킨다. take전에 autofocus는 답답함 늘릴 수 있다. 차라리 tap to autofocus나 추가한다.
     private boolean use_autofocus = false;
