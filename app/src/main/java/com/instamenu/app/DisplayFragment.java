@@ -80,6 +80,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     Bitmap origin;
     Bitmap reference; // 최신 링크를 갖고 있어야 image가 받아서 변환 가능하다.
 
+    ImageView imageView;
     ViewPager pager;
 
     Button buttonOk, buttonClose;
@@ -166,10 +167,28 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 origin = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
             }
 
+            // imageview
+            imageView = (ImageView) view.findViewById(R.id.fragment_display_image);
+
             // set pager
             pager = (ViewPager) view.findViewById(R.id.fragment_display_pager);
             pager.setAdapter(new PagerAdapter_());
-            pager.setCurrentItem(0);
+            pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int i, float v, int i2) {
+                }
+
+                @Override
+                public void onPageSelected(int i) {
+                    setPage(i);
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int i) {
+                }
+            });
+
+            setPage(0);// vp.
 
             waitView = view.findViewById(R.id.fragment_display_wait);
 
@@ -215,6 +234,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         return view;
     }
 
+    public void setPage(int i) {
+        pager.setCurrentItem(i);
+
+        // 1. set imageview
+        //imageView.setImageBitmap(reference);
+        // 2. change vp item to transparent
+        //... no dap(될 지 안될지 모르겠다.)
+    }
+
     private class PagerAdapter_ extends PagerAdapter {
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
@@ -223,14 +251,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             switch(position) {
                 case 0:
                     break;
-                case 1:
-                    reference = BitmapFilter.changeStyle(origin, BitmapFilter.SOFT_GLOW_STYLE);
-
-                    break;
-                case 2:
-                    reference = BitmapFilter.changeStyle(origin, BitmapFilter.OLD_STYLE);
-
-                    break;
+                default:
+                    reference = BitmapFilter.changeStyle(origin, position);
             }
 
             ImageView view = new ImageView(getActivity());
@@ -251,7 +273,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         @Override
         public int getCount() {
-            return 3;
+            return BitmapFilter.TOTAL_FILTER_NUM + 1; // 0은 default(no filter).
         }
 
         @Override
