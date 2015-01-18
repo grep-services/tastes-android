@@ -579,8 +579,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         }
     }
 
-    boolean isSwiping;
-
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if(v instanceof Button) {
