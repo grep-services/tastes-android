@@ -1,7 +1,11 @@
 package com.instamenu.app;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.IntentSender;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -9,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,11 +24,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.ErrorDialogFragment;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.instamenu.R;
+import com.instamenu.util.LocationUtils;
 
 public class SplashFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, Button.OnClickListener {
     private static final String ARG_LOCATION = "location";
@@ -33,7 +41,6 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
 
     // network, location
     private GoogleApiClient mGoogleApiClient;
-    private boolean mResolvingError = false;// connection 관련한건데 아직 안씀.
     private boolean mLocationUpdates = false;// 사실상 동의서다.(pref에 저장된 동의 여부이므로)
     private LocationRequest mLocationRequest;
     private boolean mRequestingLocationUpdates = false;
@@ -47,7 +54,7 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
 
     private SplashFragmentCallbakcs mCallbacks;
 
-    public static SplashFragment newInstance(boolean network, boolean location) {
+    public static SplashFragment newInstance(boolean location) {
         SplashFragment fragment = new SplashFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_LOCATION, location);
@@ -64,7 +71,8 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
 
         // get from pref(정확히는 pref(main)->args(frag)->get here.
         if (getArguments() != null) {
-            mLocationUpdates = getArguments().getBoolean(ARG_LOCATION);
+            //mLocationUpdates = getArguments().getBoolean(ARG_LOCATION);
+            mLocationUpdates = false;
         }
 
         // init loc
@@ -125,51 +133,106 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
         }
     }
 
-    protected void startLocationUpdates() {
-        mRequestingLocationUpdates = true;
-        mRequestingLocationFailed = false;
+    // connection failed됐을 때 activity로부터 call되어 다시 connect 시도 하게 되는 module.
+    public void connect() {
+        if(mGoogleApiClient.isConnecting() == false && mGoogleApiClient.isConnected() == false) {
+            mGoogleApiClient.connect();
+        }
+    }
 
-        updateUI();
-
-        createLocationRequest();// 할 때마다 생성해야 num = 1인 것이 문제되지 않는다.
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-
-        // callback 같은거 특별히 없는듯. 그냥 handler 달고 해야될듯.
-        mRunnable = new Runnable(){
-            @Override
-            public void run() {
-                if(mLocationUpdated == false) { // 물론 updated되고 나면 바로 updateUI로 가고 intent 실행되겠지만, 이거랑 시간이 비슷할 경우도 가정하지 않을 수 없다.
-                    mRequestingLocationFailed = true;
-
-                    stopLocationUpdates();
-                }
+    /*
+    내가 만든거다. google location update 예제 자체가 너무 좀 이상하게 되어있었다.
+    일단 google play service available이 api client보다 더 넓은 범위가 아니라 api client connected에 종속된 것이라는 실험 결과(?)가 나왔고
+    전체적으로 어디서 검사해야 할 지 확실치 않았기 때문에 api client connected 검사하는 쪽이 있으면 전부 해주기로 했다.
+    그렇게 하면 전체적으로 봤을 때 예제랑 다른 점은 home(back) 즉 onResume 등에서의 stop을 할 때 client api connection만 검사하는 것이 있었는데 괜찮을지 확인해보면 된다.
+     */
+    private boolean servicesAvailable() {
+        if(mGoogleApiClient.isConnected() == true) {
+            if(servicesConnected() == true) {
+                return true;
             }
-        };
+        }
 
-        mHandler = new Handler();
-        mHandler.postDelayed(mRunnable, 10000);
+        return false;
+    }
+
+    private boolean servicesConnected() {
+        // Check that Google Play services is available
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getActivity());
+
+        // If Google Play services is available
+        if (ConnectionResult.SUCCESS == resultCode) {
+            // In debug mode, log the status
+            Log.d("location-api", "google play service available");
+
+            // Continue
+            return true;
+            // Google Play services was not available for some reason
+        } else {
+            // Display an error dialog
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(resultCode, getActivity(), 0);
+            if (dialog != null) {
+                ErrorDialogFragment errorFragment = new ErrorDialogFragment();
+                errorFragment.setDialog(dialog);
+                errorFragment.show(getFragmentManager(), "Memento");
+            }
+            return false;
+        }
+    }
+
+    /*
+    available check나 connection failed나 자기 처리 module이 있으므로, 여기서는 그냥
+     */
+    protected void startLocationUpdates() {
+        if(servicesAvailable() == true) {
+            if(mRequestingLocationUpdates == false) {
+                mRequestingLocationUpdates = true;
+                mRequestingLocationFailed = false;
+
+                updateUI();
+
+                createLocationRequest();// 할 때마다 생성해야 num = 1인 것이 문제되지 않는다.
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+                // callback 같은거 특별히 없는듯. 그냥 handler 달고 해야될듯.
+                mHandler = new Handler();
+
+                mRunnable = new Runnable(){
+                    @Override
+                    public void run() {
+                        if(mLocationUpdated == false) { // 물론 updated되고 나면 바로 updateUI로 가고 intent 실행되겠지만, 이거랑 시간이 비슷할 경우도 가정하지 않을 수 없다.
+                            mRequestingLocationFailed = true;
+
+                            stopLocationUpdates();
+                        }
+                    }
+                };
+
+                mHandler.postDelayed(mRunnable, 10000);
+            }
+        }
     }
 
     protected void stopLocationUpdates() {
-        if(mGoogleApiClient.isConnected()) { // 원래 이렇게 안에다 하는게 맞을 것 같으므로 여기다 했다.
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        }// 그리고 나머지들에 대해서는 connected 검사 사실 할 필요 없으므로 이렇게 뺐다.
+        if(servicesAvailable() == true) {
+            if(mRequestingLocationUpdates == true) {
+                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
 
-        mHandler.removeCallbacks(mRunnable);
+                // callback이 없는 경우가 있을지 - stop은 무조건 start 이후 나올 수가 있으며 그것도 정확한 1:1 매칭이므로 무조건 callback이 있다고 볼 수 있다.
+                mHandler.removeCallbacks(mRunnable);// 여기서 꺼야 재시작 하는 경우 failed가 true가 되지 않아서 항상 onResume에서 다시 시작될 수 있게 해준다.
 
-        mRequestingLocationUpdates = false;
+                mRequestingLocationUpdates = false;
 
-        // 사실 이것도 여러군데서 실행되겠지만 home일 경우 update를 안해주기 위해 connected 속에 집어넣으면 나중에 갑자기 인터넷 끊는 경우 등에 대처가 안된다.(나중에는 화면도 바꿔준다.)
-        updateUI();
+                updateUI();
+            }
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        if(!mResolvingError) {  // more about this later
-            mGoogleApiClient.connect();
-        }
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -177,9 +240,7 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
         super.onResume();
 
         if(mLocationUpdates == true && mRequestingLocationFailed == false) {
-            if(mGoogleApiClient.isConnected() && mRequestingLocationUpdates == false) {
-                startLocationUpdates();
-            }
+            startLocationUpdates();
         }
     }
 
@@ -188,9 +249,7 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
         super.onPause();
 
         if(mLocationUpdates == true && mRequestingLocationFailed == false) {
-            if(mGoogleApiClient.isConnected() && mRequestingLocationUpdates == true) {
-                stopLocationUpdates();
-            }
+            stopLocationUpdates();
         }
     }
 
@@ -204,9 +263,7 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
     @Override
     public void onConnected(Bundle bundle) {
         if(mLocationUpdates == true && mRequestingLocationFailed == false) {
-            if(mRequestingLocationUpdates == false) {
-                startLocationUpdates();
-            }
+            startLocationUpdates();
         }
     }
 
@@ -216,6 +273,30 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+        /*
+         * Google Play services can resolve some errors it detects.
+         * If the error has a resolution, try sending an Intent to
+         * start a Google Play services activity that can resolve
+         * error.
+         */
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(getActivity(), LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
+
+                /*
+                * Thrown if Google Play services canceled the original
+                * PendingIntent
+                */
+
+            } catch (IntentSender.SendIntentException e) {
+                // Log the error
+                e.printStackTrace();
+            }
+        } else {
+            // If no resolution is available, display a dialog to the user with the error.
+            showErrorDialog(connectionResult.getErrorCode());
+        }
     }
 
     @Override
@@ -236,15 +317,11 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
                 mLocationUpdates = true;// callback으로 날려야 한다.
                 onLocationAgree();
                 // start request.
-                if(mGoogleApiClient.isConnected()) {
-                    startLocationUpdates();
-                }
+                startLocationUpdates();
 
                 break;
             case R.id.fragment_splash_location_retry_btn:
-                if(mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
-                    startLocationUpdates();
-                }
+                startLocationUpdates();
 
                 break;
         }
@@ -294,6 +371,66 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
     public void onDetach() {
         super.onDetach();
         mCallbacks = null;
+    }
+
+    /**
+     * Show a dialog returned by Google Play services for the
+     * connection error code
+     *
+     * @param errorCode An error code returned from onConnectionFailed
+     */
+    private void showErrorDialog(int errorCode) {
+
+        // Get the error dialog from Google Play services
+        Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(errorCode, getActivity(), LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
+
+        // If Google Play services can provide an error dialog
+        if (errorDialog != null) {
+
+            // Create a new DialogFragment in which to show the error dialog
+            ErrorDialogFragment errorFragment = new ErrorDialogFragment();
+
+            // Set the dialog in the DialogFragment
+            errorFragment.setDialog(errorDialog);
+
+            // Show the error dialog in the DialogFragment
+            errorFragment.show(getFragmentManager(), "Memento");
+        }
+    }
+
+    /**
+     * Define a DialogFragment to display the error dialog generated in
+     * showErrorDialog.
+     */
+    public static class ErrorDialogFragment extends DialogFragment {
+
+        // Global field to contain the error dialog
+        private Dialog mDialog;
+
+        /**
+         * Default constructor. Sets the dialog field to null
+         */
+        public ErrorDialogFragment() {
+            super();
+            mDialog = null;
+        }
+
+        /**
+         * Set the dialog to display
+         *
+         * @param dialog An error dialog
+         */
+        public void setDialog(Dialog dialog) {
+            mDialog = dialog;
+        }
+
+        /*
+         * This method must return a Dialog to the DialogFragment.
+         */
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return mDialog;
+        }
     }
 
     public interface SplashFragmentCallbakcs {

@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
@@ -13,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -25,6 +27,7 @@ import com.commonsware.cwac.camera.PictureTransaction;
 import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.instamenu.R;
 import com.instamenu.content.Image;
+import com.instamenu.util.LocationUtils;
 import com.instamenu.util.QueryWrapper;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -52,6 +55,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
 
     private SlidingMenu slidingMenu;
 
+    private SplashFragment splashFragment;
     private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
     private CameraFragment_ cameraFragment;
@@ -100,8 +104,8 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
         viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
         replaceFragment(R.id.container, viewPagerFragment);
 
-        Fragment fragment = SplashFragment.newInstance(true, mLocationUpdates);
-        addFragment(fragment);
+        splashFragment = SplashFragment.newInstance(mLocationUpdates);
+        addFragment(splashFragment);
     }
 
     public void setSlidingMenu() {
@@ -322,7 +326,7 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
     @Override
     public void onSplashLocationAgreed() {
         // 일단 debug동안은 disable.
-        //setPreferences(true);
+        setPreferences(true);
     }
 
     //---- vp
@@ -557,6 +561,35 @@ public class MainActivity extends ActionBarActivity implements SplashFragment.Sp
             case R.id.fragment_item_close:
             //case R.id.fragment_filter_cancel:
                 onBackPressed();
+
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Choose what to do based on the request code
+        switch (requestCode) {
+
+            // If the request code matches the code sent in onConnectionFailed
+            case LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST :
+
+                switch (resultCode) {
+                    // If Google Play services resolved the problem
+                    case Activity.RESULT_OK:
+                        splashFragment.connect();
+
+                        break;
+
+                    // If any other result was returned by Google Play services
+                    default:
+
+                        break;
+                }
+
+                // If any other request code was received
+            default:
+                // Report that this Activity received an unknown requestCode
 
                 break;
         }
