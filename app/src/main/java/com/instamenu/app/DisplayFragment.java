@@ -550,11 +550,22 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 toolbar.setVisibility(View.GONE);
                 waitView.setVisibility(View.VISIBLE);
 
-                if(mirror || pager.getCurrentItem() > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
+                int position = pager.getCurrentItem();
+
+                if(mirror || position > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
+                    Bitmap bitmap;
+
+                    switch(position) {
+                        case 0:
+                            bitmap = origin;
+
+                            break;
+                        default:
+                            bitmap = filters[pager.getCurrentItem() - 1];
+                    }
+
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    // origin을 최종 필터로 바꾼다.
-                    Bitmap filtered = filters[pager.getCurrentItem() - 1];
-                    filtered.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
                     image = stream.toByteArray();
                 }
 
