@@ -78,9 +78,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     private byte[] image = null;
 
     Bitmap origin;
-    Bitmap reference; // 최신 링크를 갖고 있어야 image가 받아서 변환 가능하다.
+    Bitmap[] filters;
+    private final static int[] indexes = {BitmapFilter.GRAY_STYLE, BitmapFilter.PIXELATE_STYLE, BitmapFilter.TV_STYLE, BitmapFilter.OLD_STYLE, BitmapFilter.LIGHT_STYLE, BitmapFilter.LOMO_STYLE, BitmapFilter.HDR_STYLE, BitmapFilter.SOFT_GLOW_STYLE};;
 
-    ImageView imageView;
+    //ImageView imageView;
     ViewPager pager;
 
     Button buttonOk, buttonClose;
@@ -167,28 +168,16 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 origin = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
             }
 
-            // imageview
-            imageView = (ImageView) view.findViewById(R.id.fragment_display_image);
+            filters = new Bitmap[indexes.length];
+            for(int i = 0; i < indexes.length; i++) {
+                // 사진을 찍을 때마다 filters를 set null 해줘야 한다.
+                filters[i] = null;
+            }
 
             // set pager
             pager = (ViewPager) view.findViewById(R.id.fragment_display_pager);
             pager.setAdapter(new PagerAdapter_());
-            pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                @Override
-                public void onPageScrolled(int i, float v, int i2) {
-                }
-
-                @Override
-                public void onPageSelected(int i) {
-                    setPage(i);
-                }
-
-                @Override
-                public void onPageScrollStateChanged(int i) {
-                }
-            });
-
-            setPage(0);// vp.
+            pager.setCurrentItem(0);
 
             waitView = view.findViewById(R.id.fragment_display_wait);
 
@@ -234,32 +223,37 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         return view;
     }
 
-    public void setPage(int i) {
-        pager.setCurrentItem(i);
-
-        // 1. set imageview
-        //imageView.setImageBitmap(reference);
-        // 2. change vp item to transparent
-        //... no dap(될 지 안될지 모르겠다.)
-    }
-
+    /*
+    첫 한번씩은 필터를 만들어 쓴다. 사진을 찍을 때마다 필터 배열은 초기화된다.
+    이것보다 더 좋은 방식은 사진을 찍을 때마다 필터 배열을 thread로 만드는 것일 것이다.
+    하지만 그것도 아직 thread 완료 되기 전 swipe시 막을 process 생각해보지 못했고
+    일단 오래 걸리면서 의미 없어 보이는 필터 빼면 어느정도 해결은 되므로 넘어간다.
+     */
     private class PagerAdapter_ extends PagerAdapter {
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            reference = origin;
+            Bitmap bitmap;//TODO: 문제 생기면 recycle부터 신경써본다.
 
             switch(position) {
                 case 0:
+                    bitmap = origin;
+
                     break;
                 default:
-                    reference = BitmapFilter.changeStyle(origin, position);
+                    if(filters[position - 1] == null) {// 만약 filter마다 손볼게 따로 있다면(lomo size 등) 그건 따로 한다.
+                        filters[position - 1] = BitmapFilter.changeStyle(origin, indexes[position - 1]);
+                    }
+
+                    bitmap = filters[position - 1];
+
+                    break;
             }
 
             ImageView view = new ImageView(getActivity());
             ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             view.setLayoutParams(layoutParams);
             view.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            view.setImageBitmap(reference);
+            view.setImageBitmap(bitmap);
 
             container.addView(view);
 
@@ -273,7 +267,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         @Override
         public int getCount() {
-            return BitmapFilter.TOTAL_FILTER_NUM + 1; // 0은 default(no filter).
+            return indexes.length + 1;// default(not filter)도 포함.
         }
 
         @Override
@@ -556,11 +550,11 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 toolbar.setVisibility(View.GONE);
                 waitView.setVisibility(View.VISIBLE);
 
-                if(pager.getCurrentItem() > 0) { // 물론 size 0보다 크다는 가정 하에.
-                    // 반전이든 필터든 필요한 만큼 적용된다.
+                if(mirror || pager.getCurrentItem() > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    // origin은 아마 최신일 것이다.
-                    reference.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
+                    // origin을 최종 필터로 바꾼다.
+                    Bitmap filtered = filters[pager.getCurrentItem() - 1];
+                    filtered.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
                     image = stream.toByteArray();
                 }
 

@@ -174,7 +174,7 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
             if (dialog != null) {
                 ErrorDialogFragment errorFragment = new ErrorDialogFragment();
                 errorFragment.setDialog(dialog);
-                errorFragment.show(getFragmentManager(), "Memento");
+                errorFragment.show(getFragmentManager(), getResources().getString(R.string.app_name));
             }
             return false;
         }
@@ -394,7 +394,7 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
             errorFragment.setDialog(errorDialog);
 
             // Show the error dialog in the DialogFragment
-            errorFragment.show(getFragmentManager(), "Memento");
+            errorFragment.show(getFragmentManager(), getResources().getString(R.string.app_name));
         }
     }
 
