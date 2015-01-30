@@ -113,7 +113,7 @@ public class ImageAdapter extends BaseAdapter {
                 .cacheOnDisk(true)
                 .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
                 .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
-                .displayer(new FadeInBitmapDisplayer(500)) // 여긴 넣어두는게 자연스럽게 쌓이는 것 같아 보일 것 같다.
+                //.displayer(new FadeInBitmapDisplayer(500)) // 여긴 넣어두는게 자연스럽게 쌓이는 것 같아 보일 것 같다.
                 .build();
 
         imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, viewHolder.image, options, new SimpleImageLoadingListener() {

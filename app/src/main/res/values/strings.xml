@@ -11,4 +11,6 @@
 
     <string name="distance_unit">m</string><!-- &#160; to insert space. -->
 
+    <string name="tag_header"><![CDATA[#]]></string>
+
 </resources>

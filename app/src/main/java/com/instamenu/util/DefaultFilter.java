@@ -29,7 +29,8 @@ public class DefaultFilter implements InputFilter{
         expected += dest.subSequence(0, dstart);
         expected += source.subSequence(start, end);
         expected += dest.subSequence(dend, dest.length());
-        if(!expected.contains(mHeader)) { // header를 지울려고 하면 안되게 한다.
+        //if(!expected.contains(mHeader)) { // header를 지울려고 하면 안되게 한다.
+        if(!expected.startsWith(mHeader)) { // header 지우는 것 뿐만 아니라 header 앞뒤에서 텍스트 생성되는 것도 다 막는다.
             return dest.subSequence(dstart, dend);
         } else {
             if(!pattern.matcher(source).matches()) { // 그건 아니라 하더라도 pattern 안맞으면 그것도 안되게 한다.

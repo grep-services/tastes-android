@@ -193,13 +193,13 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             long sec = time != -1 ? (System.currentTimeMillis() - time) / 1000 : 0;// 물론 time이 0인지로 비교해도 되지만 아예 없는 걸 하기 위해 -1로 했다.
 
             if(sec < 60) { // 초 단위(1분 미만)
-                datetime = sec + "second" + (sec > 1 ? "s" : "") + " ago";
+                datetime = sec + "sec" + (sec > 1 ? "s" : "");
             } else if(sec < 60 * 60) { // 분 단위(1시간 미만)
-                datetime = sec / 60 + "minute" + ((sec / 60) > 1 ? "s" : "") + " ago";
+                datetime = sec / 60 + "min" + ((sec / 60) > 1 ? "s" : "");
             } else if(sec < 60 * 60 * 24) { // 시 단위(24시간 미만)
-                datetime = sec / (60 * 60) + "hour" + ((sec / (60 * 60)) > 1 ? "s" : "") + " ago";
+                datetime = sec / (60 * 60) + "hr" + ((sec / (60 * 60)) > 1 ? "s" : "");
             } else { // 일 단위(나머지 전부)
-                datetime = sec / (60 * 60 * 24) + "day" + ((sec / (60 * 60 * 24)) > 1 ? "s" : "") + " ago";
+                datetime = sec / (60 * 60 * 24) + "day" + ((sec / (60 * 60 * 24)) > 1 ? "s" : "");
             }
 
             //SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());// default locale이 어떤 영향을 미칠 지 확인해보기.

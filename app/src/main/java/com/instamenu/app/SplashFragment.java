@@ -71,8 +71,8 @@ public class SplashFragment extends Fragment implements GoogleApiClient.Connecti
 
         // get from pref(정확히는 pref(main)->args(frag)->get here.
         if (getArguments() != null) {
-            //mLocationUpdates = getArguments().getBoolean(ARG_LOCATION);
-            mLocationUpdates = false;
+            mLocationUpdates = getArguments().getBoolean(ARG_LOCATION);
+            //mLocationUpdates = false;
         }
 
         // init loc

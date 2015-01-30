@@ -111,6 +111,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
+        edit.setText(HEADER);
         edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(50)});
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override

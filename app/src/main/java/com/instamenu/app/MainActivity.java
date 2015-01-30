@@ -112,6 +112,7 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
         slidingMenu = new SlidingMenu(this);
         slidingMenu.setMode(SlidingMenu.RIGHT);
         slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+        //slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
         slidingMenu.setBehindWidthRes(R.dimen.navigation_drawer_width);
         slidingMenu.setFadeDegree(0.35f);
         slidingMenu.attachToActivity(this, SlidingMenu.SLIDING_WINDOW);
