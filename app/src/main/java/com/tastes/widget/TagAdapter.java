@@ -68,6 +68,16 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
         notifyDataSetChanged();// 되는지 보기.
     }
 
+    public void setSwitches(boolean enabled) {
+        if(tags != null) {
+            for(int i = 0; i< switches.size(); i++) {
+                switches.set(i, enabled ? "true" : "false");
+            }
+
+            notifyDataSetChanged();// 되는지 보기.
+        }
+    }
+
     public void addTag(String tag) {
         addTag(tag, "true");
     }

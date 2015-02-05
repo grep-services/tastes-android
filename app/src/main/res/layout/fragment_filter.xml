@@ -3,14 +3,55 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/view_inverse"
     tools:context="com.tastes.app.FilterFragment">
+
+    <!-- 아무리 해도 include로는 selector 연결 잘 안되서 이렇게 했다. -->
+    <RelativeLayout
+        android:id="@+id/fragment_filter_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/margin"
+        android:paddingRight="@dimen/margin"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@drawable/selector_list"
+        android:clickable="true"
+        android:descendantFocusability="blocksDescendants"><!-- for item click event. -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/margin"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:textSize="18sp"
+            android:textColor="@color/text_inverse"
+            android:text="All"/>
+
+        <CheckBox
+            android:id="@+id/fragment_filter_header_check"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:button="@null"
+            android:background="@drawable/selector_check"/>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/list_divider"
+        android:background="@color/list_divider"/>
 
     <ListView
         android:id="@+id/fragment_filter_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/view_inverse"
         android:listSelector="@drawable/selector_list"
         android:divider="@color/list_divider"
         android:dividerHeight="@dimen/list_divider"/>

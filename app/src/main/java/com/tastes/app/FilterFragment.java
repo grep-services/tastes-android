@@ -16,6 +16,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -44,6 +46,8 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     SharedPreferences preferences;
 
+    View header;
+    CheckBox check;
     ListView list;
     TagAdapter adapter;
     EditText edit;
@@ -103,6 +107,17 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         list.setOnTouchListener(touchListener);
         list.setOnScrollListener(touchListener.makeScrollListener());
         list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
+
+        header = view.findViewById(R.id.fragment_filter_header);
+        header.setOnClickListener(this);
+
+        check = (CheckBox) header.findViewById(R.id.fragment_filter_header_check);
+        check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                adapter.setSwitches(isChecked);
+            }
+        });
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
         edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
@@ -185,6 +200,11 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
+            case R.id.fragment_filter_header:
+                CheckBox checkBox = (CheckBox) v.findViewById(R.id.fragment_filter_header_check);
+                checkBox.setChecked(!checkBox.isChecked());
+
+                break;
             case R.id.fragment_filter_add:
                 setButtonEnabled(false);
 
