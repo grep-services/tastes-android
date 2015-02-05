@@ -29,7 +29,7 @@
             android:ellipsize="marquee"
             android:textSize="18sp"
             android:textColor="@color/text_inverse"
-            android:text="All"/>
+            android:text="@string/select_all"/>
 
         <CheckBox
             android:id="@+id/fragment_filter_header_check"

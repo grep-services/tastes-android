@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name"><![CDATA[#]]>tastes</string>
-
-    <string name="title_fragment_camera"></string>
-    <string name="title_fragment_display"></string>
-    <string name="title_fragment_home">Home</string>
-    <string name="title_fragment_filter">Filter</string>
-    <string name="title_fragment_item">Menu</string>
-
-    <string name="distance_unit">m</string><!-- &#160; to insert space. -->
-
     <string name="location_agree">\'<![CDATA[#]]>tastes\'가 귀하의 현재 위치를 사용하려고 합니다.</string>
     <string name="location_fail">현재 위치를 받아올 수 없습니다. 설정 확인 후 재시도 해주세요.</string>
     <string name="location_retry">재시도</string>
@@ -26,5 +16,6 @@
     <string name="date_hour">시간 전</string>
     <string name="date_day">일 전</string>
     <string name="date_etc"></string>
+    <string name="select_all">전체선택</string>
 
 </resources>
