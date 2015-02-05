@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.instamenu.app.CameraFragment_">
+    tools:context="com.tastes.app.CameraFragment_">
 <!--
     <com.commonsware.cwac.camera.CameraView
         android:id="@+id/fragment_camera_preview"

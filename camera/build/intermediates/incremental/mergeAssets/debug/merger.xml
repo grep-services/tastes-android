@@ -2,10 +2,10 @@
 <merger version="2" >
 
     <dataSet config="main" >
-        <source path="D:\Work\ATS\ho\app\Instamenu\camera\assets" />
+        <source path="D:\Work\ATS\ho\app\tastes\camera\assets" />
     </dataSet>
     <dataSet config="debug" >
-        <source path="D:\Work\ATS\ho\app\Instamenu\camera\build-types\debug\assets" />
+        <source path="D:\Work\ATS\ho\app\tastes\camera\build-types\debug\assets" />
     </dataSet>
 
 </merger>

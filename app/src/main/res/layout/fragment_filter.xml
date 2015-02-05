@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.instamenu.app.FilterFragment">
+    tools:context="com.tastes.app.FilterFragment">
 
     <ListView
         android:id="@+id/fragment_filter_list"

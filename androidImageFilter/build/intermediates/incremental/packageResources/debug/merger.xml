@@ -2,19 +2,19 @@
 <merger version="2" >
 
     <dataSet config="main" >
-        <source path="D:\Work\ATS\ho\app\Instamenu\androidImageFilter\src\main\res" >
+        <source path="D:\Work\ATS\ho\app\tastes\androidImageFilter\src\main\res" >
             <file
-                path="D:\Work\ATS\ho\app\Instamenu\androidImageFilter\src\main\res\values\strings.xml"
+                path="D:\Work\ATS\ho\app\tastes\androidImageFilter\src\main\res\values\strings.xml"
                 qualifiers="" >
                 <string name="libname" >AndroidImageFilter
                 </string>
             </file>
         </source>
-        <source path="D:\Work\ATS\ho\app\Instamenu\androidImageFilter\build\generated\res\rs\debug" />
-        <source path="D:\Work\ATS\ho\app\Instamenu\androidImageFilter\build\generated\res\generated\debug" />
+        <source path="D:\Work\ATS\ho\app\tastes\androidImageFilter\build\generated\res\rs\debug" />
+        <source path="D:\Work\ATS\ho\app\tastes\androidImageFilter\build\generated\res\generated\debug" />
     </dataSet>
     <dataSet config="debug" >
-        <source path="D:\Work\ATS\ho\app\Instamenu\androidImageFilter\src\debug\res" />
+        <source path="D:\Work\ATS\ho\app\tastes\androidImageFilter\src\debug\res" />
     </dataSet>
 
 </merger>

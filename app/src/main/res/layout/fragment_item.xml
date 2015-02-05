@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/gray_dark"
     android:clickable="true"
-    tools:context="com.instamenu.app.ItemFragment">
+    tools:context="com.tastes.app.ItemFragment">
 
     <android.support.v4.view.ViewPager
     android:id="@+id/fragment_item_pager"
