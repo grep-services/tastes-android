@@ -28,6 +28,7 @@ import android.widget.Toast;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.instamenu.R;
+import com.instamenu.content.Tag;
 import com.instamenu.util.ByteLengthFilter;
 import com.instamenu.util.DefaultFilter;
 import com.instamenu.widget.SwipeDismissListViewTouchListener;
@@ -55,7 +56,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     EditText edit;
     Button button;
 
-    private final String HEADER = "";
+    //private final String HEADER = "";
 
     private FilterFragmentCallbacks mCallbacks;
 
@@ -111,8 +112,8 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
-        edit.setText(HEADER);
-        edit.setFilters(new InputFilter[]{new DefaultFilter(HEADER), new ByteLengthFilter(50)});
+        edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
+        edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -126,6 +127,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 return false;
             }
         });
+        edit.setSelection(1);
         /* 버벅거리는 것이 있는데 이것 때문인지... 빼본다.
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -206,7 +208,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     }
 
     public void confirmTag() {
-        String tag = edit.getText().subSequence(HEADER.length(), edit.length()).toString();
+        String tag = edit.getText().subSequence(Tag.HEADER.length(), edit.length()).toString();
 
         Animation shake = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
 
@@ -227,7 +229,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
             hideKeyboard();
 
-            edit.getText().replace(HEADER.length(), edit.length(), "", 0, 0);
+            edit.getText().replace(Tag.HEADER.length(), edit.length(), "", 0, 0);
             edit.clearFocus();
 
             list.setSelection(adapter.getCount());

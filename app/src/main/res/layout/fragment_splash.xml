@@ -39,7 +39,7 @@
                 android:padding="@dimen/margin"
                 android:gravity="bottom|center_horizontal"
                 android:textSize="18sp"
-                android:text="Cannot find your current location. Check the settings and try again."/>
+                android:text="@string/location_fail"/>
 
             <Button
                 android:id="@+id/fragment_splash_location_retry_btn"
@@ -48,7 +48,7 @@
                 android:background="@drawable/selector_button"
                 android:textSize="18sp"
                 android:textColor="@color/text_inverse"
-                android:text="Retry"
+                android:text="@string/location_retry"
                 android:onClick="mOnClick"/>
 
         </LinearLayout>
@@ -66,7 +66,7 @@
                 android:padding="@dimen/margin"
                 android:gravity="bottom|center_horizontal"
                 android:textSize="18sp"
-                android:text="'#tastes' would like to use your current location."/>
+                android:text="@string/location_agree"/>
 
             <Button
                 android:id="@+id/fragment_splash_location_agree_btn"
@@ -75,7 +75,7 @@
                 android:background="@drawable/selector_button"
                 android:textSize="18sp"
                 android:textColor="@color/text_inverse"
-                android:text="OK"
+                android:text="@string/location_ok"
                 android:onClick="mOnClick"/>
 
         </LinearLayout>

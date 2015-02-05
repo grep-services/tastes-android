@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.instamenu.R;
+import com.instamenu.content.Tag;
 import com.instamenu.util.ByteLengthFilter;
 import com.instamenu.util.DefaultFilter;
 
@@ -44,7 +45,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
     LayoutInflater inflater;
     View.OnClickListener listener;
 
-    private final String HEADER = "";
+    //private final String HEADER = "#";
 
     public TagAdapter(LayoutInflater inflater) {
         this(null, inflater, null, null);
@@ -208,7 +209,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        viewHolder.tag.setText(HEADER + tags.get(position));
+        viewHolder.tag.setText(Tag.HEADER + tags.get(position));
         if(switch_ == true) { // 아직 scroll시 움직임은 남아있다. 하지만 아직 답이 없으므로 그대로 간다.
             viewHolder.switch_.setTag(position);// for accessing to switch list.
             viewHolder.switch_.setOnCheckedChangeListener(null);// programmatically checked는 굳이 switch list change 해줄 필요 없으므로 이렇게 간다.

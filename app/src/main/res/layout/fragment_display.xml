@@ -30,7 +30,7 @@
         android:gravity="center"
         android:textSize="18sp"
         android:textColor="@color/text_inverse"
-        android:text="Wait..."
+        android:text="@string/upload_wait"
         android:visibility="gone"/>
 
     <RelativeLayout

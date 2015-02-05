@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.instamenu.R;
 import com.instamenu.content.Image;
+import com.instamenu.content.Tag;
 import com.instamenu.util.QueryWrapper;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -51,7 +52,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
     ViewPager pager;
 
-    private final String HEADER = "";
+    //private final String HEADER = "";
 
     private ItemFragmentCallbacks mCallbacks;
 
@@ -95,7 +96,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         text.setLayoutParams(layoutParams);
         int p = getPixel(16);
         text.setPadding(p, p, p, p);
-        text.setText(HEADER + tag);
+        text.setText(Tag.HEADER + tag);
         text.setTextSize(18);
         text.setTextColor(getResources().getColor(R.color.text_inverse));
         text.setSingleLine(true);
@@ -193,13 +194,13 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             long sec = time != -1 ? (System.currentTimeMillis() - time) / 1000 : 0;// 물론 time이 0인지로 비교해도 되지만 아예 없는 걸 하기 위해 -1로 했다.
 
             if(sec < 60) { // 초 단위(1분 미만)
-                datetime = sec + "sec" + (sec > 1 ? "s" : "");
+                datetime = sec + getString(R.string.date_sec) + (sec > 1 ? getString(R.string.date_etc) : "");
             } else if(sec < 60 * 60) { // 분 단위(1시간 미만)
-                datetime = sec / 60 + "min" + ((sec / 60) > 1 ? "s" : "");
+                datetime = sec / 60 + getString(R.string.date_min) + ((sec / 60) > 1 ? getString(R.string.date_etc) : "");
             } else if(sec < 60 * 60 * 24) { // 시 단위(24시간 미만)
-                datetime = sec / (60 * 60) + "hr" + ((sec / (60 * 60)) > 1 ? "s" : "");
+                datetime = sec / (60 * 60) + getString(R.string.date_hour) + ((sec / (60 * 60)) > 1 ? getString(R.string.date_etc) : "");
             } else { // 일 단위(나머지 전부)
-                datetime = sec / (60 * 60 * 24) + "day" + ((sec / (60 * 60 * 24)) > 1 ? "s" : "");
+                datetime = sec / (60 * 60 * 24) + getString(R.string.date_day) + ((sec / (60 * 60 * 24)) > 1 ? getString(R.string.date_etc) : "");
             }
 
             //SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());// default locale이 어떤 영향을 미칠 지 확인해보기.

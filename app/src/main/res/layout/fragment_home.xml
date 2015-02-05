@@ -72,7 +72,7 @@
                     android:layout_gravity="center"
                     android:textSize="18sp"
                     android:textColor="@color/text"
-                    android:text="No image"/>
+                    android:text="@string/img_empty"/>
 
             </ScrollView>
 

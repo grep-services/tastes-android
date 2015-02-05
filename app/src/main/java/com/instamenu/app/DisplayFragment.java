@@ -46,6 +46,7 @@ import android.widget.Toast;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.instamenu.R;
+import com.instamenu.content.Tag;
 import com.instamenu.util.ByteLengthFilter;
 import com.instamenu.util.DefaultFilter;
 import com.instamenu.util.LogWrapper;
@@ -101,7 +102,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     boolean isKeyboard = false;
     int mSlop;
 
-    private final String HEADER = "";
+    //private final String HEADER = "";
 
     private DisplayFragmentCallbacks mCallbacks;
 
@@ -144,7 +145,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         View view = inflater.inflate(R.layout.fragment_display, container, false);
 
         if(image == null) {
-            Toast.makeText(getActivity(), "There is no image.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), getString(R.string.upload_image), Toast.LENGTH_SHORT).show();
 
             ((MainActivity) getActivity()).onBackPressed();// 일단 이렇게 해본다.
         } else { // 굳이 else 써야되는진 몰겠지만 finish 확실히 sync한지 모르므로. 나중에는 test도 해본다.
@@ -339,7 +340,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     public void confirmView() { // check 뿐만 아니라 처리까지 여기서 해야 중복 shake 등도 할 수 있다.
         if(focusedView != null) {
             EditText edit = (EditText) focusedView;
-            String string = edit.getText().subSequence(HEADER.length(), edit.getText().length()).toString();
+            String string = edit.getText().subSequence(Tag.HEADER.length(), edit.getText().length()).toString();
             //int leftMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).leftMargin;
             //int topMargin = ((RelativeLayout.LayoutParams) focusedView.getLayoutParams()).topMargin;
             float ratioX = focusedView.getX() / (float) container_.getMeasuredWidth();
@@ -469,11 +470,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         int p = getPixel(16);
         edit.setPadding(p, p, p, p);
         edit.setInputType(InputType.TYPE_CLASS_TEXT); // 왜그런진 몰라도 setText앞에 와야 한다.
-        edit.setHint("Tag");
-        edit.setHintTextColor(getResources().getColor(R.color.text_inverse));
-        edit.setText(HEADER);
-        //edit.setEms(HEADER.length());
-        edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */HEADER), new ByteLengthFilter(50)});
+        edit.setText(Tag.HEADER);
+        //edit.setHint("Tag"); text가 있으므로 hint는 자연히 무시된다. 혼재하게 할 수 있으나 일단 지운다.
+        //edit.setHintTextColor(getResources().getColor(R.color.text_inverse));
+        edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */), new ByteLengthFilter(50)});
         edit.setTextSize(18);
         edit.setTextColor(getResources().getColor(R.color.text_inverse));
         //edit.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
@@ -531,7 +531,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             case R.id.fragment_display_ok:
                 // check network first.
                 if(isNetworkAvailable() == false) {
-                    Toast toast = Toast.makeText(getActivity(), "Check your network status", Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
 
@@ -539,7 +539,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 }
                 // check tag existence
                 if(tags == null) {
-                    Toast toast = Toast.makeText(getActivity(), "Add a tag", Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getActivity(), getString(R.string.upload_tag), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
 
