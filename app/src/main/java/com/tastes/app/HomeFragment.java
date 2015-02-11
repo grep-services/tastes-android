@@ -13,6 +13,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.tastes.R;
 import com.tastes.content.Image;
@@ -20,6 +21,8 @@ import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
 import com.tastes.widget.ImageAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
+
+import org.apache.http.conn.HttpHostConnectException;
 
 import java.util.List;
 
@@ -130,21 +133,36 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         // 다른 정보를 더 받아와야 되는 등, 점점더 골치아파진다.(왜냐하면 이 home frag는 한번 실행되면 계속 남아있으므로 pref도 그대로일 것이기 때문.)
         final List<String> tags = mActivity != null ? mActivity.getFilters() : null;
         // get images from server with tags.
-        AsyncTask<Void, Void, List<Image>> task = new AsyncTask<Void, Void, List<Image>>() {
+        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+            List<Image> images = null;
+
             @Override
-            protected List<Image> doInBackground(Void... params) {
-                return queryWrapper.getImages(tags, latitude, longitude);
+            protected Boolean doInBackground(Void... params) {
+                try {
+                    images = queryWrapper.getImages(tags, latitude, longitude);
+                } catch (HttpHostConnectException e) {
+                    //e.printStackTrace();
+                    return false;
+                }
+
+                return true;
             }
 
             @Override
-            protected void onPostExecute(List<Image> images) {
-                super.onPostExecute(images);
+            protected void onPostExecute(Boolean success) {
+                super.onPostExecute(success);
 
-                // set to adapter.
-                adapter.setImages(images);
+                if(success) {// item update는 사실 network가 안돌아갈 때까지 해줄 필요는 없다고 생각한다. 그럼 괜히 화면만 비어서 이상하다.(그래도 논의해보기.)
+                    // set to adapter.
+                    adapter.setImages(images);
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
+                }
 
-                // refresh 해제.
-                refresh.setRefreshing(false);
+                if(refresh.isRefreshing()) {
+                    // refresh 해제.
+                    refresh.setRefreshing(false);
+                }
             }
         };
 

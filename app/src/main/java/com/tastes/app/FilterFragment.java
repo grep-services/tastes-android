@@ -136,7 +136,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             }
         });
         edit.setSelection(1);
-        /* 버벅거리는 것이 있는데 이것 때문인지... 빼본다.
+        /* 버벅거리는 것이 있는데 이것 때문인지... 빼본다. => 빼긴 했지만 버벅거리는 것의 이유는 아니었다.
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {

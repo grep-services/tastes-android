@@ -7,11 +7,15 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIUtils;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
@@ -28,6 +32,9 @@ public class NetworkProcessor {
     private static final String file_name = "image.jpg";
     private static final String mime_type = "application/octet-stream";
     //private static final String mime_type = "multipart/form-data";
+    private static final int CONNECTION_TIMEOUT = 5000;
+    private static final int SOCKET_TIMEOUT = 5000;
+
     /*
     public String getGet() {
         String result = null;
@@ -51,11 +58,15 @@ public class NetworkProcessor {
     }
     */
     // 전체적으로 null check 필요한 부분들 exception에서 걸리면 설정해준다.
-    public String getResponse(String path, List<NameValuePair> parameters, byte[] file)
-    {
+    public String getResponse(String path, List<NameValuePair> parameters, byte[] file) throws HttpHostConnectException {
         String response = null;
 
-        HttpClient httpClient = new DefaultHttpClient();// 나중에 ThreadSafeClient 쓰든가 해본다.(4.x 에서 Pool 어쩌고로 바꼈다고 하던데...)
+        HttpParams httpParams = new BasicHttpParams();
+
+        HttpConnectionParams.setConnectionTimeout(httpParams, CONNECTION_TIMEOUT);
+        HttpConnectionParams.setSoTimeout(httpParams, SOCKET_TIMEOUT);
+
+        HttpClient httpClient = new DefaultHttpClient(httpParams);// 나중에 ThreadSafeClient 쓰든가 해본다.(4.x 에서 Pool 어쩌고로 바꼈다고 하던데...)
 
         try {
             // get도 있으면 몰라도 post에서는 query null이므로(나중 추가) 그냥 uri method 없애고 이렇게 간단하게 간다.
@@ -86,6 +97,8 @@ public class NetworkProcessor {
             // 여기에 이렇게 encoding을 넣어줘야 제대로 날아온다.
             response = EntityUtils.toString(httpEntity, encoding);// entity null이면 IllegalArgumentException 뜬다. null check 하지말고 필요하면 exception으로 처리한다.
 
+        } catch(HttpHostConnectException e) {
+            throw e;
         } catch(Exception e) {// 나중에 connection refused(org.apache.http.conn.HttpHostConnectException) 설정해주기.
             // 인터넷 연결 안되면 여기서도 connection refused 뜨지만 display ok 등에서 여기걸 사용한다 치면 filter에 이미 등록되어버리는 등 문제가 많다. 따라서 그전에 막고 여긴 일단 놔둔다.
             LogWrapper.e("REQUEST", e.getMessage());

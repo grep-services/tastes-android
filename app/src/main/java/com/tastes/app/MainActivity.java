@@ -12,15 +12,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.commonsware.cwac.camera.PictureTransaction;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.util.LocationUtils;
+import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import org.apache.http.conn.HttpHostConnectException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +52,7 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
     private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
     private CameraFragment_ cameraFragment;
+    private DisplayFragment displayFragment;
     private HomeFragment homeFragment;
 
     // location
@@ -95,6 +100,12 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
 
         splashFragment = SplashFragment.newInstance(mLocationUpdates);
         addFragment(splashFragment);
+    }
+
+    @Override
+    protected void onResume() {
+        LogWrapper.e("Main", "Resume");
+        super.onResume();
     }
 
     public void setSlidingMenu() {
@@ -386,7 +397,8 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
         cameraFragment.restartPreview();
 
         //DisplayFragment.imageToShow = image;
-        addFragment(DisplayFragment.newInstance(mirror, image, null, latitude, longitude));
+        displayFragment = DisplayFragment.newInstance(mirror, image, null, latitude, longitude);
+        addFragment(displayFragment);
 
         flag_taking_camera = false;// 최대한 늦게 하는게, 답답할 수도 있겠지만 잘못된 방향으로 흘러가는걸 막아줄 수 있다.
     }
@@ -397,29 +409,43 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
         // set flag
         flag_fragment_display = true;
         // send to server
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             @Override
-            protected Void doInBackground(Void... params) {
-                queryWrapper.addImage(file, time, address, latitude, longitude, tags, positions);
+            protected Boolean doInBackground(Void... params) {
+                try {
+                    queryWrapper.addImage(file, time, address, latitude, longitude, tags, positions);
+                } catch (HttpHostConnectException e) {
+                    //e.printStackTrace();
+                    return false;
+                }
 
-                return null;
+                return true;
             }
 
             @Override
-            protected void onPostExecute(Void unused) {
-                super.onPostExecute(unused);
+            protected void onPostExecute(Boolean success) {
+                super.onPostExecute(success);
 
-                // add to pref.
-                addPreferences(tags, switches);
-                // set filter also.
-                filterFragment.setTags(MainActivity.this.tags, MainActivity.this.switches); // filter가 이제 새로 뜨는게 아니라서 변경 생길 때마다 해줘야된다.(ok는 변경을 무조건 수반한다고 볼 수 있다.)
-                // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
-                homeFragment.setView();
+                if(success) {
+                    // add to pref.
+                    addPreferences(tags, switches);
+                    // set filter also.
+                    filterFragment.setTags(MainActivity.this.tags, MainActivity.this.switches); // filter가 이제 새로 뜨는게 아니라서 변경 생길 때마다 해줘야된다.(ok는 변경을 무조건 수반한다고 볼 수 있다.)
+                    // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
+                    homeFragment.setView();
 
-                if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
-                    viewPagerFragment.setCurrentPage(1);
+                    if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
+                        viewPagerFragment.setCurrentPage(1);
 
-                    onBackPressed();
+                        onBackPressed();
+                    }
+                } else {
+                    if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
+                        displayFragment.showWait(false);
+                    }
+
+                    // display가 닫혔든 말든 msg(toast)는 표시해주는 것이 좋을 것 같다.
+                    Toast.makeText(MainActivity.this, getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -511,6 +537,8 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
             } else {
                 if(flag_fragment_display == true) {
                     flag_fragment_display = false;// 미리 false로 하고 pop한다.
+
+                    displayFragment = null;// 쓸 일 없으면 null 처리를 해주는게 나을듯 하다.
                 }
 
                 fragmentManager.popBackStack();

@@ -3,6 +3,7 @@ package com.tastes.util;
 import com.tastes.content.Image;
 
 import org.apache.http.NameValuePair;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +52,7 @@ public class QueryWrapper {
         return string;
     }
 
-    public void testUtf(byte[] file, String string) {
+    public void testUtf(byte[] file, String string) throws HttpHostConnectException {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
@@ -63,7 +64,7 @@ public class QueryWrapper {
     }
 
     // add image.(create)
-    public void addImage(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions) {
+    public void addImage(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions) throws HttpHostConnectException {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
@@ -76,10 +77,15 @@ public class QueryWrapper {
         parameters.add(new BasicNameValuePair("positions", getString(positions)));
         // get result
         String response = networkProcessor.getResponse(PATH_ADD_IMAGE, parameters, file);
+
+        if(response.contains("502 Bad Gateway")) {
+            // 여기도 어차피 가만히 놔두면 json exception으로 넘어간다.
+            throw new HttpHostConnectException(null, null);// null 괜찮은지 모르겠다.(일단 괜찮은 것 같긴 하다.)
+        }
         // parse
     }
     // tag to image.(edit)
-    public void tagImage(int id, List<String> tags) {
+    public void tagImage(int id, List<String> tags) throws HttpHostConnectException {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         parameters.add(new BasicNameValuePair("id", String.valueOf(id)));
@@ -90,7 +96,7 @@ public class QueryWrapper {
     }
     // get image.(get one)
     // distance는 이렇게 개개의 item을 받을 때는 넘어오지 않는다.(현재는). 따라서 id와 같이, 기존의 것을 다시 넘기고 받는다.(사실 받는 쪽에서 해도 되지만, 초기화 측면에서 여기서 했다.)
-    public Image getImage(int id, long distance) {
+    public Image getImage(int id, long distance) throws HttpHostConnectException {
         Image image = null;
 
         // set params
@@ -134,7 +140,7 @@ public class QueryWrapper {
     사실 tags가 먼저 오고 좌표가 나중에 오는 이유는, 좌표가 없을 수도 있다는 가정을 한 것인데
     아직까지는 서버에서 좌표로 filtering해서 넘겨주기 때문에 좌표가 없으면 아무것도 받아오지 못한다.
      */
-    public List<Image> getImages(List<String> tags, double latitude, double longitude) {
+    public List<Image> getImages(List<String> tags, double latitude, double longitude) throws HttpHostConnectException {
 
         if(tags == null) return null;// 다 묶을 필요까지는 없고, 아무튼 filter null일 경우까지도 생각해야 된다는 말이다. 실제로 filter 다 지우면 exception 떴다.
 
@@ -148,7 +154,12 @@ public class QueryWrapper {
         // get result
         String response = networkProcessor.getResponse(PATH_GET_IMAGES, parameters, null);
 
-        if(response == null) return null;// 보통 network 끊기면 여기서 걸릴 것이다.(splash든 refresh든)
+        if(response == null) {
+            return null;// 보통 network 끊기면 여기서 걸릴 것이다.(splash든 refresh든)
+        } else if(response.contains("502 Bad Gateway")) {
+            // 직접 하는것도 사실 좀 그렇긴 하지만, 가만 놔둬서 json exception으로 넘어가고, 그럼에도 그냥 null 취급 당해서 empty와 구분도 안가게 놔두는 것 보다는 낫다.
+            throw new HttpHostConnectException(null, null);// null 괜찮은지 모르겠다.(일단 괜찮은 것 같긴 하다.)
+        }
         // parse
         try {
             JSONArray imageArray = new JSONArray(response);
@@ -188,7 +199,7 @@ public class QueryWrapper {
         return images;
     }
     // get tag.(get multiple)
-    public List<String> getTags(String tag) {
+    public List<String> getTags(String tag) throws HttpHostConnectException {
         List<String> tags = null;
 
         // set params

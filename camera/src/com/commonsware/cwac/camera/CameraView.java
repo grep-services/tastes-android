@@ -666,6 +666,18 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
   // based on:
   // http://developer.android.com/reference/android/hardware/Camera.Parameters.html#setRotation(int)
 
+    /*
+    orientation은 portrait 0도, right 90, left 270으로 되며, info.ori는 항상 90이고, 결국 rotation은 land가 0이고, 오른쪽으로 돌면서 90씩 커진다.
+    orientation : p 0, r 90, ...
+    info.ori : back 90, front 270
+    rotation : (back) land 0, r 90, ..., (front) p 270, r 180, l 0, ... (즉, land 0부터 밑으로(위로 아님) 90씩 커진다. land 0, bottom 90, right 180, port 270.))
+    하지만, 현재 문제는, takepicture에서, onOri changed에 의해, 결국 여기 get Rotation에서 정해진, rotation에 의해 picture rotation이 정해진다는 것이다.
+    b 90, f 270으로 고정되어야 될 것이, p부터 시작한다 치면 b 90, 180, 270, 0, f 270, 180, 0, 90 이렇게 되어버린다.
+    즉, port 고정을 preview에서만(기본 lib는 port도 없고 land만) 잡아주고, picture는 ori에 맞게 돌려버리는게 문제여서, 직접 제어해줬다.
+    그리고 나중에 app 자체가 port를 풀게 된다면, 이 코드도 풀어주면 그만이 될 것이다.
+    그리고, 직접 90, 270보다는, camera info에 나와있듯이, camera.info를 사용하도록 한다.(확실한 보장은 못하겠지만)
+    */
+
   private int getCameraPictureRotation(int orientation) {
     Camera.CameraInfo info=new Camera.CameraInfo();
     Camera.getCameraInfo(cameraId, info);
@@ -674,10 +686,12 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
     orientation=(orientation + 45) / 90 * 90;
 
     if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-      rotation=(info.orientation - orientation + 360) % 360;
+      //rotation=(info.orientation - orientation + 360) % 360;
+        rotation = info.orientation;// 270
     }
     else { // back-facing camera
-      rotation=(info.orientation + orientation) % 360;
+      //rotation=(info.orientation + orientation) % 360;
+        rotation = info.orientation;// 90
     }
 
     return(rotation);
@@ -695,6 +709,10 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
       disable();
     }
 
+      /*
+      orientation : portrait : 0. left : 270. right : 90.
+      output : p 90, l  0, r 180, ...
+       */
     @Override
     public void onOrientationChanged(int orientation) {
       if (camera != null && orientation != ORIENTATION_UNKNOWN) {

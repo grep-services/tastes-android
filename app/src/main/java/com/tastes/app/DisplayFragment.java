@@ -510,6 +510,12 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         return mobile.isConnected() || wifi.isConnected();
     }
 
+    public void showWait(boolean show) {
+        // 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
+        toolbar.setVisibility(show ? View.GONE : View.VISIBLE);
+        waitView.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
@@ -531,9 +537,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     break;
                 }
 
-                // 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
-                toolbar.setVisibility(View.GONE);
-                waitView.setVisibility(View.VISIBLE);
+                showWait(true);
 
                 int position = pager.getCurrentItem();
 
