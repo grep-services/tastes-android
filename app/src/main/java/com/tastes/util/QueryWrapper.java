@@ -64,7 +64,7 @@ public class QueryWrapper {
     }
 
     // add image.(create)
-    public void addImage(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions) throws HttpHostConnectException {
+    public void addImage(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions) throws HttpHostConnectException {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.

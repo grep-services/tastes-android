@@ -67,12 +67,12 @@
                 android:layout_height="match_parent">
 
                 <TextView
+                    android:id="@+id/fragment_home_empty_txt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:textSize="18sp"
-                    android:textColor="@color/text"
-                    android:text="@string/img_empty"/>
+                    android:textColor="@color/text"/><!-- wait 자체가 없기 때문에 초기를 애초에 empty string으로둔다. -->
 
             </ScrollView>
 

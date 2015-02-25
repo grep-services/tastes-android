@@ -22,6 +22,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true"/>
 
+    <!--
     <TextView
         android:id="@+id/fragment_display_wait"
         android:layout_width="match_parent"
@@ -31,7 +32,74 @@
         android:textSize="18sp"
         android:textColor="@color/text_inverse"
         android:text="@string/upload_wait"
-        android:visibility="gone"/>
+        android:visibility="gone"/>-->
+
+    <RelativeLayout
+        android:id="@+id/fragment_display_wait"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gray_overlay"
+        android:visibility="gone">
+
+        <!-- 테두리 좀 거칠긴 하지만, 전체 컨셉이 일단은 기능 위주이므로 디자인적인 컨셉 적당히 통일된 걸로 일단 넘어간다. -->
+        <com.pnikosis.materialishprogress.ProgressWheel
+            xmlns:wheel="http://schemas.android.com/apk/res-auto"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerInParent="true"
+            wheel:matProg_progressIndeterminate="true"
+            wheel:matProg_barColor="@color/progress_bar"
+            wheel:matProg_rimColor="@color/progress_rim"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/fragment_display_location"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gray_overlay"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin"
+            android:textSize="18sp"
+            android:textColor="@color/text_inverse"
+            android:text="@string/location_retry"/>
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/refresh"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/fragment_display_network"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gray_overlay"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin"
+            android:textSize="18sp"
+            android:textColor="@color/text_inverse"
+            android:text="@string/network_retry"/>
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/refresh"/>
+
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/fragment_display_toolbar"

@@ -52,12 +52,12 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     private static final String ARG_MIRROR = "mirror";// for ffc
     private static final String ARG_IMAGE = "image";
-    private static final String ARG_ADDRESS = "address";
+    //private static final String ARG_ADDRESS = "address";
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
 
     private boolean mirror;
-    private String address;
+    //private String address;
     private double latitude;
     private double longitude;
 
@@ -72,7 +72,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     Button buttonOk, buttonClose;
 
-    View waitView;
+    View waitView, locationView, networkView;
 
     List<String> tags;
     List<String> switches;
@@ -91,12 +91,12 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     private DisplayFragmentCallbacks mCallbacks;
 
-    public static DisplayFragment newInstance(boolean mirror, byte[] image, String address, double latitude, double longitude) {
+    public static DisplayFragment newInstance(boolean mirror, byte[] image, double latitude, double longitude) {
         DisplayFragment fragment = new DisplayFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_MIRROR, mirror);
         args.putByteArray(ARG_IMAGE, image);
-        args.putString(ARG_ADDRESS, address);
+        //args.putString(ARG_ADDRESS, address);
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
         fragment.setArguments(args);
@@ -114,7 +114,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         if (getArguments() != null) {
             mirror = getArguments().getBoolean(ARG_MIRROR);
             image = getArguments().getByteArray(ARG_IMAGE);
-            address = getArguments().getString(ARG_ADDRESS);
+            //address = getArguments().getString(ARG_ADDRESS);
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
@@ -166,12 +166,17 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             pager.setCurrentItem(0);
 
             waitView = view.findViewById(R.id.fragment_display_wait);
+            locationView = view.findViewById(R.id.fragment_display_location);
+            networkView = view.findViewById(R.id.fragment_display_network);
 
             buttonOk = (Button) view.findViewById(R.id.fragment_display_ok);
             buttonClose = (Button) view.findViewById(R.id.fragment_display_close);
 
             //buttonOk.setOnTouchListener(this);
             //buttonClose.setOnTouchListener(this);
+
+            locationView.setOnClickListener(this);
+            networkView.setOnClickListener(this);
 
             buttonOk.setOnClickListener(this);
             buttonClose.setOnClickListener(this);
@@ -207,6 +212,32 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         }
 
         return view;
+    }
+
+    public void notifyNetworkFailure() {
+        //showView(toolbar);// 나중에는 networkView를 만들고 그것을 띄운다.
+        showView(networkView);
+    }
+
+    public boolean isWaiting() {
+        return (waitView.getVisibility() == View.VISIBLE);
+    }
+
+    public void notifyLocationFailure() {
+        showView(locationView);
+    }
+
+    public void setLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+
+        if(isWaiting()) {
+            /*
+            wait는 두 종류 있는데, 두번째 종류는 이미 location set된 상태이므로 다시 request location 할 일이 없으므로 여기로 오지 않을 것이다.
+            그러므로 그냥 첫번째 wait(request location)이라 생각하고 upload를 call하면 된다.
+             */
+            upload();
+        }
     }
 
     /*
@@ -279,9 +310,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     // caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다.
-    public void actionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches) {
+    public void actionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches) {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayActionOKClicked(file, time, address, latitude, longitude, tags, positions, switches);
+            mCallbacks.onDisplayActionOKClicked(file, time, latitude, longitude, tags, positions, switches);
         }
     }
 
@@ -502,6 +533,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
+    // 일단 쓰지 않는다. 어차피 exception으로 걸리고, 괜히 먼저 해놨다가 location 걸린 후에 또다시 network로 걸리면 사용자 혼란만 더 생긴다.
     private boolean isNetworkAvailable() {
         ConnectivityManager manager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mobile = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
@@ -510,21 +542,53 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         return mobile.isConnected() || wifi.isConnected();
     }
 
-    public void showWait(boolean show) {
+    public void showView(View view) {
         // 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
-        toolbar.setVisibility(show ? View.GONE : View.VISIBLE);
-        waitView.setVisibility(show ? View.VISIBLE : View.GONE);
+        toolbar.setVisibility(View.GONE);
+        waitView.setVisibility(View.GONE);
+        locationView.setVisibility(View.GONE);
+        networkView.setVisibility(View.GONE);
+
+        view.setVisibility(View.VISIBLE);
+    }
+
+    // 따로 빼야 location 완료 등에서도 연결될 수 있다.
+    public void upload() {
+        int position = pager.getCurrentItem();
+
+        if(mirror || position > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
+            Bitmap bitmap;
+
+            switch(position) {
+                case 0:
+                    bitmap = origin;
+
+                    break;
+                default:
+                    bitmap = filters[pager.getCurrentItem() - 1];
+            }
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
+            image = stream.toByteArray();
+        }
+
+        actionOKClicked(image, System.currentTimeMillis(), latitude, longitude, tags, positions, switches);
     }
 
     @Override
     public void onClick(View v) {
+        MainActivity mainActivity = (MainActivity) getActivity();
+
         switch(v.getId()) {
             case R.id.fragment_display_ok:
-                // check network first.
-                if(isNetworkAvailable() == false) {
-                    Toast toast = Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    toast.show();
+                // check location first.
+                if(mainActivity.isLocationUpdated() == false) {
+                    if(mainActivity.isRequestingLocationUpdates()) {// 어차피 몇초 안에 끝나는 일이므로 toast보다는 dialog가 낫다. 기존 wait를 쓴다.
+                        showView(waitView);
+                    } else if(mainActivity.isRequestingLocationFailed()) {
+                        showView(locationView);
+                    }
 
                     break;
                 }
@@ -537,32 +601,25 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     break;
                 }
 
-                showWait(true);
+                showView(waitView);
 
-                int position = pager.getCurrentItem();
-
-                if(mirror || position > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
-                    Bitmap bitmap;
-
-                    switch(position) {
-                        case 0:
-                            bitmap = origin;
-
-                            break;
-                        default:
-                            bitmap = filters[pager.getCurrentItem() - 1];
-                    }
-
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
-                    image = stream.toByteArray();
-                }
-
-                actionOKClicked(image, System.currentTimeMillis(), address, latitude, longitude, tags, positions, switches);
+                upload();
 
                 break;
             case R.id.fragment_display_close:
                 ((MainActivity) getActivity()).onBackPressed();// adjustpan 때문에 disable 등등 다 안돼서 background로라도 처리해야 했고 그러려면 listener도 frag에서 처리해야 했다.
+
+                break;
+            case R.id.fragment_display_location:
+                showView(waitView);
+
+                mainActivity.startLocationUpdates();
+
+                break;
+            case R.id.fragment_display_network:// location, tag check를 다 넘어가야 upload 자체가 되고, upload로부터 나오는 exception에서 나오므로, 다른건 더 필요없다.
+                showView(waitView);
+
+                upload();
 
                 break;
         }
@@ -571,7 +628,11 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if(v instanceof Button) {
-            return false;
+            return false; // 이건 아마 layer로 넘기려는 것이고
+        }
+
+        if(toolbar.getVisibility() != View.VISIBLE) {
+            return true; // 이건 block 시 touch disable하는 것.
         }
 
         // x, y로 움직이는 것들은, layout parameters 설정이 제대로 안되어 있으면 adjustPan에 적용되지 않아서 일단 제외하고 margin 방식으로 갈아탔다.
@@ -671,6 +732,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public interface DisplayFragmentCallbacks {
-        public void onDisplayActionOKClicked(byte[] file, long time, String address, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches);
+        public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches);
     }
 }

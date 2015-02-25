@@ -1,20 +1,32 @@
 package com.tastes.app;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.commonsware.cwac.camera.PictureTransaction;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.util.LocationUtils;
@@ -30,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity implements SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private QueryWrapper queryWrapper;
 
@@ -39,7 +51,6 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
     private List<String> switches;
     private String strTags;
     private String strSwitches;
-    private boolean mLocationUpdates;
 
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
@@ -56,13 +67,27 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
     private HomeFragment homeFragment;
 
     // location
+    private GoogleApiClient mGoogleApiClient;
+    private boolean mLocationUpdates = false;// 사실상 동의서다.(pref에 저장된 동의 여부이므로)
+    private LocationRequest mLocationRequest;
+    private boolean mRequestingLocationUpdates = false;
+    private boolean mLocationUpdated = false;
+    private boolean mRequestingLocationFailed = false;
     private double latitude;
     private double longitude;
+
+    private Handler mHandler;
+    private Runnable mRunnable;
+
+    private static final int LOCATION_TIMEOUT = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // init loc
+        buildGoogleApiClient();
 
         // init vars.
         queryWrapper = new QueryWrapper();
@@ -102,10 +127,298 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
         addFragment(splashFragment);
     }
 
+    //---- location
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        // default 60m. 어차피 1번이므로 상관없다.
+        //mLocationRequest.setInterval(100000);
+        // default 60/6 = 10m. 이것도 상관없다.
+        //mLocationRequest.setFastestInterval(100000);
+        // 100m 정도 오차. 시간은 1초 정도. network만 쓰는게 아니라, balnaced인데, 실내에선 gps만 켜면 gps가 안잡혀서 그래서 안되는듯. 결국, msg도 그런거 고려해서 띄워주기.
+        //mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        // high도 마찬가지로 실내에선 gps만 켜놓으면 안잡힌다. 하지만 나머지에 대해서는 속도 차이 모르겠고, 정확도가 사실 중요하다. 오히려 실외에서 gps만 있을 때 high는 잡아도 balanced는 못잡을 수 있으므로 이걸로 간다.
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setNumUpdates(1);
+        mLocationRequest.setExpirationDuration(10000);// 혹시나 이게 자체적으로 stop을 유발하는건 아닌지... 확인하고 싶지만 방법을 아직 못찾았다.
+    }
+
+    // connection failed됐을 때 activity로부터 call되어 다시 connect 시도 하게 되는 module.
+    public void connect() {
+        if(mGoogleApiClient.isConnecting() == false && mGoogleApiClient.isConnected() == false) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    /*
+    내가 만든거다. google location update 예제 자체가 너무 좀 이상하게 되어있었다.
+    일단 google play service available이 api client보다 더 넓은 범위가 아니라 api client connected에 종속된 것이라는 실험 결과(?)가 나왔고
+    전체적으로 어디서 검사해야 할 지 확실치 않았기 때문에 api client connected 검사하는 쪽이 있으면 전부 해주기로 했다.
+    그렇게 하면 전체적으로 봤을 때 예제랑 다른 점은 home(back) 즉 onResume 등에서의 stop을 할 때 client api connection만 검사하는 것이 있었는데 괜찮을지 확인해보면 된다.
+    */
+    private boolean servicesAvailable() {
+        if(mGoogleApiClient.isConnected() == true) {
+            if(servicesConnected() == true) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean servicesConnected() {
+        // Check that Google Play services is available
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+
+        // If Google Play services is available
+        if (ConnectionResult.SUCCESS == resultCode) {
+            // In debug mode, log the status
+            Log.d("location-api", "google play service available");
+
+            // Continue
+            return true;
+            // Google Play services was not available for some reason
+        } else {
+            // Display an error dialog
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0);
+            if (dialog != null) {
+                ErrorDialogFragment errorFragment = new ErrorDialogFragment();
+                errorFragment.setDialog(dialog);
+                errorFragment.show(getFragmentManager(), getResources().getString(R.string.app_name));
+            }
+            return false;
+        }
+    }
+
+    /*
+    available check나 connection failed나 자기 처리 module이 있으므로, 여기서는 그냥
+     */
+    protected void startLocationUpdates() {
+        if(servicesAvailable() == true) {
+            if(mRequestingLocationUpdates == false) {
+                mRequestingLocationUpdates = true;
+                mRequestingLocationFailed = false;
+
+                //updateUI();
+
+                createLocationRequest();// 할 때마다 생성해야 num = 1인 것이 문제되지 않는다.
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+                // callback 같은거 특별히 없는듯. 그냥 handler 달고 해야될듯.
+                mHandler = new Handler();
+
+                mRunnable = new Runnable(){
+                    @Override
+                    public void run() {
+                        if(mLocationUpdated == false) { // 물론 updated되고 나면 바로 updateUI로 가고 intent 실행되겠지만, 이거랑 시간이 비슷할 경우도 가정하지 않을 수 없다.
+                            mRequestingLocationFailed = true;
+
+                            stopLocationUpdates();
+                        }
+                    }
+                };
+
+                mHandler.postDelayed(mRunnable, LOCATION_TIMEOUT);
+            }
+        }
+    }
+
+    protected void stopLocationUpdates() {
+        if(servicesAvailable() == true) {
+            if(mRequestingLocationUpdates == true) {
+                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+
+                // callback이 없는 경우가 있을지 - stop은 무조건 start 이후 나올 수가 있으며 그것도 정확한 1:1 매칭이므로 무조건 callback이 있다고 볼 수 있다.
+                mHandler.removeCallbacks(mRunnable);// 여기서 꺼야 재시작 하는 경우 failed가 true가 되지 않아서 항상 onResume에서 다시 시작될 수 있게 해준다.
+
+                mRequestingLocationUpdates = false;
+
+                onLocationUpdated();
+            }
+        }
+    }
+
+    public void onLocationUpdated() {
+        // 당장 필요한건 update success시 home setview 하는 것 뿐일듯 하다.... display도 있을듯.
+        if(mLocationUpdated) {
+            if(displayFragment != null) {
+                displayFragment.setLocation(latitude, longitude);
+            }
+            if(homeFragment != null) {// null인 상황은 애초에 onLocationChanged에서 저장되는 latlng가 자동으로 homeFrag 생성시 전달되어 해결될 것이다.
+                homeFragment.setLocation(latitude, longitude);
+            }
+        } else {
+            if(mRequestingLocationFailed) {
+                if(displayFragment != null) {// display가 살아있고
+                    if(displayFragment.isWaiting()) {// wait 중이라면
+                        displayFragment.notifyLocationFailure();// failure를 알린다.
+                    }
+                }
+                if(homeFragment != null) {
+                    homeFragment.notifyLocationFailure();
+                }
+            }
+        }
+    }
+
+    public boolean isLocationUpdated() {
+        return mLocationUpdated;
+    }
+
+    public boolean isRequestingLocationUpdates() {
+        return mRequestingLocationUpdates;
+    }
+
+    public boolean isRequestingLocationFailed() {
+        return mRequestingLocationFailed;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mGoogleApiClient.connect();
+    }
+
     @Override
     protected void onResume() {
-        LogWrapper.e("Main", "Resume");
         super.onResume();
+
+        if(mLocationUpdates == true && mRequestingLocationFailed == false) {
+            startLocationUpdates();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if(mLocationUpdates == true && mRequestingLocationFailed == false) {
+            stopLocationUpdates();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();// 왜인진 모르겠지만 일단 isConnected 확인 안해도 된다고 생각한다.
+
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        if(mLocationUpdates == true && mRequestingLocationFailed == false) {
+            startLocationUpdates();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        /*
+         * Google Play services can resolve some errors it detects.
+         * If the error has a resolution, try sending an Intent to
+         * start a Google Play services activity that can resolve
+         * error.
+         */
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(this, LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
+
+                /*
+                * Thrown if Google Play services canceled the original
+                * PendingIntent
+                */
+
+            } catch (IntentSender.SendIntentException e) {
+                // Log the error
+                e.printStackTrace();
+            }
+        } else {
+            // If no resolution is available, display a dialog to the user with the error.
+            showErrorDialog(connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+
+        mLocationUpdated = true;
+
+        stopLocationUpdates();
+    }
+
+    /**
+     * Show a dialog returned by Google Play services for the
+     * connection error code
+     *
+     * @param errorCode An error code returned from onConnectionFailed
+     */
+    private void showErrorDialog(int errorCode) {
+
+        // Get the error dialog from Google Play services
+        Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(errorCode, this, LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
+
+        // If Google Play services can provide an error dialog
+        if (errorDialog != null) {
+
+            // Create a new DialogFragment in which to show the error dialog
+            ErrorDialogFragment errorFragment = new ErrorDialogFragment();
+
+            // Set the dialog in the DialogFragment
+            errorFragment.setDialog(errorDialog);
+
+            // Show the error dialog in the DialogFragment
+            errorFragment.show(getFragmentManager(), getResources().getString(R.string.app_name));
+        }
+    }
+
+    /**
+     * Define a DialogFragment to display the error dialog generated in
+     * showErrorDialog.
+     */
+    public static class ErrorDialogFragment extends DialogFragment {
+
+        // Global field to contain the error dialog
+        private Dialog mDialog;
+
+        /**
+         * Default constructor. Sets the dialog field to null
+         */
+        public ErrorDialogFragment() {
+            super();
+            mDialog = null;
+        }
+
+        /**
+         * Set the dialog to display
+         *
+         * @param dialog An error dialog
+         */
+        public void setDialog(Dialog dialog) {
+            mDialog = dialog;
+        }
+
+        /*
+         * This method must return a Dialog to the DialogFragment.
+         */
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return mDialog;
+        }
     }
 
     public void setSlidingMenu() {
@@ -182,6 +495,7 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
 
         return filters;
     }
+
     public ArrayList<String> getList(String string) {
         if(string != null) {
             return new ArrayList<String>(Arrays.asList(string.split("\\|")));
@@ -207,7 +521,7 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
     }
 
     public void initPreferences() {
-        preferences = getSharedPreferences("instamenu", Context.MODE_PRIVATE);
+        preferences = getSharedPreferences("tastes", Context.MODE_PRIVATE);
 
         mLocationUpdates = preferences.getBoolean("LocationUpdates", false);
 
@@ -303,22 +617,15 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
     public boolean isSplashViewing() {
         return flag_fragment_splash;
     }
-    @Override
-    public void onSplashLocationUpdated(double latitude, double longitude) {
-        // 위경도 설정부터 하고
-        this.latitude = latitude;
-        this.longitude = longitude;
 
+    @Override
+    public void onSplashFinished() {
         // 닫기 전에 flag부터 false로 해준다.
         flag_fragment_splash = false;
 
         // camera도 tools 복귀시켜주고 flip도 해준다.
         cameraFragment.setToolsVisible(true);
         cameraFragment.flip();// 느리면 더 앞으로 당긴다.
-
-        // home도 location set 해준다.
-        homeFragment.setLocation(latitude, longitude);
-        homeFragment.setView();// swipe할 때 해주자니 사실 1번 이후로는 필요없기 때문에 여기서 하는게 맞다고 생각했다.
 
         // fragment닫아야 한다.
         popFragment();
@@ -328,6 +635,8 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
     public void onSplashLocationAgreed() {
         // 일단 debug동안은 disable.
         setPreferences(true);
+        // start request.
+        startLocationUpdates();
     }
 
     //---- vp
@@ -397,7 +706,7 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
         cameraFragment.restartPreview();
 
         //DisplayFragment.imageToShow = image;
-        displayFragment = DisplayFragment.newInstance(mirror, image, null, latitude, longitude);
+        displayFragment = DisplayFragment.newInstance(mirror, image, latitude, longitude);// 여기서도 보내야 location process 잘 맞아떨어진다.
         addFragment(displayFragment);
 
         flag_taking_camera = false;// 최대한 늦게 하는게, 답답할 수도 있겠지만 잘못된 방향으로 흘러가는걸 막아줄 수 있다.
@@ -405,7 +714,7 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
 
     //---- display
     @Override
-    public void onDisplayActionOKClicked(final byte[] file, final long time, final String address, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> switches) {
+    public void onDisplayActionOKClicked(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> switches) {
         // set flag
         flag_fragment_display = true;
         // send to server
@@ -413,8 +722,9 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
             @Override
             protected Boolean doInBackground(Void... params) {
                 try {
-                    queryWrapper.addImage(file, time, address, latitude, longitude, tags, positions);
+                    queryWrapper.addImage(file, time, latitude, longitude, tags, positions);
                 } catch (HttpHostConnectException e) {
+                    LogWrapper.e("Loc", e.getMessage());
                     //e.printStackTrace();
                     return false;
                 }
@@ -441,11 +751,12 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
                     }
                 } else {
                     if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
-                        displayFragment.showWait(false);
+                        //displayFragment.showWait(false);
+                        displayFragment.notifyNetworkFailure();
                     }
 
                     // display가 닫혔든 말든 msg(toast)는 표시해주는 것이 좋을 것 같다.
-                    Toast.makeText(MainActivity.this, getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(MainActivity.this, getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -511,7 +822,15 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
             // set to pref.
             setPreferences(tags, switches);
             // update home
-            homeFragment.setView();
+            /*
+            위치는 어차피 home 자체적으로 표시되고 해결되게 되어있다.
+            따라서 여기서는 위치가 없으면 pass, 있으면 진행하면 된다.
+            (사실 onRefres에서 위치가 있는 부분만 떼온 것이나 다름없다고 보면 된다.)
+             */
+            if(mLocationUpdated) {
+                homeFragment.setRefreshing(true);
+                homeFragment.setView();
+            }
         }
     }
 
@@ -595,7 +914,7 @@ public class MainActivity extends Activity implements SplashFragment.SplashFragm
                 switch (resultCode) {
                     // If Google Play services resolved the problem
                     case Activity.RESULT_OK:
-                        splashFragment.connect();
+                        connect();
 
                         break;
 

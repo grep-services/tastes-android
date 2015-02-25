@@ -28,4 +28,8 @@
     <color name="list_divider">@color/gray</color>
     <color name="list_pressed">@color/gray</color>
 
+    <!-- progressbar colors -->
+    <color name="progress_bar">@color/white</color>
+    <color name="progress_rim">@color/black</color>
+
 </resources>
