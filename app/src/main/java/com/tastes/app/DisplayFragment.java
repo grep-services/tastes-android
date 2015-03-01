@@ -119,8 +119,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
 
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-
         ViewConfiguration vc = ViewConfiguration.get(getActivity());
         mSlop = (int)(vc.getScaledTouchSlop() * 0.5); // 50퍼센트 정도가 적당하다. 대략 16dp 로 계산되는거 같다만...
     }

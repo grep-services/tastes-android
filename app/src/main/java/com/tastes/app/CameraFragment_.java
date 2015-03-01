@@ -45,7 +45,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     private View layerView;
     private View tools;// for splash
 
-    private boolean use_ffc = true;
+    private boolean use_ffc = false;// splash ffc로 하고 main에서 flip하려니 타이밍 에러 가능성 있다. 버벅거리기도 하므로 이렇게 간다.
     private boolean mirror_ffc = true;
     // 일단, continuous가 대세다. 이걸 더 발전시킨다. take전에 autofocus는 답답함 늘릴 수 있다. 차라리 tap to autofocus나 추가한다.
     private boolean use_autofocus = false;

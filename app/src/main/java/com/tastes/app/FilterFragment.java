@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -53,6 +56,8 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     EditText edit;
     Button button;
 
+    boolean isKeyboard = false;
+
     //private final String HEADER = "";
 
     private FilterFragmentCallbacks mCallbacks;
@@ -82,7 +87,34 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_filter, container, false);
+        final View view = inflater.inflate(R.layout.fragment_filter, container, false);
+
+        // tree observer 이용한 visible view height(keyboard 위쪽) 재는 방식 쓰려 했으나 adjustPan일 경우 가능하고, 다시말해 view들이 움직이게 된다는 말이어서 실패했다.
+        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { // 하지만 이렇게 사용하긴 하도록 한다.
+            @Override
+            public void onGlobalLayout() {
+                Rect r = new Rect();
+                view.getWindowVisibleDisplayFrame(r);
+                int screenHeight = view.getRootView().getHeight();
+
+                int keypadHeight = screenHeight - r.bottom;
+
+                // 0.15 ratio is perhaps enough to determine keypad height.
+                if (keypadHeight > screenHeight * 0.15) {
+                    isKeyboard = true;
+
+                    ((MainActivity) getActivity()).getSlidingMenu().setSlidingEnabled(false);
+                    ((MainActivity) getActivity()).setViewPagerEnabled(false);
+                } else {
+                    if(isKeyboard == true) {
+                        ((MainActivity) getActivity()).getSlidingMenu().setSlidingEnabled(true);
+                        ((MainActivity) getActivity()).setViewPagerEnabled(true);
+
+                        isKeyboard = false;
+                    }
+                }
+            }
+        });
 
         list = (ListView) view.findViewById(R.id.fragment_filter_list);
 
@@ -136,16 +168,21 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             }
         });
         edit.setSelection(1);
-        /* 버벅거리는 것이 있는데 이것 때문인지... 빼본다. => 빼긴 했지만 버벅거리는 것의 이유는 아니었다.
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                /*
                 if(adapter.isEmpty() == false) {
                     list.setSelection(hasFocus ? adapter.getCount() : 0);
                 }
+                */
+                if (hasFocus == true) {
+                    showKeyboard();
+                } else {
+                    hideKeyboard();
+                }
             }
         });
-        */
 
         button = (Button) view.findViewById(R.id.fragment_filter_add);
         button.setOnClickListener(this);
@@ -238,14 +275,13 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "이미 존재하는 이름입니다.", Toast.LENGTH_SHORT).show();
         } else {
+            edit.clearFocus();// keyboard close부터.
+
             adapter.addTag(tag);
 
-            hideKeyboard();
-
-            edit.getText().replace(Tag.HEADER.length(), edit.length(), "", 0, 0);
-            edit.clearFocus();
-
             list.setSelection(adapter.getCount());
+
+            edit.getText().replace(Tag.HEADER.length(), edit.length(), "", 0, 0);// refresh는 차라리 맨 나중에.
         }
 
         setButtonEnabled(true);

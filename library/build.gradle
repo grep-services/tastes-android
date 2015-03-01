@@ -1,0 +1,30 @@
+apply plugin: 'android-library'
+
+// app의 build.gradle로 옮기자니 version 올려야 되고, library 최소변경 의도에 안맞는다. 일단 그대로 둔다.
+dependencies {
+    compile 'com.android.support:support-v4:13.0.0'
+}
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "20.0.0"
+
+    defaultConfig {
+        minSdkVersion 7
+        targetSdkVersion 16
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+
+            manifest.srcFile 'AndroidManifest.xml'
+        }
+    }
+
+}

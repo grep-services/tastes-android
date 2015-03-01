@@ -104,10 +104,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 .build();
         ImageLoader.getInstance().init(configuration);
 
-        setSlidingMenu();
+        viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
+        replaceFragment(R.id.container, viewPagerFragment);
+
+        splashFragment = SplashFragment.newInstance(mLocationUpdates);
+        addFragment(splashFragment);
 
         filterFragment = FilterFragment.newInstance(tags, switches);
         replaceFragment(R.id.menu, filterFragment);
+
+        setSlidingMenu();
 
         getFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
@@ -119,12 +125,6 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 }
             }
         });
-
-        viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
-        replaceFragment(R.id.container, viewPagerFragment);
-
-        splashFragment = SplashFragment.newInstance(mLocationUpdates);
-        addFragment(splashFragment);
     }
 
     //---- location
@@ -425,7 +425,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         slidingMenu = new SlidingMenu(this);
         slidingMenu.setMode(SlidingMenu.RIGHT);
         slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-        //slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
+        slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
         slidingMenu.setBehindWidthRes(R.dimen.navigation_drawer_width);
         slidingMenu.setFadeDegree(0.35f);
         slidingMenu.attachToActivity(this, SlidingMenu.SLIDING_WINDOW);
@@ -433,8 +433,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         slidingMenu.setOnOpenListener(new SlidingMenu.OnOpenListener() {
             @Override
             public void onOpen() {
-                // change input mode.(display mode will be changed at there.)
-                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                // change input mode.(display mode will be changed at there.) => resize하면 느려진다. 그냥 default pan으로 간다.
                 // toolbar icon animation.
             }
         });
@@ -447,6 +446,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 // toolbar icon animation.
             }
         });
+    }
+
+    public SlidingMenu getSlidingMenu() {
+        return slidingMenu;
     }
 
     public void replaceFragment(int containerViewId, Fragment fragment) {
@@ -625,7 +628,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         // camera도 tools 복귀시켜주고 flip도 해준다.
         cameraFragment.setToolsVisible(true);
-        cameraFragment.flip();// 느리면 더 앞으로 당긴다.
+        //cameraFragment.flip();// 느리면 더 앞으로 당긴다.
 
         // fragment닫아야 한다.
         popFragment();
@@ -663,6 +666,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         // vp에서 저 fragment들을 설정하는 시각을 여기서 정확히 예측하느니, callback으로 이렇게 한다.
         cameraFragment = viewPagerFragment.getCameraFragment();
         homeFragment = viewPagerFragment.getHomeFragment();
+    }
+
+    public void setViewPagerEnabled(boolean enabled) {
+        viewPagerFragment.setEnabled(enabled);
     }
 
     //---- camera

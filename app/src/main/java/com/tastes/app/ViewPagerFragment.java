@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.tastes.R;
+import com.tastes.widget.ViewPager_;
 
 public class ViewPagerFragment extends Fragment {
 
@@ -25,7 +26,7 @@ public class ViewPagerFragment extends Fragment {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    private ViewPager mViewPager;
+    private ViewPager_ mViewPager;
 
     private ViewPagerFragmentCallbacks mCallbacks;
 
@@ -68,7 +69,7 @@ public class ViewPagerFragment extends Fragment {
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getActivity().getFragmentManager());
 
-        mViewPager = (ViewPager) view.findViewById(R.id.pager);
+        mViewPager = (ViewPager_) view.findViewById(R.id.pager);
 
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
@@ -124,6 +125,10 @@ public class ViewPagerFragment extends Fragment {
     public void setCurrentPage(int index) {
         mViewPager.setCurrentItem(index);
         mOnPageSelected(index);
+    }
+
+    public void setEnabled(boolean enabled) {
+        mViewPager.setPagingEnabled(enabled);
     }
 
     public CameraFragment_ getCameraFragment() {

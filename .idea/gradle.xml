@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$/androidImageFilter" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/camera" />
+            <option value="$PROJECT_DIR$/library" />
           </set>
         </option>
       </GradleProjectSettings>
