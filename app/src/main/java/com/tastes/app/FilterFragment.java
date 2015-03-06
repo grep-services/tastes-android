@@ -38,11 +38,13 @@ import java.util.List;
 // TODO: tag가 내용 포함할지는 몰라도, 변경된 사항들 중(tag 추가, 삭제, switch 변경) 실제적인 true가 없을 경우는 refresh에서 제외하는 기능도 추가하도록 한다.
 public class FilterFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
 
+    private static final String ARG_DEFAULT_TAG = "defaultTag";
     private static final String ARG_TAGS = "tags";
     private static final String ARG_SWITCHES = "switches";
 
     private float lastTranslate = 0.0f;
 
+    private boolean defaultTag;
     // 처음 받는 용이다. adpater와 계속 동기화되긴 솔직히 힘들다.(switch 변경까지 생각해보면 안된다고 생각하는게 맞다.)
     private List<String> tags;
     private List<String> switches;
@@ -62,9 +64,10 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     private FilterFragmentCallbacks mCallbacks;
 
-    public static FilterFragment newInstance(List<String> tags, List<String> switches) {
+    public static FilterFragment newInstance(boolean defaultTag, List<String> tags, List<String> switches) {
         FilterFragment fragment = new FilterFragment();
         Bundle args = new Bundle();
+        args.putBoolean(ARG_DEFAULT_TAG, defaultTag);
         args.putStringArrayList(ARG_TAGS, tags != null ? (ArrayList<String>) tags : null);
         args.putStringArrayList(ARG_SWITCHES, switches != null ? (ArrayList<String>) switches : null);
         fragment.setArguments(args);
@@ -80,6 +83,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
+            defaultTag = getArguments().getBoolean(ARG_DEFAULT_TAG);
             tags = getArguments().getStringArrayList(ARG_TAGS);
             switches = getArguments().getStringArrayList(ARG_SWITCHES);
         }
@@ -144,12 +148,15 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         header.setOnClickListener(this);
 
         check = (CheckBox) header.findViewById(R.id.fragment_filter_header_check);
+        check.setChecked(defaultTag);
+        /*
         check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 adapter.setSwitches(isChecked);
             }
         });
+        */
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
         edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
@@ -171,13 +178,12 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                /*
-                if(adapter.isEmpty() == false) {
-                    list.setSelection(hasFocus ? adapter.getCount() : 0);
-                }
-                */
-                if (hasFocus == true) {
-                    showKeyboard();
+                //if(adapter.isEmpty() == false) {
+                //    list.setSelection(hasFocus ? adapter.getCount() : 0);
+                //}
+
+                if (hasFocus == true) {// 이건 자동으로 된다. 괜히 했다가 keyboard 중복 열리는 문제 생긴다.
+                    //showKeyboard();
                 } else {
                     hideKeyboard();
                 }
@@ -215,7 +221,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     public void closeFilter() {
         if (mCallbacks != null) {
-            mCallbacks.onCloseFilter(adapter.getTags(), adapter.getSwitches());
+            mCallbacks.onCloseFilter(check.isChecked(), adapter.getTags(), adapter.getSwitches());
         }
     }
 
@@ -267,9 +273,11 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             //YoYo.with(Techniques.Shake).playOn(edit);
             edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
-        } else if(adapter.getTags() != null && adapter.getTags().contains(tag)) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
-            // list scroll 해보기.
-            list.setSelection(adapter.getTags().indexOf(tag));
+        } else if(adapter.getTags() != null && (adapter.getTags().contains(tag) || tag.equals("tastes"))) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
+            if(adapter.getTags().contains(tag)) {// tastes를 포함한 것일 때는 어차피 맨 위에 있으므로 cursor 움직일 필요 없다.
+                // list scroll 해보기.
+                list.setSelection(adapter.getTags().indexOf(tag));
+            }
 
             //YoYo.with(Techniques.Shake).playOn(edit);
             edit.startAnimation(shake);
@@ -293,6 +301,6 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     }
 
     public interface FilterFragmentCallbacks {
-        public void onCloseFilter(List<String> tags, List<String> switches);
+        public void onCloseFilter(boolean defaultFilter, List<String> tags, List<String> switches);
     }
 }

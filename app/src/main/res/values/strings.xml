@@ -25,6 +25,6 @@
     <string name="date_hour">hr</string>
     <string name="date_day">day</string>
     <string name="date_etc">s</string>
-    <string name="select_all">All</string>
+    <string name="select_all">@string/app_name</string>
 
 </resources>

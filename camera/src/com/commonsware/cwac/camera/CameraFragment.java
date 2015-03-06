@@ -212,6 +212,10 @@ public class CameraFragment extends Fragment {
     cameraView.lockToLandscape(enable);
   }
 
+    public void lockToPortrait(boolean enable) {
+        cameraView.lockToPortrait(enable);
+    }
+
   /**
    * Call this to begin an auto-focus operation (e.g., in
    * response to the user tapping something to focus the

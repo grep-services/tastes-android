@@ -10,16 +10,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.android.mms.exif.ExifInterface;
 import com.commonsware.cwac.camera.PictureTransaction;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -47,6 +51,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private QueryWrapper queryWrapper;
 
     private SharedPreferences preferences;
+    private boolean defaultTag;
     private List<String> tags;
     private List<String> switches;
     private String strTags;
@@ -81,6 +86,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     private static final int LOCATION_TIMEOUT = 5000;
 
+    private static final boolean ROTATE_TAG = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,7 +117,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         splashFragment = SplashFragment.newInstance(mLocationUpdates);
         addFragment(splashFragment);
 
-        filterFragment = FilterFragment.newInstance(tags, switches);
+        filterFragment = FilterFragment.newInstance(defaultTag, tags, switches);
         replaceFragment(R.id.menu, filterFragment);
 
         setSlidingMenu();
@@ -425,7 +432,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         slidingMenu = new SlidingMenu(this);
         slidingMenu.setMode(SlidingMenu.RIGHT);
         slidingMenu.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-        slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
+        //slidingMenu.setTouchModeBehind(SlidingMenu.TOUCHMODE_FULLSCREEN);
         slidingMenu.setBehindWidthRes(R.dimen.navigation_drawer_width);
         slidingMenu.setFadeDegree(0.35f);
         slidingMenu.attachToActivity(this, SlidingMenu.SLIDING_WINDOW);
@@ -484,6 +491,14 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         // get switch-on tags.
         ArrayList<String> filters = null;
 
+        if(defaultTag) {
+            if(filters == null) {
+                filters = new ArrayList<String>();
+            }
+
+            filters.add("tastes");
+        }
+
         if(tags != null) {
             for(int i = 0; i < tags.size(); i++) {
                 if(filters == null) {
@@ -526,6 +541,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public void initPreferences() {
         preferences = getSharedPreferences("tastes", Context.MODE_PRIVATE);
 
+        defaultTag = preferences.getBoolean("DefaultTag", true);
+
         mLocationUpdates = preferences.getBoolean("LocationUpdates", false);
 
         strTags = preferences.getString("Tags", null);
@@ -537,8 +554,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         //LogWrapper.e("INIT PREF", strTags+","+strSwitches);
     }
 
-    public void setPreferences(List<String> tags, List<String> switches) {
+    public void setPreferences(boolean defaultTag, List<String> tags, List<String> switches) {
         SharedPreferences.Editor editor = preferences.edit();
+
+        // default부터 해준다. - 결국 이것이 filter가 여닫히지 않으면 저장안되겠지만 init자체에서의 defaultTag의 default가 true이므로 일단 문제없다.
+        this.defaultTag = defaultTag;
+        editor.putBoolean("DefaultTag", defaultTag);
 
         // tag만으로 비교해도 된다.
         if(tags != null) {
@@ -695,7 +716,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     @Override
-    public void onSaveImage(boolean mirror, byte[] image) {
+    public void onSaveImage(boolean mirror, byte[] image, int rotation) {
         // 필요한지 test 한번 해봤는데, 필요하다. ㅡㅡ... 꼭 해봐야 아는가...
         runOnUiThread(new Runnable() {
             @Override
@@ -712,8 +733,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
          */
         cameraFragment.restartPreview();
 
+        if(ROTATE_TAG) {
+            if(rotation == -90 || rotation == 90) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+        }
+
+        // set flag
+        flag_fragment_display = true;
         //DisplayFragment.imageToShow = image;
-        displayFragment = DisplayFragment.newInstance(mirror, image, latitude, longitude);// 여기서도 보내야 location process 잘 맞아떨어진다.
+        displayFragment = DisplayFragment.newInstance(mirror, image, ROTATE_TAG ? rotation : 0, latitude, longitude);// 여기서도 보내야 location process 잘 맞아떨어진다.
         addFragment(displayFragment);
 
         flag_taking_camera = false;// 최대한 늦게 하는게, 답답할 수도 있겠지만 잘못된 방향으로 흘러가는걸 막아줄 수 있다.
@@ -721,15 +750,13 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     //---- display
     @Override
-    public void onDisplayActionOKClicked(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> switches) {
-        // set flag
-        flag_fragment_display = true;
+    public void onDisplayActionOKClicked(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> orientations, final List<String> switches) {
         // send to server
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
                 try {
-                    queryWrapper.addImage(file, time, latitude, longitude, tags, positions);
+                    queryWrapper.addImage(file, time, latitude, longitude, tags, positions, orientations);
                 } catch (HttpHostConnectException e) {
                     LogWrapper.e("Loc", e.getMessage());
                     //e.printStackTrace();
@@ -786,32 +813,36 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     //---- filter
-    public boolean isTagsChanged(List<String> tags, List<String> switches) {
+    public boolean isTagsChanged(boolean defaultTag, List<String> tags, List<String> switches) {
         boolean result = false;
 
-        if(tags == null || (tags != null && tags.isEmpty())) { // filter 비었을 때
-            if(this.tags == null || (this.tags != null && this.tags.isEmpty())) { // pref도 비었으면 not changed
-                result = false;
-            } else { // pref는 안비었으면 filter를 지운거고 changed.
-                result = true;
-            }
-        } else { // filter 안비었을 때
-            if(this.tags == null || (this.tags != null && this.tags.isEmpty())) { // tag 비었으면 filter 추가된거고 changed.
-                result = true;
-            } else { // tag도 안비었으면
-                if(tags.size() != this.tags.size()) { // size 다르면 자세히 비교할 필요도 없이 changed.
+        if(this.defaultTag != defaultTag) {
+            result = true;
+        } else {
+            if(tags == null || (tags != null && tags.isEmpty())) { // filter 비었을 때
+                if(this.tags == null || (this.tags != null && this.tags.isEmpty())) { // pref도 비었으면 not changed
+                    result = false;
+                } else { // pref는 안비었으면 filter를 지운거고 changed.
                     result = true;
-                } else { // size 같으면 일단 비교.(filter에서 추가 삭제 반복하면 내용만 다를수도 있다.)
-                    for(int i = 0; i < tags.size(); i++) {
-                        if(tags.get(i).equals(this.tags.get(i)) == false) { // tag 하나라도 다르면 바로 changed.
-                            result = true;
-
-                            break;
-                        } else { // tag 같아도 switch 다르면 changed.
-                            if(switches.get(i).equals(this.switches.get(i)) == false) {
+                }
+            } else { // filter 안비었을 때
+                if(this.tags == null || (this.tags != null && this.tags.isEmpty())) { // tag 비었으면 filter 추가된거고 changed.
+                    result = true;
+                } else { // tag도 안비었으면
+                    if(tags.size() != this.tags.size()) { // size 다르면 자세히 비교할 필요도 없이 changed.
+                        result = true;
+                    } else { // size 같으면 일단 비교.(filter에서 추가 삭제 반복하면 내용만 다를수도 있다.)
+                        for(int i = 0; i < tags.size(); i++) {
+                            if(tags.get(i).equals(this.tags.get(i)) == false) { // tag 하나라도 다르면 바로 changed.
                                 result = true;
 
                                 break;
+                            } else { // tag 같아도 switch 다르면 changed.
+                                if(switches.get(i).equals(this.switches.get(i)) == false) {
+                                    result = true;
+
+                                    break;
+                                }
                             }
                         }
                     }
@@ -823,11 +854,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     @Override
-    public void onCloseFilter(List<String> tags, List<String> switches) {
+    public void onCloseFilter(boolean defaultTag, List<String> tags, List<String> switches) {
         // 나중에는 변경된 사항들만 변화시킬 수 있는 logic을 생각해보도록 한다.
-        if(isTagsChanged(tags, switches) == true) { // updates preferences, homefragment when only changes exist.
+        if(isTagsChanged(defaultTag, tags, switches) == true) { // updates preferences, homefragment when only changes exist.
             // set to pref.
-            setPreferences(tags, switches);
+            setPreferences(defaultTag, tags, switches);
             // update home
             /*
             위치는 어차피 home 자체적으로 표시되고 해결되게 되어있다.
@@ -865,9 +896,17 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     flag_fragment_display = false;// 미리 false로 하고 pop한다.
 
                     displayFragment = null;// 쓸 일 없으면 null 처리를 해주는게 나을듯 하다.
-                }
 
-                fragmentManager.popBackStack();
+                    fragmentManager.popBackStack();
+
+                    if(ROTATE_TAG) {
+                        if(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                        }
+                    }
+                } else {
+                    fragmentManager.popBackStack();
+                }
             }
         } else {
             if(flag_fragment_home == true) { // isVisible 아직은 안정확함.

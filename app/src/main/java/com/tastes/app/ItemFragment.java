@@ -116,8 +116,20 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
             container.addView(text);
 
+            // 저장시 최초 touch시의 padding 효과를 제거한 실제 xy를 저장했으므로 출력도 그대로 해주면 된다.
             text.setX((int)(container.getMeasuredWidth() * ratioX));
             text.setY((int)(container.getMeasuredHeight() * ratioY));
+
+            if(image.orientations != null) {// 기존 image에 tag가 추가되는 기능이 activate되지 않는 한 list 내에 빈 값이 있을 일은 없다. 그래서 현재는 null check만 하면 된다.
+                // pivot역시 padding을 고려할 필요 없이 그대로 xy를 이용해주면 된다는 계산.
+                //container.setPivotX(text.getX());
+                //container.setPivotY(text.getY());
+                //text.getRootView().setPivotX(text.getX());
+                //text.getRootView().setPivotY(text.getY());
+                //TODO: should change pivot
+
+                text.setRotation(Float.valueOf(image.orientations.get(i)));
+            }
         }
     }
 

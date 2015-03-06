@@ -2,6 +2,7 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -76,7 +77,12 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
         imageLoader = ImageLoader.getInstance();
     }
-
+/*
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+*/
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         /*

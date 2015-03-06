@@ -79,7 +79,7 @@ public class SplashFragment extends Fragment implements Button.OnClickListener {
                 public void run() {
                     onFinished();
                 }
-            }, 2000);// remove 안해줘도 되는지.
+            }, 1500);// remove 안해줘도 되는지.
         }
     }
 

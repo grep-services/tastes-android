@@ -41,11 +41,13 @@ public class QueryWrapper {
     public String getString(List<String> list) {
         String string = null;
 
-        for(String item : list) {
-            if(string == null) {
-                string = new String(item);
-            } else {
-                string += ("," + item);
+        if(list != null) {
+            for(String item : list) {
+                if(string == null) {
+                    string = new String(item);
+                } else {
+                    string += ("," + item);
+                }
             }
         }
 
@@ -64,7 +66,7 @@ public class QueryWrapper {
     }
 
     // add image.(create)
-    public void addImage(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions) throws HttpHostConnectException {
+    public void addImage(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations) throws HttpHostConnectException {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
@@ -75,6 +77,7 @@ public class QueryWrapper {
         parameters.add(new BasicNameValuePair("longitude", String.valueOf(longitude)));
         parameters.add(new BasicNameValuePair("tag", getString(tags)));
         parameters.add(new BasicNameValuePair("positions", getString(positions)));
+        parameters.add(new BasicNameValuePair("orientations", getString(orientations)));
         // get result
         String response = networkProcessor.getResponse(PATH_ADD_IMAGE, parameters, file);
 
@@ -121,6 +124,8 @@ public class QueryWrapper {
 
             List<String> positions = getList(imageObject.getString("positions"));
 
+            List<String> orientations = getList(imageObject.getString("orientations"));
+
             String datetime = null;
             if(imageObject.getString("time").equals("null") == false) {
                 long time = Long.valueOf(imageObject.getString("time"));// null인 것들은 exception 날 준비 한다.
@@ -128,7 +133,7 @@ public class QueryWrapper {
                 datetime = format.format(new Date(time));
             }
 
-            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, imageObject.getString("address"), distance, tags, positions);
+            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, imageObject.getString("address"), distance, tags, positions, orientations);
         } catch (JSONException e) {
             LogWrapper.e("JSON", e.getMessage());
         }
@@ -184,7 +189,9 @@ public class QueryWrapper {
 
                 List<String> positions = getList(imageObject.getString("positions"));
 
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), imageObject.getString("address"), dist, tags_, positions);
+                List<String> orientations = getList(imageObject.getString("orientations"));
+
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), imageObject.getString("address"), dist, tags_, positions, orientations);
 
                 if(images == null) {
                     images = new ArrayList<Image>();

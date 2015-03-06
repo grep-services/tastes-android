@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -19,11 +20,11 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -52,11 +53,13 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     private static final String ARG_MIRROR = "mirror";// for ffc
     private static final String ARG_IMAGE = "image";
+    private static final String ARG_ROTATION = "rotation";
     //private static final String ARG_ADDRESS = "address";
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
 
     private boolean mirror;
+    private int rotation;
     //private String address;
     private double latitude;
     private double longitude;
@@ -77,6 +80,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     List<String> tags;
     List<String> switches;
     List<String> positions;// x|y형태로 저장해서 나중에 comma로 다시 연결한다.
+    List<String> orientations;
 
     ViewGroup toolbar, container_;
 
@@ -87,15 +91,19 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     boolean isKeyboard = false;
     int mSlop;
 
+    boolean tagDefault = false;
+    private static final String TAG_DEFAULT = "tastes";
+
     //private final String HEADER = "";
 
     private DisplayFragmentCallbacks mCallbacks;
 
-    public static DisplayFragment newInstance(boolean mirror, byte[] image, double latitude, double longitude) {
+    public static DisplayFragment newInstance(boolean mirror, byte[] image, int rotation, double latitude, double longitude) {
         DisplayFragment fragment = new DisplayFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_MIRROR, mirror);
         args.putByteArray(ARG_IMAGE, image);
+        args.putInt(ARG_ROTATION, rotation);
         //args.putString(ARG_ADDRESS, address);
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
@@ -114,6 +122,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         if (getArguments() != null) {
             mirror = getArguments().getBoolean(ARG_MIRROR);
             image = getArguments().getByteArray(ARG_IMAGE);
+            rotation = getArguments().getInt(ARG_ROTATION);
             //address = getArguments().getString(ARG_ADDRESS);
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
@@ -149,7 +158,19 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 // mirrorffc가 안되니깐 이렇게라도 해야된다.
                 Matrix matrix = new Matrix();
                 matrix.setScale(-1, 1);
+
+                if(rotation == -90 || rotation == 90) {
+                    matrix.setRotate(rotation, (float) width / 2, (float) height / 2);
+                }
+
                 origin = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
+            } else {
+                if(rotation == -90 || rotation == 90) {
+                    Matrix matrix = new Matrix();
+                    matrix.setRotate(rotation, (float) width / 2, (float) height / 2);
+
+                    origin = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
+                }
             }
 
             filters = new Bitmap[indexes.length];
@@ -204,6 +225,13 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                             isKeyboard = false;
                         }
+                    }
+
+                    // 이렇게 하면 종료시 getActivity() null check 필요없고, 기타 default tag의 중복 등록 역시 없어지게 된다.
+                    if(!tagDefault) {
+                        setEdit(TAG_DEFAULT, -10000, -10000, false);
+
+                        tagDefault = true;
                     }
                 }
             });
@@ -308,9 +336,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     // caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다.
-    public void actionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches) {
+    public void actionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches) {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayActionOKClicked(file, time, latitude, longitude, tags, positions, switches);
+            mCallbacks.onDisplayActionOKClicked(file, time, latitude, longitude, tags, positions, orientations, switches);
         }
     }
 
@@ -325,7 +353,20 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         if(positions == null) positions = new ArrayList<String>();
 
-        positions.add(ratioX+"|"+ratioY);
+        if(rotation == -90 || rotation == 90) {// orientation 안바꿔도 될 때까지는 이렇게 해야 home에서(port) 정상적으로 보인다.
+            // 그리고 이렇게 분류하는 것도 찍은 그대로 나오게 하기 위해서이다.(나중을 생각해도 이게 맞다.)
+            if(rotation == -90) {
+                positions.add((1 - ratioY) + "|" + ratioX);
+            } else {
+                positions.add(ratioY + "|" + (1 - ratioX));
+            }
+        } else {
+            positions.add(ratioX + "|" + ratioY);
+        }
+
+        if(orientations == null) orientations = new ArrayList<String>();
+
+        orientations.add(String.valueOf(((rotation * -1) + 360) % 360));// minus를 string에 쓰긴 그렇고, -90은 90, 90은 270(-90)이므로 이렇게 했다.
 
         return tags.indexOf(tag);
     }
@@ -338,6 +379,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         tags.remove(index);
         switches.remove(index);
         positions.remove(index);
+        orientations.remove(index);
     }
 
     public boolean checkTag(String tag) {
@@ -472,11 +514,50 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         //view.setLayoutParams(layoutParams);
 
-        view.setX(x);
-        view.setY(y);
+        if(x == -10000 && y == -10000) {// flag - center - touch로는 여기에 다다를 수 없다.
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+            view.setLayoutParams(layoutParams);
+        } else {
+            view.setX(x);
+            view.setY(y);
+        }
     }
 
-    public EditText getEdit() {
+    public void setEdit(final String string, float x, float y, boolean focused) {
+        final EditText edit = getEdit(string);
+
+        container_.addView(edit);
+
+        setPosition(edit, x, y);
+
+        if(focused) {// focuse를 받게 해야 하는 정상적인 방식.
+            requestViewFocused(edit);
+        } else {// focuse를 안받게 한다는 말은, focus를 받았다가 다시 confirm되는 과정까지 다 인위적으로 해줘야 한다는 말이다.(touch에서의 confirm까지.)
+            edit.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if(edit.getWidth() > 0 && edit.getHeight() > 0) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            edit.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        } else {
+                            edit.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
+
+                        float ratioX = edit.getX() / (float) container_.getMeasuredWidth();
+                        float ratioY = edit.getY() / (float) container_.getMeasuredHeight();
+
+                        int index = addTag(string, ratioX, ratioY);
+
+                        edit.setTag(index); // for removing later.
+                    }
+                }
+            });
+        }
+    }
+
+    public EditText getEdit(String string) {
         EditText edit = new EditText(getActivity());
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         edit.setLayoutParams(layoutParams);
@@ -484,14 +565,14 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         int p = getPixel(16);
         edit.setPadding(p, p, p, p);
         edit.setInputType(InputType.TYPE_CLASS_TEXT); // 왜그런진 몰라도 setText앞에 와야 한다.
-        edit.setText(Tag.HEADER);
+        edit.setText(string == null ? Tag.HEADER : Tag.HEADER + string);
         //edit.setHint("Tag"); text가 있으므로 hint는 자연히 무시된다. 혼재하게 할 수 있으나 일단 지운다.
         //edit.setHintTextColor(getResources().getColor(R.color.text_inverse));
         edit.setFilters(new InputFilter[]{new DefaultFilter(/*edit, */), new ByteLengthFilter(50)});
         edit.setTextSize(18);
         edit.setTextColor(getResources().getColor(R.color.text_inverse));
         //edit.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
-        edit.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        edit.setImeOptions(EditorInfo.IME_ACTION_DONE | EditorInfo.IME_FLAG_NO_FULLSCREEN);// extracted는 비추되어서 이걸로 썼다.
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -571,7 +652,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             image = stream.toByteArray();
         }
 
-        actionOKClicked(image, System.currentTimeMillis(), latitude, longitude, tags, positions, switches);
+        actionOKClicked(image, System.currentTimeMillis(), latitude, longitude, tags, positions, orientations, switches);
     }
 
     @Override
@@ -591,7 +672,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     break;
                 }
                 // check tag existence
-                if(tags == null) {
+                if(tags == null || tags.isEmpty()) {// 애초에 remove될 때 null시키면 되겠지만 여러번 체크하는 것도 그렇고 일단 이게 최소 변경이므로 이렇게 간다.
                     Toast toast = Toast.makeText(getActivity(), getString(R.string.upload_tag), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
@@ -689,14 +770,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                             isMoving = false;
                         } else {
-                            EditText edit = getEdit();
-
-                            container_.addView(edit);
-
-                            // edit height는 아직 안나오는데, 구할 필요까지는 없을 것 같다.
-                            setPosition(edit, event.getX() - getPixel(16), event.getY() - getPixel(16));
-
-                            requestViewFocused(edit);
+                            setEdit(null, event.getX() - getPixel(16), event.getY() - getPixel(16), true);// edit height는 아직 안나오는데, 구할 필요까지는 없을 것 같다.
                         }
                     } else {
                         if(isMoving == true) {// move : focused null이지만, et 선택했을 때. 그리고 move true일 때.
@@ -730,6 +804,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public interface DisplayFragmentCallbacks {
-        public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> switches);
+        public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches);
     }
 }

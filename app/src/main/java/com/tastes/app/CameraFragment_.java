@@ -2,15 +2,19 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -55,6 +59,8 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     private String mode_flash = Camera.Parameters.FLASH_MODE_OFF;
 
     private boolean isAutoFocusing;
+
+    private int rotation;
 
     private CameraFragmentCallbacks mCallbacks = null;// callback. 변경 ui는 fragment에 있고, 변경 대상 vars는 activity에 있다. activity가 implement하게 하고, 그 method를 call한다.
     // 근데 이거 그런방법은 없는가? callback 그대로 쓰는 등...
@@ -174,7 +180,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
 
     public void saveImage_(byte[] image) {
         if (mCallbacks != null) {
-            mCallbacks.onSaveImage(use_ffc, image);
+            mCallbacks.onSaveImage(use_ffc, image, getRotation());
         }
     }
 
@@ -207,6 +213,10 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     public void onClick(View v) {
         switch(v.getId()) {
             case R.id.fragment_camera_shot:
+                // default 기준.(현재 portrait) 그리고 지나간 궤적의 반대방향으로 값이 매겨짐. 즉 landscape left는 90, left의 left는 180 등.
+                //rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+                setRotation(cameraView.getOrientation());// 촬영 순간 기기의 각도를 받아서, 변환한다.
+
                 if(use_ffc == true) {
                     // 이렇게 기존 변수는 변경시키지 말아야 다시 flip했을 때 그대로 사용하게 할 수 있다.
                     takePicture(Camera.Parameters.FLASH_MODE_OFF);
@@ -220,6 +230,30 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
 
                 break;
         }
+    }
+
+    /*
+    적절히 범위를 정해주는 것도 좋다. 일단 0(360)부터 시계방향으로 증가한다.(p, l 무관)
+    추측을 하는데, +-60도까지는 port로 준다. 그리고 거꾸로 된 port는 오히려 별로 없을 것이므로 land는 +-60에서 90도씩 즉 거꾸로된 port는 총 60도만 가진다.
+    port : 300 ~ 60, land 왼쪽 : 210 ~ 300, land 오른쪽 : 60 ~ 150, 거꾸로 port : 150 ~ 210
+    rotation : 0, -90, 90, 180. 이렇게 간다.(왜곡)
+    하지만, 거꾸로 port는 쓰일 일이 있을지는 모르겠다.
+     */
+    public void setRotation(int orientation) {
+        if(orientation >= 300 || orientation < 60) {
+            rotation = 0;
+        } else if(orientation >= 60 && orientation < 150) {
+            rotation = 90;
+        } else if(orientation >= 150 && orientation < 210) {
+            //rotation = 180;
+            rotation = 0;// 어차피 keyboard가 돌지를 않는데 180으로 해버리면 tag orientation이 server에 180으로 들어가서, 결국 거꾸로 표시될 것이다. 일단 이렇게 할 수밖에 없다.
+        } else {
+            rotation = -90;
+        }
+    }
+
+    public int getRotation() {
+        return rotation;
     }
 
     public void autoFocus(float x, float y) {
@@ -434,6 +468,6 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
      */
     public interface CameraFragmentCallbacks {
         public void onTakePicture(String mode_flash);
-        public void onSaveImage(boolean mirror, byte[] image);
+        public void onSaveImage(boolean mirror, byte[] image, int orientation);
     }
 }

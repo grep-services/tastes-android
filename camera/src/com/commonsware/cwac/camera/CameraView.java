@@ -56,6 +56,8 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
   private boolean isAutoFocusing=false;
   private int lastPictureOrientation=-1;
 
+    private int orientation;
+
   public CameraView(Context context) {
     super(context);
 
@@ -260,6 +262,10 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
     return(displayOrientation);
   }
 
+    public int getLastPictureOrientation() {
+        return lastPictureOrientation;
+    }
+
   public void lockToLandscape(boolean enable) {
     if (enable) {
       getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
@@ -270,6 +276,17 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
       onOrientationChange.disable();
     }
   }
+
+    public void lockToPortrait(boolean enable) {
+        if (enable) {
+            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+            onOrientationChange.enable();
+        }
+        else {
+            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+            onOrientationChange.disable();
+        }
+    }
 
   public void restartPreview() {
     if (!inPreview) {
@@ -305,9 +322,14 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
           pictureParams.setFlashMode(xact.flashMode);
         }
 
-        if (!onOrientationChange.isEnabled()) {
+          /*
+          외부 activity 실행이후 다시 onResume되면서 setCameraDisplayOrientation으로 가게 되고, 결국 그것이 회전 문제 원인인 것 같았다.
+          초기에도 setCameraDisplayOrientation이 실행되는데 왜 그런진 모르겠지만,
+          아무튼 portrait고정 상태에서 setCameraPictureOrientation이 실행되게 하려면 이렇게 주석 해제 해야 한다.
+           */
+        //if (!onOrientationChange.isEnabled()) {
           setCameraPictureOrientation(pictureParams);
-        }
+        //}
 
         camera.setParameters(xact.host.adjustPictureParameters(xact,
                                                                pictureParams));
@@ -628,6 +650,7 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
 
     boolean wasInPreview=inPreview;
 
+      // api14 이상은 stop할 필요 없다고는 한다.
     if (inPreview) {
       stopPreview();
     }
@@ -637,6 +660,7 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
     if (wasInPreview) {
       startPreview();
     }
+
   }
 
   private void setCameraPictureOrientation(Camera.Parameters params) {
@@ -688,10 +712,12 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
     if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
       //rotation=(info.orientation - orientation + 360) % 360;
         rotation = info.orientation;// 270
+        //rotation = 270;
     }
     else { // back-facing camera
       //rotation=(info.orientation + orientation) % 360;
         rotation = info.orientation;// 90
+        //rotation = 90;
     }
 
     return(rotation);
@@ -700,6 +726,14 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
   Activity getActivity() {
     return((Activity)getContext());
   }
+
+    private void setOrientation(int orientation) {
+        this.orientation = orientation;
+    }
+
+    public int getOrientation() {
+        return orientation;
+    }
 
   private class OnOrientationChange extends OrientationEventListener {
     private boolean isEnabled=false;
@@ -716,6 +750,10 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
     @Override
     public void onOrientationChanged(int orientation) {
       if (camera != null && orientation != ORIENTATION_UNKNOWN) {
+
+          // save device rotation for display fragment.
+          setOrientation(orientation);
+
         int newOutputOrientation=getCameraPictureRotation(orientation);
 
         if (newOutputOrientation != outputOrientation) {
