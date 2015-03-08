@@ -1,1 +1,1 @@
-include ':app', ':camera', ':androidImageFilter', ':library'
+include ':app', ':camera', ':androidImageFilter'

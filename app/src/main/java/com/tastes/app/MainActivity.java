@@ -36,7 +36,7 @@ import com.tastes.content.Image;
 import com.tastes.util.LocationUtils;
 import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
-import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
+//import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
