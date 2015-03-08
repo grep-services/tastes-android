@@ -108,11 +108,9 @@ public class ViewPagerFragment extends Fragment {
         mOnPageSelected(index);
     }
 
-    /*
     public void setEnabled(boolean enabled) {
         mViewPager.setPagingEnabled(enabled);
     }
-    */
 
     /*
      * 일단 tab content 중간중간에 사라지는 문제가 state로 바꾸면서 해결은 되었지만 원인 확실히 알아봐야 한다.

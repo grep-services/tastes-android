@@ -718,11 +718,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         }
     }
 
-    /*
     public void setViewPagerEnabled(boolean enabled) {
         viewPagerFragment.setEnabled(enabled);
     }
-    */
 
     //---- camera
     @Override
