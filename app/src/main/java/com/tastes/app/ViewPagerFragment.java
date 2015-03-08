@@ -13,16 +13,14 @@ import android.view.ViewGroup;
 import com.tastes.R;
 import com.tastes.widget.ViewPager_;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ViewPagerFragment extends Fragment {
-
-    private static final String ARG_LATITUDE = "latitude";
-    private static final String ARG_LONGITUDE = "longitude";
-
-    private double latitude;
-    private double longitude;
 
     private CameraFragment_ cameraFragment;
     private HomeFragment homeFragment;
+    private FilterFragment filterFragment;
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
@@ -30,13 +28,8 @@ public class ViewPagerFragment extends Fragment {
 
     private ViewPagerFragmentCallbacks mCallbacks;
 
-    public static ViewPagerFragment newInstance(double latitude, double longitude) {
+    public static ViewPagerFragment newInstance() {
         ViewPagerFragment fragment = new ViewPagerFragment();
-
-        Bundle args = new Bundle();
-        args.putDouble(ARG_LATITUDE, latitude);
-        args.putDouble(ARG_LONGITUDE, longitude);
-        fragment.setArguments(args);
 
         return fragment;
     }
@@ -48,15 +41,9 @@ public class ViewPagerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            latitude = getArguments().getDouble(ARG_LATITUDE);
-            longitude = getArguments().getDouble(ARG_LONGITUDE);
-        }
-
-        cameraFragment = CameraFragment_.newInstance();
-        homeFragment = HomeFragment.newInstance(latitude, longitude);
-
-        setFragments();
+        cameraFragment = ((MainActivity) getActivity()).getCameraFragment();
+        homeFragment = ((MainActivity) getActivity()).getHomeFragment();
+        filterFragment = ((MainActivity) getActivity()).getFilterFragment();
     }
 
     @Override
@@ -99,12 +86,6 @@ public class ViewPagerFragment extends Fragment {
         }
     }
 
-    public void setFragments() {
-        if (mCallbacks != null) {
-            mCallbacks.onSetFragments();
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -127,17 +108,11 @@ public class ViewPagerFragment extends Fragment {
         mOnPageSelected(index);
     }
 
+    /*
     public void setEnabled(boolean enabled) {
         mViewPager.setPagingEnabled(enabled);
     }
-
-    public CameraFragment_ getCameraFragment() {
-        return cameraFragment;
-    }
-
-    public HomeFragment getHomeFragment() {
-        return homeFragment;
-    }
+    */
 
     /*
      * 일단 tab content 중간중간에 사라지는 문제가 state로 바꾸면서 해결은 되었지만 원인 확실히 알아봐야 한다.
@@ -163,6 +138,8 @@ public class ViewPagerFragment extends Fragment {
                     fragment = homeFragment;
 
                     break;
+                case 2:
+                    fragment = filterFragment;
             }
 
             return fragment;
@@ -170,12 +147,11 @@ public class ViewPagerFragment extends Fragment {
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
     }
 
     public interface ViewPagerFragmentCallbacks {
         public void onViewPagerPageSelected(int position);
-        public void onSetFragments();
     }
 }

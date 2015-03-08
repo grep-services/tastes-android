@@ -55,9 +55,11 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
     // noti 할 필요 없어서 이렇게 했다.
     public void initTags(List<String> tags, List<String> switches) {
-        // ref 그대로 갖고오면 main activity의 list들까지 변하게 된다. 이렇게 복제한다.
-        this.tags = tags != null ? new ArrayList<String>(tags) : null;
-        this.switches = switches != null ? new ArrayList<String>(switches) : null;
+        // ref 그대로 갖고오면 main activity의 list들까지 변하게 된다. 이렇게 복제한다. => 이미 filter는 main의 것을 받아와서 새로 정의하므로 괜찮다.
+        //this.tags = tags != null ? new ArrayList<String>(tags) : null;
+        //this.switches = switches != null ? new ArrayList<String>(switches) : null;
+        this.tags = tags;
+        this.switches = switches;
 
         switch_ = true;
     }

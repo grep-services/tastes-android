@@ -68,8 +68,11 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         FilterFragment fragment = new FilterFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_DEFAULT_TAG, defaultTag);
-        args.putStringArrayList(ARG_TAGS, tags != null ? (ArrayList<String>) tags : null);
-        args.putStringArrayList(ARG_SWITCHES, switches != null ? (ArrayList<String>) switches : null);
+        //args.putStringArrayList(ARG_TAGS, tags != null ? (ArrayList<String>) tags : null);
+        //args.putStringArrayList(ARG_SWITCHES, switches != null ? (ArrayList<String>) switches : null);
+        // 이렇게 해야 main의 것과 연결 안되며, 동시에 adapter로 null대신 obj전달해 ref 유지할 수 있다.
+        args.putStringArrayList(ARG_TAGS, tags != null ? new ArrayList<String>(tags) : new ArrayList<String>());
+        args.putStringArrayList(ARG_SWITCHES, switches != null ? new ArrayList<String>(switches) : new ArrayList<String>());
         fragment.setArguments(args);
         return fragment;
     }
@@ -82,6 +85,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // 여기서부터 꼬인다. 그냥 넘겨받지 말고 main activity에꺼 가져쓴다.
         if (getArguments() != null) {
             defaultTag = getArguments().getBoolean(ARG_DEFAULT_TAG);
             tags = getArguments().getStringArrayList(ARG_TAGS);
@@ -94,6 +98,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         final View view = inflater.inflate(R.layout.fragment_filter, container, false);
 
         // tree observer 이용한 visible view height(keyboard 위쪽) 재는 방식 쓰려 했으나 adjustPan일 경우 가능하고, 다시말해 view들이 움직이게 된다는 말이어서 실패했다.
+        /*
         view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { // 하지만 이렇게 사용하긴 하도록 한다.
             @Override
             public void onGlobalLayout() {
@@ -119,6 +124,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 }
             }
         });
+        */
 
         list = (ListView) view.findViewById(R.id.fragment_filter_list);
 
@@ -142,21 +148,21 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                         });
         list.setOnTouchListener(touchListener);
         list.setOnScrollListener(touchListener.makeScrollListener());
-        list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
+        //list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
+        list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);// 이게 last item visible이면 다 위로 올리고, 아니면 그대로 덮는다.
 
         header = view.findViewById(R.id.fragment_filter_header);
         header.setOnClickListener(this);
 
         check = (CheckBox) header.findViewById(R.id.fragment_filter_header_check);
         check.setChecked(defaultTag);
-        /*
         check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                adapter.setSwitches(isChecked);
+                //adapter.setSwitches(isChecked);
+                defaultTag = isChecked;
             }
         });
-        */
 
         edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
         edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
@@ -178,10 +184,6 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                //if(adapter.isEmpty() == false) {
-                //    list.setSelection(hasFocus ? adapter.getCount() : 0);
-                //}
-
                 if (hasFocus == true) {// 이건 자동으로 된다. 괜히 했다가 keyboard 중복 열리는 문제 생긴다.
                     //showKeyboard();
                 } else {
@@ -195,14 +197,24 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
         return view;
     }
+/*
+    public void setDefaultTag(boolean defaultTag) {
+        if(check != null) {
+            //TODO: check 했는데 왜 home에서는 나오지만 실제 filter에서는 unchecked로 나오는지 알아보기.
+            check.setChecked(defaultTag);
+        }
+    }
 
     public void setTags(List<String> tags, List<String> switches) {
         this.tags = tags;
         this.switches = switches;
 
-        adapter.setTags(tags, switches);
+        // adapter가 null이란 것은, 한번도 안 열었다는 것이고(vp...), 어쨌든 열릴 때 adapter set 하면서 tags, switches 모두 반영된다.
+        if(adapter != null) {
+            adapter.setTags(tags, switches);
+        }
     }
-
+*/
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -221,7 +233,13 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     public void closeFilter() {
         if (mCallbacks != null) {
-            mCallbacks.onCloseFilter(check.isChecked(), adapter.getTags(), adapter.getSwitches());
+            //mCallbacks.onCloseFilter(defaultTag, adapter.getTags(), adapter.getSwitches());
+            /*
+            adpater에서 받아오는 덕분에 전달은 제대로 됐었지만 다시 filter로 돌아올 때는 그냥 local var를 썼기에 여기서는 제대로 된 값을 못 받아왔었다.
+            그래서 이제 local var를 제대로 사용하기로 하고, adapter에 보내는 ref도 거기서 새로 정의되는 것이 아니라 ref 그대로 사용되게 된다.
+            따라서 여기서도 adpater의 값을 받아와서 쓰는 것이 아니라 그냥 local var를 사용하면 된다.
+             */
+            mCallbacks.onCloseFilter(defaultTag, tags, switches);
         }
     }
 
@@ -254,12 +272,6 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 confirmTag();
 
                 break;
-            /*
-            case R.id.list_row_tag:
-                Toast.makeText(getActivity(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();
-
-                break;
-                */
         }
     }
 
@@ -287,7 +299,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
             adapter.addTag(tag);
 
-            list.setSelection(adapter.getCount());
+            list.setSelection(adapter.getCount());// transcriptmode always는 아니라서 이렇게 해줘야만 last item invisible일 때도 scroll to bottom 된다.
 
             edit.getText().replace(Tag.HEADER.length(), edit.length(), "", 0, 0);// refresh는 차라리 맨 나중에.
         }

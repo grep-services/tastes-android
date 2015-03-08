@@ -61,15 +61,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private boolean flag_fragment_home = false;// except for home, default back key processing.
     private boolean flag_fragment_display = false;// 보낼 때 true가 된다.
     private boolean flag_taking_camera = false;// fragment 관련이 아니라, cam frag에서 taking 중일 때만 true되어서 back을 막아주는 역할을 하는 flag이다.
+    private boolean flag_fragment_filter = false;
 
-    private SlidingMenu slidingMenu;
+    //private SlidingMenu slidingMenu;
 
     private SplashFragment splashFragment;
-    private FilterFragment filterFragment;
-    private ViewPagerFragment viewPagerFragment;
     private CameraFragment_ cameraFragment;
     private DisplayFragment displayFragment;
     private HomeFragment homeFragment;
+    private FilterFragment filterFragment;
+    private ViewPagerFragment viewPagerFragment;
 
     // location
     private GoogleApiClient mGoogleApiClient;
@@ -111,12 +112,19 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 .build();
         ImageLoader.getInstance().init(configuration);
 
-        viewPagerFragment = ViewPagerFragment.newInstance(latitude, longitude);
+        cameraFragment = CameraFragment_.newInstance();
+
+        homeFragment = HomeFragment.newInstance(latitude, longitude);
+
+        filterFragment = FilterFragment.newInstance(defaultTag, tags, switches);
+
+        viewPagerFragment = ViewPagerFragment.newInstance();
         replaceFragment(R.id.container, viewPagerFragment);
 
         splashFragment = SplashFragment.newInstance(mLocationUpdates);
         addFragment(splashFragment);
 
+        /*
         filterFragment = FilterFragment.newInstance(defaultTag, tags, switches);
         replaceFragment(R.id.menu, filterFragment);
 
@@ -132,6 +140,19 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 }
             }
         });
+        */
+    }
+
+    public CameraFragment_ getCameraFragment() {
+        return cameraFragment;
+    }
+
+    public HomeFragment getHomeFragment() {
+        return homeFragment;
+    }
+
+    public FilterFragment getFilterFragment() {
+        return filterFragment;
     }
 
     //---- location
@@ -428,6 +449,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         }
     }
 
+    /*
     public void setSlidingMenu() {
         slidingMenu = new SlidingMenu(this);
         slidingMenu.setMode(SlidingMenu.RIGHT);
@@ -458,6 +480,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public SlidingMenu getSlidingMenu() {
         return slidingMenu;
     }
+    */
 
     public void replaceFragment(int containerViewId, Fragment fragment) {
         FragmentManager fragmentManager = getFragmentManager();
@@ -617,14 +640,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             String strTags = getString(this.tags);
             String strSwitches = getString(this.switches);
 
-            if(strSwitches.equals(this.strSwitches) == false) {
+            // 사실 null check 따로 해줄 필요는 없다.(둘 다 동시에 null 또는 not null이 아니라면 그 자체로 문제가 되므로.)
+            if(strSwitches != null && strSwitches.equals(this.strSwitches) == false) {
                 SharedPreferences.Editor editor = preferences.edit();
 
                 this.strSwitches = strSwitches;
 
                 editor.putString("Switches", this.strSwitches);
 
-                if(strTags.equals(this.strTags) == false) {
+                if(strTags != null && strTags.equals(this.strTags) == false) {
                     this.strTags = strTags;
 
                     editor.putString("Tags", this.strTags);
@@ -668,30 +692,37 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public void onViewPagerPageSelected(int position) {
         switch(position) {
             case 0:// Camera
+                // camera flag는 없으므로 pass.
                 flag_fragment_home = false;
 
-                slidingMenu.setSlidingEnabled(false);
+                //slidingMenu.setSlidingEnabled(false);
 
                 break;
             case 1:// Home
                 flag_fragment_home = true;
 
-                slidingMenu.setSlidingEnabled(true);
+                if(flag_fragment_filter == true) {
+                    flag_fragment_filter = false;
+
+                    filterFragment.closeFilter();
+                }
+
+                //slidingMenu.setSlidingEnabled(true);
+
+                break;
+            case 2:
+                flag_fragment_home = false;
+                flag_fragment_filter = true;
 
                 break;
         }
     }
 
-    @Override
-    public void onSetFragments() {
-        // vp에서 저 fragment들을 설정하는 시각을 여기서 정확히 예측하느니, callback으로 이렇게 한다.
-        cameraFragment = viewPagerFragment.getCameraFragment();
-        homeFragment = viewPagerFragment.getHomeFragment();
-    }
-
+    /*
     public void setViewPagerEnabled(boolean enabled) {
         viewPagerFragment.setEnabled(enabled);
     }
+    */
 
     //---- camera
     @Override
@@ -723,6 +754,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             public void run() {
                 // ====> shot button 때 필요할수도....
                 cameraFragment.setShotButtonEnabled(true);
+
+                // 여기서 해야 되는 것 같다. 아무튼, default를 resize로 하고, display에서만 바꿔주는게 맞을 듯 하다. 반대로 하면 vp에서 계속 change되어서 더 느릴듯 하다.
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
             }
         });
 
@@ -771,10 +805,22 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 super.onPostExecute(success);
 
                 if(success) {
+                    /*
+                    // tag 자체 filtering - tastes tag는 서버에는 switch와 함께 올라가더라도, 여기서는 빼 줘야 중복 안된다. - 나중에는 list 자체에 포함시켜서 이렇게 안꼬이게 한다.
+                    if(tags != null && tags.contains("tastes")) {
+                        int index = tags.indexOf("tastes");
+
+                        defaultTag = switches.get(index).equals("true");// 사실 항상 true일 것이다 ㅡ display에서는 모두 true이므로.
+                        filterFragment.setDefaultTag(defaultTag);
+
+                        tags.remove(index);
+                        switches.remove(index);
+                    }
                     // add to pref.
                     addPreferences(tags, switches);
                     // set filter also.
                     filterFragment.setTags(MainActivity.this.tags, MainActivity.this.switches); // filter가 이제 새로 뜨는게 아니라서 변경 생길 때마다 해줘야된다.(ok는 변경을 무조건 수반한다고 볼 수 있다.)
+                    */
                     // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
                     homeFragment.setView();
 
@@ -801,10 +847,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     //---- home
+    /*
     @Override
     public void onHomeActionFilterClicked() {
         slidingMenu.toggle();
     }
+    */
 
     @Override
     public void onHomeItemClicked(List<Image> images, int position) {
@@ -904,17 +952,24 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                         }
                     }
+
+                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 } else {
                     fragmentManager.popBackStack();
                 }
             }
         } else {
             if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
+                /*
                 if(slidingMenu.isMenuShowing()) {
                     slidingMenu.toggle();
                 } else {
                     viewPagerFragment.setCurrentPage(0);
                 }
+                */
+                viewPagerFragment.setCurrentPage(0);
+            } else if(flag_fragment_filter == true) {
+                viewPagerFragment.setCurrentPage(1);
             } else { // camera라 하더라도
                 if(flag_taking_camera == false) { // 사진 찍는 중은 skip한다.
                     finish();
@@ -944,6 +999,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             case R.id.fragment_item_close:
             //case R.id.fragment_filter_cancel:
                 onBackPressed();
+
+                break;
+            case R.id.fragment_home_filter:
+                viewPagerFragment.setCurrentPage(2);
 
                 break;
         }

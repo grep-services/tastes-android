@@ -29,7 +29,7 @@ import org.apache.http.conn.HttpHostConnectException;
 
 import java.util.List;
 
-public class HomeFragment extends Fragment implements GridView.OnItemClickListener, Button.OnClickListener {
+public class HomeFragment extends Fragment implements GridView.OnItemClickListener/*, Button.OnClickListener*/ {
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
 
@@ -117,7 +117,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             }
         });
 
-        ((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
+        //((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
 
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -241,11 +241,13 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         mCallbacks = null;
     }
 
+    /*
     public void actionFilterClicked() {
         if(mCallbacks != null) {
             mCallbacks.onHomeActionFilterClicked();
         }
     }
+    */
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -255,6 +257,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         }
     }
 
+    /*
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
@@ -264,9 +267,10 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
                 break;
         }
     }
+    */
 
     public interface HomeFragmentCallbacks {
-        public void onHomeActionFilterClicked();
+        //public void onHomeActionFilterClicked();
         public void onHomeItemClicked(List<Image> images, int position);
     }
 }
