@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="2" >
+
+    <dataSet config="main" >
+        <source path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets" >
+            <file
+                name="fonts/NotoSansCJKkr-Bold.otf"
+                path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets\fonts\NotoSansCJKkr-Bold.otf" />
+            <file
+                name="fonts/NotoSansCJKkr-Medium.otf"
+                path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets\fonts\NotoSansCJKkr-Medium.otf" />
+            <file
+                name="fonts/NotoSansCJKkr-Regular.otf"
+                path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets\fonts\NotoSansCJKkr-Regular.otf" />
+            <file
+                name="fonts/NotoSansCJKkr-Thin.otf"
+                path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets\fonts\NotoSansCJKkr-Thin.otf" />
+            <file
+                name="fonts/NotoSansCJKkr-Light.otf"
+                path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets\fonts\NotoSansCJKkr-Light.otf" />
+            <file
+                name="fonts/NotoSansCJKkr-DemiLight.otf"
+                path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets\fonts\NotoSansCJKkr-DemiLight.otf" />
+            <file
+                name="fonts/NotoSansCJKkr-Black.otf"
+                path="D:\Work\ATS\ho\app\tastes\robototextview\src\main\assets\fonts\NotoSansCJKkr-Black.otf" />
+        </source>
+    </dataSet>
+    <dataSet config="release" >
+        <source path="D:\Work\ATS\ho\app\tastes\robototextview\src\release\assets" />
+    </dataSet>
+
+</merger>

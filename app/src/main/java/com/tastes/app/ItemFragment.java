@@ -3,6 +3,7 @@ package com.tastes.app;
 import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -17,6 +18,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.devspark.robototextview.util.RobotoTextViewUtils;
+import com.devspark.robototextview.util.RobotoTypefaceManager;
+import com.devspark.robototextview.widget.RobotoTextView;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.content.Tag;
@@ -90,11 +94,13 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     }
 
     public TextView getText(String tag) {
-        TextView text = new TextView(getActivity());
+        //TextView text = new TextView(getActivity());
+        TextView text = new RobotoTextView(getActivity());
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         text.setLayoutParams(layoutParams);
         int p = getPixel(16);
         text.setPadding(p, p, p, p);
+        text.setIncludeFontPadding(false);// noto top bottom padding 없애기 위해.
         text.setText(Tag.HEADER + tag);
         text.setTextSize(18);
         text.setTextColor(getResources().getColor(R.color.text_inverse));

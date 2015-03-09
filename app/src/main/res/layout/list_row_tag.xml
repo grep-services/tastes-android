@@ -3,19 +3,18 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingLeft="@dimen/margin"
-    android:paddingRight="@dimen/margin"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:padding="@dimen/margin"
     android:gravity="center_vertical"
     android:descendantFocusability="blocksDescendants"><!-- for item click event. -->
 
-    <TextView
+    <com.devspark.robototextview.widget.RobotoTextView
         android:id="@+id/list_row_tag"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginRight="@dimen/margin"
+        android:padding="4dp"
+        android:includeFontPadding="false"
         android:singleLine="true"
         android:ellipsize="marquee"
         android:textSize="18sp"

@@ -25,53 +25,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="3">
-<!--
-        <LinearLayout
-            android:id="@+id/fragment_splash_location_retry"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:padding="@dimen/margin"
-                android:gravity="bottom|center_horizontal"
-                android:textSize="18sp"
-                android:text="@string/location_fail"/>
-
-            <Button
-                android:id="@+id/fragment_splash_location_retry_btn"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@drawable/selector_button"
-                android:textSize="18sp"
-                android:textColor="@color/text_inverse"
-                android:text="@string/location_retry"
-                android:onClick="mOnClick"/>
-
-        </LinearLayout>
--->
         <LinearLayout
             android:id="@+id/fragment_splash_location_agree"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
+            <com.devspark.robototextview.widget.RobotoTextView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:padding="@dimen/margin"
+                android:includeFontPadding="false"
                 android:gravity="bottom|center_horizontal"
                 android:textSize="18sp"
                 android:text="@string/location_agree"/>
 
-            <Button
+            <com.devspark.robototextview.widget.RobotoButton
                 android:id="@+id/fragment_splash_location_agree_btn"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                android:padding="4dp"
+                android:includeFontPadding="false"
                 android:background="@drawable/selector_button"
                 android:textSize="18sp"
                 android:textColor="@color/text_inverse"

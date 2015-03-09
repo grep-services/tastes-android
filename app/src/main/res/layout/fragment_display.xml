@@ -62,10 +62,12 @@
         android:gravity="center"
         android:visibility="gone">
 
-        <TextView
+        <com.devspark.robototextview.widget.RobotoTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/margin"
+            android:padding="4dp"
+            android:includeFontPadding="false"
             android:textSize="18sp"
             android:textColor="@color/text_inverse"
             android:text="@string/location_retry"/>
@@ -86,10 +88,12 @@
         android:gravity="center"
         android:visibility="gone">
 
-        <TextView
+        <com.devspark.robototextview.widget.RobotoTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/margin"
+            android:padding="4dp"
+            android:includeFontPadding="false"
             android:textSize="18sp"
             android:textColor="@color/text_inverse"
             android:text="@string/network_retry"/>

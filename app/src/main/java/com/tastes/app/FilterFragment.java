@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.devspark.robototextview.widget.RobotoEditText;
 import com.tastes.R;
 import com.tastes.content.Tag;
 import com.tastes.util.ByteLengthFilter;
@@ -162,7 +163,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             }
         });
 
-        edit = (EditText) view.findViewById(R.id.fragment_filter_edit);
+        edit = (RobotoEditText) view.findViewById(R.id.fragment_filter_edit);
         edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
         edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {

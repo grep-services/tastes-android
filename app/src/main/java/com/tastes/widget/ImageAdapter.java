@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.devspark.robototextview.widget.RobotoTextView;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -96,7 +97,7 @@ public class ImageAdapter extends BaseAdapter {
 
             viewHolder = new ViewHolder();
             viewHolder.image = (ImageView) convertView.findViewById(R.id.grid_item_image);
-            viewHolder.distance = (TextView) convertView.findViewById(R.id.grid_item_distance);
+            viewHolder.distance = (RobotoTextView) convertView.findViewById(R.id.grid_item_distance);
 
             convertView.setTag(viewHolder);
         } else {

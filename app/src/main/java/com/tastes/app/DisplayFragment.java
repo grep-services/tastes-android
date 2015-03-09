@@ -37,6 +37,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.devspark.robototextview.widget.RobotoEditText;
 import com.tastes.R;
 import com.tastes.content.Tag;
 import com.tastes.util.ByteLengthFilter;
@@ -558,12 +559,14 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public EditText getEdit(String string) {
-        EditText edit = new EditText(getActivity());
+        //EditText edit = new EditText(getActivity());
+        RobotoEditText edit = new RobotoEditText(getActivity());
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         edit.setLayoutParams(layoutParams);
         edit.setBackgroundDrawable(null);//TODO: 안되면 color transparent라도 한다.
         int p = getPixel(16);
         edit.setPadding(p, p, p, p);
+        edit.setIncludeFontPadding(false);// noto top bottom padding 없애기 위해.
         edit.setInputType(InputType.TYPE_CLASS_TEXT); // 왜그런진 몰라도 setText앞에 와야 한다.
         edit.setText(string == null ? Tag.HEADER : Tag.HEADER + string);
         //edit.setHint("Tag"); text가 있으므로 hint는 자연히 무시된다. 혼재하게 할 수 있으나 일단 지운다.

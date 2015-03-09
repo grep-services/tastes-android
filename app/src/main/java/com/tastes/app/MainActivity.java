@@ -121,7 +121,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         viewPagerFragment = ViewPagerFragment.newInstance();
         replaceFragment(R.id.container, viewPagerFragment);
 
-        splashFragment = SplashFragment.newInstance(mLocationUpdates);
+        //splashFragment = SplashFragment.newInstance(mLocationUpdates);
+        splashFragment = SplashFragment.newInstance(false);
         addFragment(splashFragment);
 
         /*

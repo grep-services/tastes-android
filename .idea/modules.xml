@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/androidImageFilter/androidImageFilter.iml" filepath="$PROJECT_DIR$/androidImageFilter/androidImageFilter.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/camera/camera.iml" filepath="$PROJECT_DIR$/camera/camera.iml" />
+      <module fileurl="file://$PROJECT_DIR$/robototextview/robototextview.iml" filepath="$PROJECT_DIR$/robototextview/robototextview.iml" />
       <module fileurl="file://$PROJECT_DIR$/tastes.iml" filepath="$PROJECT_DIR$/tastes.iml" />
     </modules>
   </component>

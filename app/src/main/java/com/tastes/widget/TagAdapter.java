@@ -8,6 +8,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import com.devspark.robototextview.widget.RobotoTextView;
 import com.tastes.R;
 import com.tastes.content.Tag;
 
@@ -176,7 +177,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
     }
 
     public static class ViewHolder {
-        public TextView tag;
+        public RobotoTextView tag;
         //public SwitchCompat switch_;
         public CheckBox switch_;
     }
@@ -190,7 +191,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
             convertView = inflater.inflate(R.layout.list_row_tag, parent, false);
 
             viewHolder = new ViewHolder();
-            viewHolder.tag = (TextView) convertView.findViewById(R.id.list_row_tag);
+            viewHolder.tag = (RobotoTextView) convertView.findViewById(R.id.list_row_tag);
             //viewHolder.tag.setOnClickListener(listener);
 
             if(switch_ == true) {
