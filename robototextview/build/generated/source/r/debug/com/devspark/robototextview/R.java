@@ -606,9 +606,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
          */
         public static int fontFamily=0x7f010001;
@@ -1217,7 +1215,6 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
          */
         public static int textStyle=0x7f010004;
@@ -1227,12 +1224,13 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
          */
         public static int textWeight=0x7f010005;
@@ -1367,28 +1365,13 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
          */
         public static int typeface=0x7f010007;
@@ -1674,100 +1657,84 @@ containing a value of this type.
         public static int abc_textfield_search_material=0x7f020032;
     }
     public static final class id {
-        public static int action_bar=0x7f080050;
+        public static int action_bar=0x7f080040;
         public static int action_bar_activity_content=0x7f080000;
-        public static int action_bar_container=0x7f08004f;
-        public static int action_bar_root=0x7f08004b;
+        public static int action_bar_container=0x7f08003f;
+        public static int action_bar_root=0x7f08003b;
         public static int action_bar_spinner=0x7f080001;
-        public static int action_bar_subtitle=0x7f08003e;
-        public static int action_bar_title=0x7f08003d;
-        public static int action_context_bar=0x7f080051;
+        public static int action_bar_subtitle=0x7f08002e;
+        public static int action_bar_title=0x7f08002d;
+        public static int action_context_bar=0x7f080041;
         public static int action_menu_divider=0x7f080002;
         public static int action_menu_presenter=0x7f080003;
-        public static int action_mode_bar=0x7f08004d;
-        public static int action_mode_bar_stub=0x7f08004c;
-        public static int action_mode_close_button=0x7f08003f;
-        public static int activity_chooser_view_content=0x7f080040;
-        public static int always=0x7f080035;
-        public static int beginning=0x7f080032;
-        public static int bold=0x7f08000e;
-        public static int checkbox=0x7f080048;
-        public static int collapseActionView=0x7f080036;
-        public static int decor_content_parent=0x7f08004e;
-        public static int default_activity_button=0x7f080043;
-        public static int dialog=0x7f08003a;
-        public static int disableHome=0x7f08002b;
-        public static int dropdown=0x7f08003b;
-        public static int edit_query=0x7f080052;
-        public static int end=0x7f080033;
-        public static int expand_activities_button=0x7f080041;
-        public static int expanded_menu=0x7f080047;
+        public static int action_mode_bar=0x7f08003d;
+        public static int action_mode_bar_stub=0x7f08003c;
+        public static int action_mode_close_button=0x7f08002f;
+        public static int activity_chooser_view_content=0x7f080030;
+        public static int always=0x7f080025;
+        public static int beginning=0x7f080022;
+        public static int black=0x7f08000b;
+        public static int bold=0x7f08000c;
+        public static int checkbox=0x7f080038;
+        public static int collapseActionView=0x7f080026;
+        public static int decor_content_parent=0x7f08003e;
+        public static int default_activity_button=0x7f080033;
+        public static int demilight=0x7f08000d;
+        public static int dialog=0x7f08002a;
+        public static int disableHome=0x7f08001b;
+        public static int dropdown=0x7f08002b;
+        public static int edit_query=0x7f080042;
+        public static int end=0x7f080023;
+        public static int expand_activities_button=0x7f080031;
+        public static int expanded_menu=0x7f080037;
         public static int home=0x7f080004;
-        public static int homeAsUp=0x7f08002c;
-        public static int icon=0x7f080045;
-        public static int ifRoom=0x7f080037;
-        public static int image=0x7f080042;
-        public static int italic=0x7f08000c;
-        public static int light=0x7f08000f;
-        public static int listMode=0x7f080029;
-        public static int list_item=0x7f080044;
-        public static int medium=0x7f080010;
-        public static int middle=0x7f080034;
-        public static int never=0x7f080038;
-        public static int none=0x7f08002d;
-        public static int normal=0x7f08000d;
+        public static int homeAsUp=0x7f08001c;
+        public static int icon=0x7f080035;
+        public static int ifRoom=0x7f080027;
+        public static int image=0x7f080032;
+        public static int light=0x7f08000e;
+        public static int listMode=0x7f080019;
+        public static int list_item=0x7f080034;
+        public static int medium=0x7f08000f;
+        public static int middle=0x7f080024;
+        public static int never=0x7f080028;
+        public static int none=0x7f08001d;
+        public static int normal=0x7f08000a;
+        public static int noto_sans_cjk_kr=0x7f080009;
+        public static int noto_sans_cjk_kr_black=0x7f080012;
+        public static int noto_sans_cjk_kr_bold=0x7f080013;
+        public static int noto_sans_cjk_kr_demilight=0x7f080014;
+        public static int noto_sans_cjk_kr_light=0x7f080015;
+        public static int noto_sans_cjk_kr_medium=0x7f080016;
+        public static int noto_sans_cjk_kr_regular=0x7f080017;
+        public static int noto_sans_cjk_kr_thin=0x7f080018;
         public static int progress_circular=0x7f080005;
         public static int progress_horizontal=0x7f080006;
-        public static int radio=0x7f08004a;
-        public static int roboto=0x7f080009;
-        public static int roboto_black=0x7f080013;
-        public static int roboto_black_italic=0x7f080014;
-        public static int roboto_bold=0x7f080015;
-        public static int roboto_bold_italic=0x7f080016;
-        public static int roboto_condensed=0x7f08000a;
-        public static int roboto_condensed_bold=0x7f080017;
-        public static int roboto_condensed_bold_italic=0x7f080018;
-        public static int roboto_condensed_italic=0x7f080019;
-        public static int roboto_condensed_light=0x7f08001a;
-        public static int roboto_condensed_light_italic=0x7f08001b;
-        public static int roboto_condensed_regular=0x7f08001c;
-        public static int roboto_italic=0x7f08001d;
-        public static int roboto_light=0x7f08001e;
-        public static int roboto_light_italic=0x7f08001f;
-        public static int roboto_medium=0x7f080020;
-        public static int roboto_medium_italic=0x7f080021;
-        public static int roboto_regular=0x7f080022;
-        public static int roboto_slab=0x7f08000b;
-        public static int roboto_slab_bold=0x7f080023;
-        public static int roboto_slab_light=0x7f080024;
-        public static int roboto_slab_regular=0x7f080025;
-        public static int roboto_slab_thin=0x7f080026;
-        public static int roboto_thin=0x7f080027;
-        public static int roboto_thin_italic=0x7f080028;
-        public static int search_badge=0x7f080054;
-        public static int search_bar=0x7f080053;
-        public static int search_button=0x7f080055;
-        public static int search_close_btn=0x7f08005a;
-        public static int search_edit_frame=0x7f080056;
-        public static int search_go_btn=0x7f08005c;
-        public static int search_mag_icon=0x7f080057;
-        public static int search_plate=0x7f080058;
-        public static int search_src_text=0x7f080059;
-        public static int search_voice_btn=0x7f08005d;
-        public static int shortcut=0x7f080049;
-        public static int showCustom=0x7f08002e;
-        public static int showHome=0x7f08002f;
-        public static int showTitle=0x7f080030;
+        public static int radio=0x7f08003a;
+        public static int regular=0x7f080010;
+        public static int search_badge=0x7f080044;
+        public static int search_bar=0x7f080043;
+        public static int search_button=0x7f080045;
+        public static int search_close_btn=0x7f08004a;
+        public static int search_edit_frame=0x7f080046;
+        public static int search_go_btn=0x7f08004c;
+        public static int search_mag_icon=0x7f080047;
+        public static int search_plate=0x7f080048;
+        public static int search_src_text=0x7f080049;
+        public static int search_voice_btn=0x7f08004d;
+        public static int shortcut=0x7f080039;
+        public static int showCustom=0x7f08001e;
+        public static int showHome=0x7f08001f;
+        public static int showTitle=0x7f080020;
         public static int split_action_bar=0x7f080007;
-        public static int submit_area=0x7f08005b;
-        public static int tabMode=0x7f08002a;
+        public static int submit_area=0x7f08004b;
+        public static int tabMode=0x7f08001a;
         public static int thin=0x7f080011;
-        public static int title=0x7f080046;
-        public static int ultra_bold=0x7f080012;
+        public static int title=0x7f080036;
         public static int up=0x7f080008;
-        public static int useLogo=0x7f080031;
-        public static int withText=0x7f080039;
-        public static int wrap_content=0x7f08003c;
+        public static int useLogo=0x7f080021;
+        public static int withText=0x7f080029;
+        public static int wrap_content=0x7f08002c;
     }
     public static final class integer {
         public static int abc_max_action_buttons=0x7f090000;
@@ -3790,9 +3757,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -3809,7 +3774,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -3825,12 +3789,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -3846,28 +3811,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -3902,9 +3852,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -3921,7 +3869,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -3937,12 +3884,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -3958,28 +3906,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4014,9 +3947,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4033,7 +3964,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4049,12 +3979,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4070,28 +4001,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4126,9 +4042,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4145,7 +4059,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4161,12 +4074,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4182,28 +4096,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4238,9 +4137,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4257,7 +4154,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4273,12 +4169,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4294,28 +4191,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4350,9 +4232,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4369,7 +4249,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4385,12 +4264,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4406,28 +4286,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4462,9 +4327,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4481,7 +4344,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4497,12 +4359,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4518,28 +4381,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4574,9 +4422,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4593,7 +4439,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4609,12 +4454,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4630,28 +4476,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4686,9 +4517,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4705,7 +4534,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4721,12 +4549,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4742,28 +4571,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4798,9 +4612,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4817,7 +4629,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4833,12 +4644,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4854,28 +4666,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -4910,9 +4707,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -4929,7 +4724,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -4945,12 +4739,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -4966,28 +4761,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -5022,9 +4802,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -5041,7 +4819,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -5057,12 +4834,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -5078,28 +4856,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -5134,9 +4897,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -5153,7 +4914,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -5169,12 +4929,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -5190,28 +4951,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -5246,9 +4992,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -5265,7 +5009,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -5281,12 +5024,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -5302,28 +5046,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */
@@ -5358,9 +5087,7 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_condensed</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_slab</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr</code></td><td>0</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:fontFamily
         */
@@ -5377,7 +5104,6 @@ containing a value of this type.
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
 <tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>italic</code></td><td>1</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textStyle
         */
@@ -5393,12 +5119,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>normal</code></td><td>0</td><td></td></tr>
-<tr><td><code>thin</code></td><td>1</td><td></td></tr>
-<tr><td><code>light</code></td><td>2</td><td></td></tr>
-<tr><td><code>medium</code></td><td>3</td><td></td></tr>
-<tr><td><code>bold</code></td><td>4</td><td></td></tr>
-<tr><td><code>ultra_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>light</code></td><td>1</td><td></td></tr>
+<tr><td><code>demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:textWeight
         */
@@ -5414,28 +5141,13 @@ containing a value of this type.
 <colgroup align="left" />
 <colgroup align="left" />
 <tr><th>Constant</th><th>Value</th><th>Description</th></tr>
-<tr><td><code>roboto_thin</code></td><td>0</td><td></td></tr>
-<tr><td><code>roboto_thin_italic</code></td><td>1</td><td></td></tr>
-<tr><td><code>roboto_light</code></td><td>2</td><td></td></tr>
-<tr><td><code>roboto_light_italic</code></td><td>3</td><td></td></tr>
-<tr><td><code>roboto_regular</code></td><td>4</td><td></td></tr>
-<tr><td><code>roboto_italic</code></td><td>5</td><td></td></tr>
-<tr><td><code>roboto_medium</code></td><td>6</td><td></td></tr>
-<tr><td><code>roboto_medium_italic</code></td><td>7</td><td></td></tr>
-<tr><td><code>roboto_bold</code></td><td>8</td><td></td></tr>
-<tr><td><code>roboto_bold_italic</code></td><td>9</td><td></td></tr>
-<tr><td><code>roboto_black</code></td><td>10</td><td></td></tr>
-<tr><td><code>roboto_black_italic</code></td><td>11</td><td></td></tr>
-<tr><td><code>roboto_condensed_light</code></td><td>12</td><td></td></tr>
-<tr><td><code>roboto_condensed_light_italic</code></td><td>13</td><td></td></tr>
-<tr><td><code>roboto_condensed_regular</code></td><td>14</td><td></td></tr>
-<tr><td><code>roboto_condensed_italic</code></td><td>15</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold</code></td><td>16</td><td></td></tr>
-<tr><td><code>roboto_condensed_bold_italic</code></td><td>17</td><td></td></tr>
-<tr><td><code>roboto_slab_thin</code></td><td>18</td><td></td></tr>
-<tr><td><code>roboto_slab_light</code></td><td>19</td><td></td></tr>
-<tr><td><code>roboto_slab_regular</code></td><td>20</td><td></td></tr>
-<tr><td><code>roboto_slab_bold</code></td><td>21</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_thin</code></td><td>0</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_light</code></td><td>1</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_demilight</code></td><td>2</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_regular</code></td><td>3</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_medium</code></td><td>4</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_bold</code></td><td>5</td><td></td></tr>
+<tr><td><code>noto_sans_cjk_kr_black</code></td><td>6</td><td></td></tr>
 </table>
           @attr name com.devspark.robototextview:typeface
         */

@@ -12518,14 +12518,8 @@ false
 
                 <attr name="fontFamily" >
                     <enum
-                        name="roboto"
+                        name="noto_sans_cjk_kr"
                         value="0" />
-                    <enum
-                        name="roboto_condensed"
-                        value="1" />
-                    <enum
-                        name="roboto_slab"
-                        value="2" />
                 </attr>
 
                 <declare-styleable name="RobotoCheckedTextView" >
@@ -12561,23 +12555,26 @@ false
 
                 <attr name="textWeight" >
                     <enum
-                        name="normal"
+                        name="thin"
                         value="0" />
                     <enum
-                        name="thin"
+                        name="light"
                         value="1" />
                     <enum
-                        name="light"
+                        name="demilight"
                         value="2" />
                     <enum
-                        name="medium"
+                        name="regular"
                         value="3" />
                     <enum
-                        name="bold"
+                        name="medium"
                         value="4" />
                     <enum
-                        name="ultra_bold"
+                        name="bold"
                         value="5" />
+                    <enum
+                        name="black"
+                        value="6" />
                 </attr>
 
                 <declare-styleable name="RobotoDigitalClock" >
@@ -12589,71 +12586,26 @@ false
 
                 <attr name="typeface" >
                     <enum
-                        name="roboto_thin"
+                        name="noto_sans_cjk_kr_thin"
                         value="0" />
                     <enum
-                        name="roboto_thin_italic"
+                        name="noto_sans_cjk_kr_light"
                         value="1" />
                     <enum
-                        name="roboto_light"
+                        name="noto_sans_cjk_kr_demilight"
                         value="2" />
                     <enum
-                        name="roboto_light_italic"
+                        name="noto_sans_cjk_kr_regular"
                         value="3" />
                     <enum
-                        name="roboto_regular"
+                        name="noto_sans_cjk_kr_medium"
                         value="4" />
                     <enum
-                        name="roboto_italic"
+                        name="noto_sans_cjk_kr_bold"
                         value="5" />
                     <enum
-                        name="roboto_medium"
+                        name="noto_sans_cjk_kr_black"
                         value="6" />
-                    <enum
-                        name="roboto_medium_italic"
-                        value="7" />
-                    <enum
-                        name="roboto_bold"
-                        value="8" />
-                    <enum
-                        name="roboto_bold_italic"
-                        value="9" />
-                    <enum
-                        name="roboto_black"
-                        value="10" />
-                    <enum
-                        name="roboto_black_italic"
-                        value="11" />
-                    <enum
-                        name="roboto_condensed_light"
-                        value="12" />
-                    <enum
-                        name="roboto_condensed_light_italic"
-                        value="13" />
-                    <enum
-                        name="roboto_condensed_regular"
-                        value="14" />
-                    <enum
-                        name="roboto_condensed_italic"
-                        value="15" />
-                    <enum
-                        name="roboto_condensed_bold"
-                        value="16" />
-                    <enum
-                        name="roboto_condensed_bold_italic"
-                        value="17" />
-                    <enum
-                        name="roboto_slab_thin"
-                        value="18" />
-                    <enum
-                        name="roboto_slab_light"
-                        value="19" />
-                    <enum
-                        name="roboto_slab_regular"
-                        value="20" />
-                    <enum
-                        name="roboto_slab_bold"
-                        value="21" />
                 </attr>
 
                 <declare-styleable name="RobotoToggleButton" >
@@ -12673,9 +12625,6 @@ false
                     <enum
                         name="normal"
                         value="0" />
-                    <enum
-                        name="italic"
-                        value="1" />
                 </attr>
             </file>
         </source>

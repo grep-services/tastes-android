@@ -9,9 +9,7 @@
     <eat-comment />
 
     <attr name="fontFamily">
-        <enum name="roboto" value="0" />
-        <enum name="roboto_condensed" value="1" />
-        <enum name="roboto_slab" value="2" />
+        <enum name="noto_sans_cjk_kr" value="0" />
     </attr>
     <!-- From: file:/D:/Work/ATS/ho/app/tastes/robototextview/build/intermediates/exploded-aar/com.android.support/appcompat-v7/21.0.3/res/values/values.xml -->
     <eat-comment />
@@ -23,15 +21,15 @@
 
     <attr name="textStyle">
         <enum name="normal" value="0" />
-        <enum name="italic" value="1" />
     </attr>
     <attr name="textWeight">
-        <enum name="normal" value="0" />
-        <enum name="thin" value="1" />
-        <enum name="light" value="2" />
-        <enum name="medium" value="3" />
-        <enum name="bold" value="4" />
-        <enum name="ultra_bold" value="5" />
+        <enum name="thin" value="0" />
+        <enum name="light" value="1" />
+        <enum name="demilight" value="2" />
+        <enum name="regular" value="3" />
+        <enum name="medium" value="4" />
+        <enum name="bold" value="5" />
+        <enum name="black" value="6" />
     </attr>
     <!-- From: file:/D:/Work/ATS/ho/app/tastes/robototextview/build/intermediates/exploded-aar/com.android.support/appcompat-v7/21.0.3/res/values/values.xml -->
     <eat-comment />
@@ -41,28 +39,13 @@
     <eat-comment />
 
     <attr name="typeface">
-        <enum name="roboto_thin" value="0" />
-        <enum name="roboto_thin_italic" value="1" />
-        <enum name="roboto_light" value="2" />
-        <enum name="roboto_light_italic" value="3" />
-        <enum name="roboto_regular" value="4" />
-        <enum name="roboto_italic" value="5" />
-        <enum name="roboto_medium" value="6" />
-        <enum name="roboto_medium_italic" value="7" />
-        <enum name="roboto_bold" value="8" />
-        <enum name="roboto_bold_italic" value="9" />
-        <enum name="roboto_black" value="10" />
-        <enum name="roboto_black_italic" value="11" />
-        <enum name="roboto_condensed_light" value="12" />
-        <enum name="roboto_condensed_light_italic" value="13" />
-        <enum name="roboto_condensed_regular" value="14" />
-        <enum name="roboto_condensed_italic" value="15" />
-        <enum name="roboto_condensed_bold" value="16" />
-        <enum name="roboto_condensed_bold_italic" value="17" />
-        <enum name="roboto_slab_thin" value="18" />
-        <enum name="roboto_slab_light" value="19" />
-        <enum name="roboto_slab_regular" value="20" />
-        <enum name="roboto_slab_bold" value="21" />
+        <enum name="noto_sans_cjk_kr_thin" value="0" />
+        <enum name="noto_sans_cjk_kr_light" value="1" />
+        <enum name="noto_sans_cjk_kr_demilight" value="2" />
+        <enum name="noto_sans_cjk_kr_regular" value="3" />
+        <enum name="noto_sans_cjk_kr_medium" value="4" />
+        <enum name="noto_sans_cjk_kr_bold" value="5" />
+        <enum name="noto_sans_cjk_kr_black" value="6" />
     </attr>
     <!-- From: file:/D:/Work/ATS/ho/app/tastes/robototextview/build/intermediates/exploded-aar/com.android.support/appcompat-v7/21.0.3/res/values/values.xml -->
     <eat-comment />
