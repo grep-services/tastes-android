@@ -107,7 +107,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         text.setSingleLine(true);
         //text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
         text.setId(R.id.fragment_item_tag);
-        //text.setOnClickListener(this);
+        text.setTag(tag);// getText도 되지만 cast하고 parsing하는것보다 이게 더 편하다.
+        text.setOnClickListener(this);
 
         return text;
     }
@@ -268,6 +269,12 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
+    public void actionTagClicked(String tag) {
+        if (mCallbacks != null) {
+            mCallbacks.onItemActionTagClicked(tag);
+        }
+    }
+
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
@@ -277,10 +284,17 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
                 break;
                 */
+            case R.id.fragment_item_tag:
+                String tag = (String) v.getTag();
+
+                actionTagClicked(tag);
+
+                break;
         }
     }
 
     public interface ItemFragmentCallbacks {
         public void onItemActionShareClicked();
+        public void onItemActionTagClicked(String tag);
     }
 }

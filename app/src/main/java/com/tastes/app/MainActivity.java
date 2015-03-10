@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private QueryWrapper queryWrapper;
 
@@ -70,6 +70,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private CameraFragment_ cameraFragment;
     private DisplayFragment displayFragment;
     private HomeFragment homeFragment;
+    private ProfileFragment profileFragment;
     private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
 
@@ -122,8 +123,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         viewPagerFragment = ViewPagerFragment.newInstance();
         replaceFragment(R.id.container, viewPagerFragment);
 
-        //splashFragment = SplashFragment.newInstance(mLocationUpdates);
-        splashFragment = SplashFragment.newInstance(false);
+        splashFragment = SplashFragment.newInstance(mLocationUpdates);
+        //splashFragment = SplashFragment.newInstance(false);
         addFragment(splashFragment);
 
         /*
@@ -284,6 +285,14 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             if(homeFragment != null) {// null인 상황은 애초에 onLocationChanged에서 저장되는 latlng가 자동으로 homeFrag 생성시 전달되어 해결될 것이다.
                 homeFragment.setLocation(latitude, longitude);
             }
+            /*
+            여러개 있으면 최상위만 될것이고, 최상위 back되어도 2순위가 되는게 아니라 null일 것이다.
+            하지만 사실 home이든 profile이든 단 1번만 위치 받으면 되며, profile은 현재 none-location 상태로 2개 이상 존재할 수 없는 구조이다.
+            따라서 현재로서는 아무 문제가 없다. 추후 필요하다면 profileFragment ref 관리 data structure 만들어서 관리하던가 하도록 한다.
+             */
+            if(profileFragment != null) {
+                profileFragment.setLocation(latitude, longitude);
+            }
         } else {
             if(mRequestingLocationFailed) {
                 if(displayFragment != null) {// display가 살아있고
@@ -293,6 +302,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 }
                 if(homeFragment != null) {
                     homeFragment.notifyLocationFailure();
+                }
+                if(profileFragment != null) {
+                    profileFragment.notifyLocationFailure();
                 }
             }
         }
@@ -874,10 +886,31 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onHomeItemClicked(List<Image> images, int position) {
         Fragment fragment = ItemFragment.newInstance(images, position);
+
+        addFragment(fragment);
+    }
+
+    //---- profile
+    @Override
+    public void onProfileActionAddClicked(String tag) {
+        filterFragment.addTag(tag);
+    }
+
+    @Override
+    public void onProfileItemClicked(List<Image> images, int position) {
+        Fragment fragment = ItemFragment.newInstance(images, position);
+
         addFragment(fragment);
     }
 
     //---- filter
+    @Override
+    public void onFilterTagClicked(String tag) {
+        profileFragment = ProfileFragment.newInstance(latitude, longitude, tag);
+
+        addFragment(profileFragment);
+    }
+
     public boolean isTagsChanged(/*boolean defaultTag, */List<String> tags, List<String> switches) {
         boolean result = false;
 
@@ -941,6 +974,13 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onItemActionShareClicked() {
 
+    }
+
+    @Override
+    public void onItemActionTagClicked(String tag) {
+        profileFragment = ProfileFragment.newInstance(latitude, longitude, tag);
+
+        addFragment(profileFragment);
     }
 
     /*
@@ -1013,8 +1053,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 break;
             //case R.id.fragment_display_close:
             case R.id.fragment_home_camera:
+            case R.id.fragment_profile_back:
             case R.id.fragment_item_close:
-            //case R.id.fragment_filter_cancel:
                 onBackPressed();
 
                 break;

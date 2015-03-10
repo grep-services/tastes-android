@@ -2,11 +2,9 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,29 +14,36 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.devspark.robototextview.widget.RobotoTextView;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.tastes.R;
 import com.tastes.content.Image;
+import com.tastes.content.Tag;
 import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
 import com.tastes.widget.ImageAdapter;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
 import org.apache.http.conn.HttpHostConnectException;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment implements GridView.OnItemClickListener/*, Button.OnClickListener*/ {
+public class ProfileFragment extends Fragment implements GridView.OnItemClickListener, Button.OnClickListener {
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
+    private static final String ARG_TAG = "tag";
 
     private double latitude;
     private double longitude;
+    private String tag;
 
     private QueryWrapper queryWrapper;
 
     ImageLoader imageLoader;
+
+    TextView text;
+    Button button;// add btn
 
     SwipeRefreshLayout refresh;
     GridView grid;
@@ -47,18 +52,19 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     View emptyView;
 
     private MainActivity mActivity;
-    private HomeFragmentCallbacks mCallbacks;
+    private ProfileFragmentCallbacks mCallbacks;
 
-    public static HomeFragment newInstance(double latitude, double longitude) {
-        HomeFragment fragment = new HomeFragment();
+    public static ProfileFragment newInstance(double latitude, double longitude, String tag) {
+        ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
+        args.putString(ARG_TAG, tag);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public HomeFragment() {
+    public ProfileFragment() {
         // Required empty public constructor
     }
 
@@ -69,6 +75,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         if (getArguments() != null) {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
+            tag = getArguments().getString(ARG_TAG);
         }
 
         queryWrapper = new QueryWrapper();
@@ -87,13 +94,20 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         ********************** filter ok 하고서 이쪽으로 온다. 즉, view 설정 등이 또 되는데.....
          */
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_home_refresh);
+        text = (RobotoTextView) view.findViewById(R.id.fragment_profile_title);
+        text.setText(Tag.HEADER + tag);
 
-        emptyView = view.findViewById(R.id.fragment_home_empty);
+        button = (Button) view.findViewById(R.id.fragment_profile_add);
+        button.setVisibility(((MainActivity) getActivity()).getFilterFragment().checkTag(tag) ? View.GONE : View.VISIBLE);
+        button.setOnClickListener(this);
 
-        grid = (GridView) view.findViewById(R.id.fragment_home_grid);
+        refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_profile_refresh);
+
+        emptyView = view.findViewById(R.id.fragment_profile_empty);
+
+        grid = (GridView) view.findViewById(R.id.fragment_profile_grid);
 
         adapter = new ImageAdapter(getActivity(), inflater, imageLoader);
 
@@ -131,7 +145,19 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         });
         // 첫번째 색 말고는 안먹힘. 일단 빼둔다.
         //refresh.setColorSchemeResources(R.color.orange, R.color.orange_dark, R.color.gray, R.color.gray_dark);
-        setRefreshing(true);
+
+        // home과는 달리, 받는 중(2가지 경우) 뿐 아니라 다 받은 후(역시 2가지)도 있을 수 있다.
+        if(mActivity.isRequestingLocationUpdates()) {// home에서는 이게 default이므로 이것밖에 없었다.
+            setRefreshing(true);
+        } else {
+            if(mActivity.isLocationUpdated()) {
+                setView();
+            } else {
+                if(mActivity.isRequestingLocationFailed()) {
+                    setLocationFailure();
+                }
+            }
+        }
 
         return view;
     }
@@ -161,14 +187,19 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     }
 
     public void setEmptyView(String string) {
-        TextView text = (TextView) emptyView.findViewById(R.id.fragment_home_empty_txt);
+        TextView text = (TextView) emptyView.findViewById(R.id.fragment_profile_empty_txt);
         text.setText(string);
     }
 
-    public void notifyLocationFailure() {
+    // 이건 setRefreshing이 필요없는 곳에서도 쓰인다.
+    public void setLocationFailure() {
         setEmptyView(getString(R.string.location_retry));
 
         adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+    }
+
+    public void notifyLocationFailure() {
+        setLocationFailure();
 
         setRefreshing(false);
     }
@@ -178,7 +209,10 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         // get tags from pref.
         //=> pull to refresh 등에서는 pref에서 tags 받아올 필요 없을 거라고 생각할수도 있지만, tag를 1번만 받아오는 구조라면, 나중에 display나 filter 등에서 넘어올 때
         // 다른 정보를 더 받아와야 되는 등, 점점더 골치아파진다.(왜냐하면 이 home frag는 한번 실행되면 계속 남아있으므로 pref도 그대로일 것이기 때문.)
-        final List<String> tags = mActivity != null ? mActivity.getFilters() : null;
+        //final List<String> tags = mActivity != null ? mActivity.getFilters() : null;
+        // tag를 계속 그대로 이용하려면 그냥 query wrapper의 method를 새로 만들면 그만이지만, 일단 분화 안하는게 변경 가능성 때문에 좋을 것 같다.
+        final List<String> tags = new ArrayList<String>();
+        tags.add(tag);
         // get images from server with tags.
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             List<Image> images = null;
@@ -227,7 +261,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         mActivity = (MainActivity) activity;
 
         try {
-            mCallbacks = (HomeFragmentCallbacks) activity;
+            mCallbacks = (ProfileFragmentCallbacks) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString() + " must implement OnFragmentInteractionListener");
         }
@@ -239,36 +273,34 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         mCallbacks = null;
     }
 
-    /*
-    public void actionFilterClicked() {
+    public void actionAddClicked() {
         if(mCallbacks != null) {
-            mCallbacks.onHomeActionFilterClicked();
+            mCallbacks.onProfileActionAddClicked(tag);
         }
     }
-    */
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if(mCallbacks != null) {
             //mCallbacks.onHomeItemClicked((Image) adapter.getItem(position));
-            mCallbacks.onHomeItemClicked(adapter.getImages(), position);
+            mCallbacks.onProfileItemClicked(adapter.getImages(), position);
         }
     }
 
-    /*
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.fragment_home_filter:
-                actionFilterClicked();
+            case R.id.fragment_profile_add:
+                button.setVisibility(View.GONE);// enabled까지 다루진 않아도 되지 않을까 싶다.
+
+                actionAddClicked();
 
                 break;
         }
     }
-    */
 
-    public interface HomeFragmentCallbacks {
-        //public void onHomeActionFilterClicked();
-        public void onHomeItemClicked(List<Image> images, int position);
+    public interface ProfileFragmentCallbacks {
+        public void onProfileActionAddClicked(String tag);
+        public void onProfileItemClicked(List<Image> images, int position);
     }
 }

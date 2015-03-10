@@ -192,7 +192,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
             viewHolder = new ViewHolder();
             viewHolder.tag = (RobotoTextView) convertView.findViewById(R.id.list_row_tag);
-            //viewHolder.tag.setOnClickListener(listener);
+            viewHolder.tag.setOnClickListener(listener);
 
             if(switch_ == true) {
                 //viewHolder.switch_ = (SwitchCompat) convertView.findViewById(R.id.list_row_switch);
@@ -208,6 +208,8 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
         }
 
         viewHolder.tag.setText(Tag.HEADER + tags.get(position));
+        viewHolder.tag.setTag(tags.get(position));// listener 등록과 이것 사이가 error 발생 시킬 수 있을지는 두고본다.
+
         if(switch_ == true) { // 아직 scroll시 움직임은 남아있다. 하지만 아직 답이 없으므로 그대로 간다.
             viewHolder.switch_.setTag(position);// for accessing to switch list.
             viewHolder.switch_.setOnCheckedChangeListener(null);// programmatically checked는 굳이 switch list change 해줄 필요 없으므로 이렇게 간다.

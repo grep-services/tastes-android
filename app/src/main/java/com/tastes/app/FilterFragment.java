@@ -231,6 +231,12 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         mCallbacks = null;
     }
 
+    public void tagClicked(String tag) {
+        if (mCallbacks != null) {
+            mCallbacks.onFilterTagClicked(tag);
+        }
+    }
+
     public void closeFilter() {
         if (mCallbacks != null) {
             //mCallbacks.onCloseFilter(defaultTag, adapter.getTags(), adapter.getSwitches());
@@ -272,7 +278,29 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 confirmTag();
 
                 break;
+            case R.id.list_row_tag:
+                String tag = (String) v.getTag();
+
+                tagClicked(tag);
+
+                break;
         }
+    }
+
+    /*
+    filter에서 바로 profile로 갈 수도 있으므로 main이 아니라 filter에서 확인해야 한다.
+    그리고 이 fragment 자체에서도 쓰인다.
+     */
+    public boolean checkTag(String tag) {
+        return (adapter.getTags() != null && adapter.getTags().contains(tag));
+    }
+
+    /*
+    profile에서 이 method를 call할땐 이미 check는 했을 것이다.
+    이 fragment 내부적으로도 쓰이는데, 그 때 역시 check도 했을 것임을 가정한다.(실제로 그 process로 되어있다.)
+     */
+    public void addTag(String tag) {
+        adapter.addTag(tag);
     }
 
     public void confirmTag() {
@@ -285,7 +313,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             //YoYo.with(Techniques.Shake).playOn(edit);
             edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
-        } else if(adapter.getTags() != null && adapter.getTags().contains(tag)) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
+        } else if(checkTag(tag)) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
             // list scroll 해보기.
             list.setSelection(adapter.getTags().indexOf(tag));
 
@@ -295,7 +323,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         } else {
             edit.clearFocus();// keyboard close부터.
 
-            adapter.addTag(tag);
+            addTag(tag);
 
             list.setSelection(adapter.getCount());// transcriptmode always는 아니라서 이렇게 해줘야만 last item invisible일 때도 scroll to bottom 된다.
 
@@ -311,6 +339,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     }
 
     public interface FilterFragmentCallbacks {
+        public void onFilterTagClicked(String tag);
         public void onCloseFilter(/*boolean defaultFilter, */List<String> tags, List<String> switches);
     }
 }
