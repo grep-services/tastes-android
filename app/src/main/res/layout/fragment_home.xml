@@ -20,13 +20,27 @@
             android:layout_centerVertical="true"
             android:background="@drawable/camera"
             android:onClick="mOnClick"/>
-        
+        <!--
         <ImageView
             android:layout_width="99dp"
             android:layout_height="36dp"
             android:layout_centerInParent="true"
             android:src="@drawable/title"
             android:scaleType="centerInside"/>
+            -->
+        <com.devspark.robototextview.widget.RobotoTextView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:padding="4dp"
+            android:includeFontPadding="false"
+            android:text="@string/title_fragment_home"
+            android:textSize="24sp"
+            android:textColor="@color/text_inverse"
+            app:fontFamily="noto_sans_cjk_kr"
+            app:textWeight="regular"
+            app:textStyle="normal"/>
 
         <Button
             android:id="@+id/fragment_home_filter"

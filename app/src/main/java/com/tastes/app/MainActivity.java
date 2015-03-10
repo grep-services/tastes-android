@@ -51,11 +51,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private QueryWrapper queryWrapper;
 
     private SharedPreferences preferences;
-    private boolean defaultTag;
+    //private boolean defaultTag;
     private List<String> tags;
     private List<String> switches;
     private String strTags;
     private String strSwitches;
+    private static final String TAG_DEFAULT = "tastes";
 
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
@@ -116,7 +117,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         homeFragment = HomeFragment.newInstance(latitude, longitude);
 
-        filterFragment = FilterFragment.newInstance(defaultTag, tags, switches);
+        filterFragment = FilterFragment.newInstance(/*defaultTag, */tags, switches);
 
         viewPagerFragment = ViewPagerFragment.newInstance();
         replaceFragment(R.id.container, viewPagerFragment);
@@ -514,7 +515,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public ArrayList<String> getFilters() {
         // get switch-on tags.
         ArrayList<String> filters = null;
-
+/*
         if(defaultTag) {
             if(filters == null) {
                 filters = new ArrayList<String>();
@@ -522,7 +523,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
             filters.add("tastes");
         }
-
+*/
         if(tags != null) {
             for(int i = 0; i < tags.size(); i++) {
                 if(filters == null) {
@@ -565,7 +566,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public void initPreferences() {
         preferences = getSharedPreferences("tastes", Context.MODE_PRIVATE);
 
-        defaultTag = preferences.getBoolean("DefaultTag", true);
+        //defaultTag = preferences.getBoolean("DefaultTag", true);
 
         mLocationUpdates = preferences.getBoolean("LocationUpdates", false);
 
@@ -576,14 +577,31 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         switches = getList(strSwitches);
 
         //LogWrapper.e("INIT PREF", strTags+","+strSwitches);
+        initDefaultTag();
     }
 
-    public void setPreferences(boolean defaultTag, List<String> tags, List<String> switches) {
+    // home, filter 등에서 사용되기 전에 바로 이렇게 해준다.
+    public void initDefaultTag() {
+        if(tags == null) {// null이면 바로 추가.
+            tags = new ArrayList<String>();
+            switches = new ArrayList<String>();
+
+            tags.add(TAG_DEFAULT);
+            switches.add("true");
+        } else {// 아니면 검색후 삽입(첫번째에)
+            if(tags.contains(TAG_DEFAULT) == false) {
+                tags.add(0, TAG_DEFAULT);
+                switches.add(0, "true");
+            }
+        }
+    }
+
+    public void setPreferences(/*boolean defaultTag, */List<String> tags, List<String> switches) {
         SharedPreferences.Editor editor = preferences.edit();
 
         // default부터 해준다. - 결국 이것이 filter가 여닫히지 않으면 저장안되겠지만 init자체에서의 defaultTag의 default가 true이므로 일단 문제없다.
-        this.defaultTag = defaultTag;
-        editor.putBoolean("DefaultTag", defaultTag);
+        //this.defaultTag = defaultTag;
+        //editor.putBoolean("DefaultTag", defaultTag);
 
         // tag만으로 비교해도 된다.
         if(tags != null) {
@@ -860,12 +878,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     //---- filter
-    public boolean isTagsChanged(boolean defaultTag, List<String> tags, List<String> switches) {
+    public boolean isTagsChanged(/*boolean defaultTag, */List<String> tags, List<String> switches) {
         boolean result = false;
 
-        if(this.defaultTag != defaultTag) {
-            result = true;
-        } else {
+        //if(this.defaultTag != defaultTag) {
+        //    result = true;
+        //} else {
             if(tags == null || (tags != null && tags.isEmpty())) { // filter 비었을 때
                 if(this.tags == null || (this.tags != null && this.tags.isEmpty())) { // pref도 비었으면 not changed
                     result = false;
@@ -895,17 +913,17 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     }
                 }
             }
-        }
+        //}
 
         return result;
     }
 
     @Override
-    public void onCloseFilter(boolean defaultTag, List<String> tags, List<String> switches) {
+    public void onCloseFilter(/*boolean defaultTag, */List<String> tags, List<String> switches) {
         // 나중에는 변경된 사항들만 변화시킬 수 있는 logic을 생각해보도록 한다.
-        if(isTagsChanged(defaultTag, tags, switches) == true) { // updates preferences, homefragment when only changes exist.
+        if(isTagsChanged(/*defaultTag, */tags, switches) == true) { // updates preferences, homefragment when only changes exist.
             // set to pref.
-            setPreferences(defaultTag, tags, switches);
+            setPreferences(/*defaultTag, */tags, switches);
             // update home
             /*
             위치는 어차피 home 자체적으로 표시되고 해결되게 되어있다.

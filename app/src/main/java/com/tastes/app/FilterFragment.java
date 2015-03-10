@@ -45,7 +45,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     private float lastTranslate = 0.0f;
 
-    private boolean defaultTag;
+    //private boolean defaultTag;
     // 처음 받는 용이다. adpater와 계속 동기화되긴 솔직히 힘들다.(switch 변경까지 생각해보면 안된다고 생각하는게 맞다.)
     private List<String> tags;
     private List<String> switches;
@@ -63,14 +63,14 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     //private final String HEADER = "";
 
+    private static final String TAG_DEFAULT = "tastes";
+
     private FilterFragmentCallbacks mCallbacks;
 
-    public static FilterFragment newInstance(boolean defaultTag, List<String> tags, List<String> switches) {
+    public static FilterFragment newInstance(/*boolean defaultTag, */List<String> tags, List<String> switches) {
         FilterFragment fragment = new FilterFragment();
         Bundle args = new Bundle();
-        args.putBoolean(ARG_DEFAULT_TAG, defaultTag);
-        //args.putStringArrayList(ARG_TAGS, tags != null ? (ArrayList<String>) tags : null);
-        //args.putStringArrayList(ARG_SWITCHES, switches != null ? (ArrayList<String>) switches : null);
+        //args.putBoolean(ARG_DEFAULT_TAG, defaultTag);
         // 이렇게 해야 main의 것과 연결 안되며, 동시에 adapter로 null대신 obj전달해 ref 유지할 수 있다.
         args.putStringArrayList(ARG_TAGS, tags != null ? new ArrayList<String>(tags) : new ArrayList<String>());
         args.putStringArrayList(ARG_SWITCHES, switches != null ? new ArrayList<String>(switches) : new ArrayList<String>());
@@ -88,7 +88,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
         // 여기서부터 꼬인다. 그냥 넘겨받지 말고 main activity에꺼 가져쓴다.
         if (getArguments() != null) {
-            defaultTag = getArguments().getBoolean(ARG_DEFAULT_TAG);
+            //defaultTag = getArguments().getBoolean(ARG_DEFAULT_TAG);
             tags = getArguments().getStringArrayList(ARG_TAGS);
             switches = getArguments().getStringArrayList(ARG_SWITCHES);
         }
@@ -153,13 +153,14 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         header = view.findViewById(R.id.fragment_filter_header);
         header.setOnClickListener(this);
 
+        // 이건 항상 false가 낫다. 따라서 pref 저장하지 않는다.
         check = (CheckBox) header.findViewById(R.id.fragment_filter_header_check);
-        check.setChecked(defaultTag);
+        //check.setChecked(defaultTag);
         check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                //adapter.setSwitches(isChecked);
-                defaultTag = isChecked;
+                adapter.setSwitches(isChecked);
+                //defaultTag = isChecked;
             }
         });
 
@@ -238,7 +239,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             그래서 이제 local var를 제대로 사용하기로 하고, adapter에 보내는 ref도 거기서 새로 정의되는 것이 아니라 ref 그대로 사용되게 된다.
             따라서 여기서도 adpater의 값을 받아와서 쓰는 것이 아니라 그냥 local var를 사용하면 된다.
              */
-            mCallbacks.onCloseFilter(defaultTag, tags, switches);
+            mCallbacks.onCloseFilter(/*defaultTag, */tags, switches);
         }
     }
 
@@ -284,11 +285,9 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             //YoYo.with(Techniques.Shake).playOn(edit);
             edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
-        } else if(adapter.getTags() != null && (adapter.getTags().contains(tag) || tag.equals("tastes"))) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
-            if(adapter.getTags().contains(tag)) {// tastes를 포함한 것일 때는 어차피 맨 위에 있으므로 cursor 움직일 필요 없다.
-                // list scroll 해보기.
-                list.setSelection(adapter.getTags().indexOf(tag));
-            }
+        } else if(adapter.getTags() != null && adapter.getTags().contains(tag)) { // 중복 되어도, msg보다는 차라리 list selection 시켜주든가 한다.
+            // list scroll 해보기.
+            list.setSelection(adapter.getTags().indexOf(tag));
 
             //YoYo.with(Techniques.Shake).playOn(edit);
             edit.startAnimation(shake);
@@ -312,6 +311,6 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     }
 
     public interface FilterFragmentCallbacks {
-        public void onCloseFilter(boolean defaultFilter, List<String> tags, List<String> switches);
+        public void onCloseFilter(/*boolean defaultFilter, */List<String> tags, List<String> switches);
     }
 }

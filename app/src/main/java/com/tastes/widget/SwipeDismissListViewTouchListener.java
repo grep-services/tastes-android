@@ -220,7 +220,7 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
                 boolean dismiss = false;
                 boolean dismissRight = false;
                 //if (Math.abs(deltaX) > mViewWidth / 2) {
-                if (deltaX * -1 > mViewWidth / 2) { // only rtol
+                if (mDownPosition > 0 && deltaX * -1 > mViewWidth / 2) { // only rtol(from 2nd item)
                     dismiss = true;
                     dismissRight = deltaX > 0;
                 } else if (mMinFlingVelocity <= velocityX && velocityX <= mMaxFlingVelocity && velocityY < velocityX) {

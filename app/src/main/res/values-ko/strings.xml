@@ -5,7 +5,7 @@
 
     <string name="title_fragment_camera"></string>
     <string name="title_fragment_display"></string>
-    <string name="title_fragment_home">Home</string>
+    <string name="title_fragment_home">홈</string>
     <string name="title_fragment_filter">Filter</string>
     <string name="title_fragment_item">Menu</string>
 
@@ -25,6 +25,6 @@
     <string name="date_hour">시간 전</string>
     <string name="date_day">일 전</string>
     <string name="date_etc"></string>
-    <string name="select_all">@string/app_name</string>
+    <string name="select_all">전체선택</string>
 
 </resources>
