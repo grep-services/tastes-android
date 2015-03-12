@@ -7,7 +7,9 @@
         <item name="colorPrimary">@color/gray</item>
         <item name="colorPrimaryDark">@color/gray_dark</item>
         <item name="colorAccent">@color/orange</item>
-        -->
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/transparent</item>
+        <item name="colorControlHighlight">@color/transparent</item>--><!-- because of edittext -->
     </style>
 
 </resources>

@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:clickable="true"
     tools:context="com.tastes.app.ProfileFragment">
 
     <RelativeLayout
@@ -36,7 +37,7 @@
             android:layout_centerInParent="true"
             android:padding="4dp"
             android:includeFontPadding="false"
-            android:textSize="24sp"
+            android:textSize="18sp"
             android:textColor="@color/text_inverse"
             app:fontFamily="noto_sans_cjk_kr"
             app:textWeight="demilight"

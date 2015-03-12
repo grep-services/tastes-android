@@ -98,32 +98,34 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_filter, container, false);
 
+        /*
         // tree observer 이용한 visible view height(keyboard 위쪽) 재는 방식 쓰려 했으나 adjustPan일 경우 가능하고, 다시말해 view들이 움직이게 된다는 말이어서 실패했다.
         view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { // 하지만 이렇게 사용하긴 하도록 한다.
             @Override
             public void onGlobalLayout() {
-                Rect r = new Rect();
-                view.getWindowVisibleDisplayFrame(r);
-                int screenHeight = view.getRootView().getHeight();
+                if(getActivity() != null) {// home에서 뜬 keyboard도 여기서 다뤄지면서 이 frag null 될 때(home to cam) 등에서 npe 나서 이렇게 했다.
+                    Rect r = new Rect();
+                    view.getWindowVisibleDisplayFrame(r);
+                    int screenHeight = view.getRootView().getHeight();
 
-                int keypadHeight = screenHeight - r.bottom;
+                    int keypadHeight = screenHeight - r.bottom;
 
-                // 0.15 ratio is perhaps enough to determine keypad height.
-                if (keypadHeight > screenHeight * 0.15) {
-                    isKeyboard = true;
+                    // 0.15 ratio is perhaps enough to determine keypad height.
+                    if (keypadHeight > screenHeight * 0.15) {
+                        isKeyboard = true;
 
-                    //((MainActivity) getActivity()).getSlidingMenu().setSlidingEnabled(false);
-                    ((MainActivity) getActivity()).setViewPagerEnabled(false);
-                } else {
-                    if(isKeyboard == true) {
-                        //((MainActivity) getActivity()).getSlidingMenu().setSlidingEnabled(true);
-                        ((MainActivity) getActivity()).setViewPagerEnabled(true);
+                        ((MainActivity) getActivity()).setViewPagerEnabled(false);
+                    } else {
+                        if(isKeyboard == true) {
+                            ((MainActivity) getActivity()).setViewPagerEnabled(true);
 
-                        isKeyboard = false;
+                            isKeyboard = false;
+                        }
                     }
                 }
             }
         });
+        */
 
         list = (ListView) view.findViewById(R.id.fragment_filter_list);
 

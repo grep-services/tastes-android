@@ -109,8 +109,8 @@ public class ImageAdapter extends BaseAdapter {
                 .showImageForEmptyUri(R.drawable.fail)
                 .showImageOnFail(R.drawable.fail)
                 //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
-                .cacheInMemory(true) // 이건 작으니까 일단 해제하지 않고 놔둬본다.
-                .cacheOnDisk(true)
+                .cacheInMemory(false) // 이건 작으니까 일단 해제하지 않고 놔둬본다.
+                .cacheOnDisk(false)
                 .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
                 .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
                 //.displayer(new FadeInBitmapDisplayer(500)) // 여긴 넣어두는게 자연스럽게 쌓이는 것 같아 보일 것 같다.

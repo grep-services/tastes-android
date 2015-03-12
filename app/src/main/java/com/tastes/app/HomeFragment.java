@@ -2,24 +2,35 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.res.Configuration;
+import android.content.Context;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.InputFilter;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.devspark.robototextview.widget.RobotoEditText;
 import com.tastes.R;
 import com.tastes.content.Image;
+import com.tastes.content.Tag;
+import com.tastes.util.ByteLengthFilter;
+import com.tastes.util.DefaultFilter;
 import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
 import com.tastes.widget.ImageAdapter;
@@ -40,11 +51,14 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
     ImageLoader imageLoader;
 
+    EditText edit;
     SwipeRefreshLayout refresh;
     GridView grid;
     ImageAdapter adapter;
 
     View emptyView;
+
+    boolean isKeyboard = false;
 
     private MainActivity mActivity;
     private HomeFragmentCallbacks mCallbacks;
@@ -82,12 +96,67 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     }
 */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         /*
         ********************** filter ok 하고서 이쪽으로 온다. 즉, view 설정 등이 또 되는데.....
          */
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        final View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // tree observer 이용한 visible view height(keyboard 위쪽) 재는 방식 쓰려 했으나 adjustPan일 경우 가능하고, 다시말해 view들이 움직이게 된다는 말이어서 실패했다.
+        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { // 하지만 이렇게 사용하긴 하도록 한다.
+            @Override
+            public void onGlobalLayout() {
+                Rect r = new Rect();
+                view.getWindowVisibleDisplayFrame(r);
+                int screenHeight = view.getRootView().getHeight();
+
+                int keypadHeight = screenHeight - r.bottom;
+
+                // 0.15 ratio is perhaps enough to determine keypad height.
+                if (keypadHeight > screenHeight * 0.15) {
+                    isKeyboard = true;
+
+                    //((MainActivity) getActivity()).setViewPagerEnabled(false);
+                } else {
+                    if(isKeyboard == true) {
+                        //((MainActivity) getActivity()).setViewPagerEnabled(true);
+
+                        clearEdit();
+
+                        isKeyboard = false;
+                    }
+                }
+            }
+        });
+
+        edit = (RobotoEditText) view.findViewById(R.id.fragment_home_edit);
+        edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
+        edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
+        edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_DONE:
+                        confirmTag();
+
+                        return true;
+                }
+
+                return false;
+            }
+        });
+        edit.setSelection(1);
+        edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus == true) {// 이건 자동으로 된다. 괜히 했다가 keyboard 중복 열리는 문제 생긴다.
+                    //showKeyboard();
+                } else {
+                    hideKeyboard();
+                }
+            }
+        });
 
         refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_home_refresh);
 
@@ -102,21 +171,26 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         grid.setEmptyView(emptyView);
         grid.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            public void onScrollStateChanged(AbsListView view, int scrollState) {// 최대 3번 called라서 여기에서 하기로 했다.
+                if(scrollState == SCROLL_STATE_IDLE) {
+                    if(grid.getChildCount() > 0 && grid.getChildAt(0).getTop() == 0) {
+                        refresh.setEnabled(true);
+                    }
+                } else {
+                    refresh.setEnabled(false);
+
+                    if(scrollState == SCROLL_STATE_TOUCH_SCROLL) {// 스크롤 하는 도중 keyboard open할 수도 있지만 그건 놔둬도 괜찮을 듯 하다.
+                        clearEdit();
+                    }
+                }
             }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if(grid.getChildCount() > 0 && grid.getChildAt(0).getTop() < 0) {
-                    refresh.setEnabled(false);
-                } else {
-                    refresh.setEnabled(true);
-                }
             }
         });
 
         //((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
-
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
@@ -136,8 +210,16 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         return view;
     }
 
+    public void clearEdit() {
+        if(edit != null && edit.hasFocus()) {
+            edit.clearFocus();
+        }
+    }
+
     public void setRefreshing(boolean refreshing) {
         if(refreshing) {
+            clearEdit();// 있으면 끈다는 말이다. 여기가 refresh, location, network 다 한번에 할 수 있는 곳이다. 또한 false 될 때도 하면 setEmptyView 등에서 안해도 되고 맥락도 더 잘 맞다.(시작과 끝에는 keyboard가 off되어야 한다는.)
+
             refresh.post(new Runnable() {
                 @Override
                 public void run() {
@@ -239,36 +321,46 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         mCallbacks = null;
     }
 
-    /*
-    public void actionFilterClicked() {
+    public void searchTag(String tag) {
         if(mCallbacks != null) {
-            mCallbacks.onHomeActionFilterClicked();
+            mCallbacks.onHomeSearchTag(tag);
         }
     }
-    */
+
+    public void confirmTag() {
+        String tag = edit.getText().subSequence(Tag.HEADER.length(), edit.length()).toString();
+
+        Animation shake = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
+
+        // 최대한 msg는 없앤다.
+        if(tag == null || tag.isEmpty()) { // 빈 내용이면 그냥 놔두면 된다.
+            //YoYo.with(Techniques.Shake).playOn(edit);
+            edit.startAnimation(shake);
+            //Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();
+        } else {
+            clearEdit();// keyboard close부터.
+
+            searchTag(tag);
+        }
+    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        clearEdit();
+
         if(mCallbacks != null) {
             //mCallbacks.onHomeItemClicked((Image) adapter.getItem(position));
             mCallbacks.onHomeItemClicked(adapter.getImages(), position);
         }
     }
 
-    /*
-    @Override
-    public void onClick(View v) {
-        switch(v.getId()) {
-            case R.id.fragment_home_filter:
-                actionFilterClicked();
-
-                break;
-        }
+    public void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
     }
-    */
 
     public interface HomeFragmentCallbacks {
-        //public void onHomeActionFilterClicked();
+        public void onHomeSearchTag(String tag);
         public void onHomeItemClicked(List<Image> images, int position);
     }
 }

@@ -71,7 +71,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/margin"
+        android:padding="8dp"
         android:gravity="center_vertical"
         android:background="@color/view">
 
@@ -86,7 +86,7 @@
             android:inputType="text"
             android:textSize="18sp"
             android:imeOptions="actionDone"
-            android:background="@null"/>
+            android:background="@drawable/background_edit"/>
 
         <Button
             android:id="@+id/fragment_filter_add"

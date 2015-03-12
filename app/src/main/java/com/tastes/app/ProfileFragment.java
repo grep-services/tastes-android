@@ -151,6 +151,8 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
             setRefreshing(true);
         } else {
             if(mActivity.isLocationUpdated()) {
+                setRefreshing(true);
+
                 setView();
             } else {
                 if(mActivity.isRequestingLocationFailed()) {

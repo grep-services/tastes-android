@@ -726,7 +726,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 // camera flag는 없으므로 pass.
                 flag_fragment_home = false;
 
-                //slidingMenu.setSlidingEnabled(false);
+                homeFragment.clearEdit();
 
                 break;
             case 1:// Home
@@ -736,6 +736,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     flag_fragment_filter = false;
 
                     filterFragment.closeFilter();
+
+                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
                 }
 
                 //slidingMenu.setSlidingEnabled(true);
@@ -745,14 +747,18 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 flag_fragment_home = false;
                 flag_fragment_filter = true;
 
+                //homeFragment.clearEdit(); 일단 안해도 돌아간다.
+
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
                 break;
         }
     }
-
+/*
     public void setViewPagerEnabled(boolean enabled) {
         viewPagerFragment.setEnabled(enabled);
     }
-
+*/
     //---- camera
     @Override
     public void onTakePicture(String mode_flash) {
@@ -785,7 +791,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 cameraFragment.setShotButtonEnabled(true);
 
                 // 여기서 해야 되는 것 같다. 아무튼, default를 resize로 하고, display에서만 바꿔주는게 맞을 듯 하다. 반대로 하면 vp에서 계속 change되어서 더 느릴듯 하다.
-                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+                //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
             }
         });
 
@@ -876,12 +882,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     //---- home
-    /*
     @Override
-    public void onHomeActionFilterClicked() {
-        slidingMenu.toggle();
+    public void onHomeSearchTag(String tag) {
+        profileFragment = ProfileFragment.newInstance(latitude, longitude, tag);
+
+        addFragment(profileFragment);
     }
-    */
 
     @Override
     public void onHomeItemClicked(List<Image> images, int position) {
@@ -1010,7 +1016,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                         }
                     }
 
-                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                    //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 } else {
                     fragmentManager.popBackStack();
                 }

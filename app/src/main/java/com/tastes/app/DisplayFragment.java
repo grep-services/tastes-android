@@ -594,7 +594,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus == true) {
-                    showKeyboard(v);
+                    showKeyboard(v);// TODO: 필요한지 확인해보기.
                 } else {
                     hideKeyboard(v);
                 }
