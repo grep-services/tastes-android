@@ -35,6 +35,7 @@ import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
 import com.tastes.widget.ImageAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.tastes.widget.SwipeRefreshLayout_;
 
 import org.apache.http.conn.HttpHostConnectException;
 
@@ -159,6 +160,14 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         });
 
         refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_home_refresh);
+        /* 아직 안된다. 보류.
+        ((SwipeRefreshLayout_) refresh).setOnActionDown(new Runnable() {
+            @Override
+            public void run() {
+                clearEdit();
+            }
+        });
+        */
 
         emptyView = view.findViewById(R.id.fragment_home_empty);
 
@@ -194,6 +203,8 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
+                clearEdit();// pull.
+
                 if(mActivity.isLocationUpdated()) {
                     setView();
                 } else {
@@ -217,9 +228,9 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     }
 
     public void setRefreshing(boolean refreshing) {
-        if(refreshing) {
-            clearEdit();// 있으면 끈다는 말이다. 여기가 refresh, location, network 다 한번에 할 수 있는 곳이다. 또한 false 될 때도 하면 setEmptyView 등에서 안해도 되고 맥락도 더 잘 맞다.(시작과 끝에는 keyboard가 off되어야 한다는.)
+        clearEdit();// 아직 true일 땐 쓸일 없지만 분화해놨다가 나중에 다시 통일하는것 보다 이게 낫다.
 
+        if(refreshing) {
             refresh.post(new Runnable() {
                 @Override
                 public void run() {
