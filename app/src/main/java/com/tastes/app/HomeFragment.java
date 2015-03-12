@@ -222,7 +222,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     }
 
     public void clearEdit() {
-        if(edit != null && edit.hasFocus()) {
+        if(edit != null) {
             edit.clearFocus();
         }
     }

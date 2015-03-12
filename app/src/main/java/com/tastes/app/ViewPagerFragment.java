@@ -67,6 +67,8 @@ public class ViewPagerFragment extends Fragment {
             }
         });
 
+        mViewPager.setOffscreenPageLimit(3);
+
         // for init flag of activity.
         //mViewPager.setCurrentItem(0);
         //mOnPageSelected(0);

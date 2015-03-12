@@ -21,6 +21,8 @@ import android.widget.TextView;
 import com.devspark.robototextview.util.RobotoTextViewUtils;
 import com.devspark.robototextview.util.RobotoTypefaceManager;
 import com.devspark.robototextview.widget.RobotoTextView;
+import com.nostra13.universalimageloader.core.imageaware.ImageAware;
+import com.nostra13.universalimageloader.core.imageaware.ImageViewAware;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.content.Tag;

@@ -20,7 +20,7 @@ android {
 }
 
 repositories {
-    maven { url "http://jzaccone.github.io/SlidingMenu-aar" }
+    //maven { url "http://jzaccone.github.io/SlidingMenu-aar" }
     maven { url "https://repo.commonsware.com.s3.amazonaws.com" }
 }
 

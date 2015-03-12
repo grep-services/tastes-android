@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.devspark.robototextview.widget.RobotoTextView;
+import com.nostra13.universalimageloader.core.imageaware.ImageViewAware;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -109,14 +110,15 @@ public class ImageAdapter extends BaseAdapter {
                 .showImageForEmptyUri(R.drawable.fail)
                 .showImageOnFail(R.drawable.fail)
                 //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
-                .cacheInMemory(false) // 이건 작으니까 일단 해제하지 않고 놔둬본다.
-                .cacheOnDisk(false)
+                .cacheInMemory(true) // 이건 작으니까 일단 해제하지 않고 놔둬본다.
+                .cacheOnDisk(true)
                 .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
                 .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
                 //.displayer(new FadeInBitmapDisplayer(500)) // 여긴 넣어두는게 자연스럽게 쌓이는 것 같아 보일 것 같다.
                 .build();
 
         imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, viewHolder.image, options, new SimpleImageLoadingListener() {
+        //imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, new ImageViewAware(viewHolder.image, false), options, new SimpleImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {
                 viewHolder.distance.setVisibility(View.GONE);
@@ -127,6 +129,7 @@ public class ImageAdapter extends BaseAdapter {
                 viewHolder.distance.setVisibility(View.VISIBLE);
             }
         });
+
         viewHolder.distance.setText(String.valueOf(images.get(position).distance) + context.getResources().getString(R.string.distance_unit));
 
         return convertView;
