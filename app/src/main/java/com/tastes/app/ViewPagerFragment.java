@@ -19,6 +19,7 @@ import java.util.List;
 public class ViewPagerFragment extends Fragment {
 
     private CameraFragment_ cameraFragment;
+    private GalleryFragment galleryFragment;
     private HomeFragment homeFragment;
     private FilterFragment filterFragment;
 
@@ -42,6 +43,7 @@ public class ViewPagerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         cameraFragment = ((MainActivity) getActivity()).getCameraFragment();
+        galleryFragment = ((MainActivity) getActivity()).getGalleryFragment();
         homeFragment = ((MainActivity) getActivity()).getHomeFragment();
         filterFragment = ((MainActivity) getActivity()).getFilterFragment();
     }
@@ -67,12 +69,12 @@ public class ViewPagerFragment extends Fragment {
             }
         });
 
-        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.setOffscreenPageLimit(4);
 
         // for init flag of activity.
         //mViewPager.setCurrentItem(0);
         //mOnPageSelected(0);
-        setCurrentPage(0);
+        setCurrentPage(1);// camera
 
         return view;
     }
@@ -131,14 +133,18 @@ public class ViewPagerFragment extends Fragment {
 
             switch(position) {
                 case 0:
-                    fragment = cameraFragment;
+                    fragment = galleryFragment;
 
                     break;
                 case 1:
-                    fragment = homeFragment;
+                    fragment = cameraFragment;
 
                     break;
                 case 2:
+                    fragment = homeFragment;
+
+                    break;
+                case 3:
                     fragment = filterFragment;
             }
 
@@ -147,7 +153,7 @@ public class ViewPagerFragment extends Fragment {
 
         @Override
         public int getCount() {
-            return 3;
+            return 4;
         }
     }
 

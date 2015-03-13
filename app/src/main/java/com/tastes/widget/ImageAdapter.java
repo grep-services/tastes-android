@@ -33,15 +33,22 @@ public class ImageAdapter extends BaseAdapter {
     LayoutInflater inflater;
     ImageLoader imageLoader;
 
+    boolean internal;// 내부 gallery에서 받는지, 외부 server에서 받는지.
+
     public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader) {
-        this(context, inflater, imageLoader, new ArrayList<Image>());
+        this(context, inflater, imageLoader, new ArrayList<Image>(), false);
     }
 
-    public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader, List<Image> images) {
+    public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader, boolean internal) {
+        this(context, inflater, imageLoader, new ArrayList<Image>(), internal);
+    }
+
+    public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader, List<Image> images, boolean internal) {
         this.context = context;
         this.inflater = inflater;
         this.imageLoader = imageLoader;
         this.images = images;
+        this.internal = internal;
     }
 
     public void setImages(List<Image> images) {
@@ -110,14 +117,16 @@ public class ImageAdapter extends BaseAdapter {
                 .showImageForEmptyUri(R.drawable.fail)
                 .showImageOnFail(R.drawable.fail)
                 //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
-                .cacheInMemory(true) // 이건 작으니까 일단 해제하지 않고 놔둬본다.
-                .cacheOnDisk(true)
+                .cacheInMemory(false) // 이건 작으니까 일단 해제하지 않고 놔둬본다.
+                .cacheOnDisk(false)
                 .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
                 .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
                 //.displayer(new FadeInBitmapDisplayer(500)) // 여긴 넣어두는게 자연스럽게 쌓이는 것 같아 보일 것 같다.
                 .build();
 
-        imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, viewHolder.image, options, new SimpleImageLoadingListener() {
+        String uri = (internal ? "" : "http://54.65.1.56:3639") + images.get(position).thumbnail;
+
+        imageLoader.displayImage(uri, viewHolder.image, options, new SimpleImageLoadingListener() {
         //imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, new ImageViewAware(viewHolder.image, false), options, new SimpleImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {
@@ -130,7 +139,13 @@ public class ImageAdapter extends BaseAdapter {
             }
         });
 
-        viewHolder.distance.setText(String.valueOf(images.get(position).distance) + context.getResources().getString(R.string.distance_unit));
+        if(images.get(position).thumbnail == null) viewHolder.image.setImageBitmap(images.get(position).bitmap);
+
+        if(images.get(position).distance >= 0) {
+            viewHolder.distance.setText(String.valueOf(images.get(position).distance) + context.getResources().getString(R.string.distance_unit));
+        } else {
+            viewHolder.distance.setVisibility(View.GONE);
+        }
 
         return convertView;
     }

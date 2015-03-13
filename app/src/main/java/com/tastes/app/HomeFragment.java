@@ -293,18 +293,20 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             protected void onPostExecute(Boolean success) {
                 super.onPostExecute(success);
 
-                if(success) {// item update는 사실 network가 안돌아갈 때까지 해줄 필요는 없다고 생각한다. 그럼 괜히 화면만 비어서 이상하다.(그래도 논의해보기.)
-                    // manually set empty view string - view가 refresh 위에 있어서 string이 아무때나 보일 수 있다.
-                    setEmptyView(getString(R.string.img_empty));
-                } else {
-                    //Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
-                    setEmptyView(getString(R.string.network_retry));
+                if(isAdded()) {// 재현 자주 되지는 않지만 attatched안됐는데 getString 등 한다고 error 난다. onPost에서는 주로 이렇게 해주라는 의견들이 있다.
+                    if(success) {// item update는 사실 network가 안돌아갈 때까지 해줄 필요는 없다고 생각한다. 그럼 괜히 화면만 비어서 이상하다.(그래도 논의해보기.)
+                        // manually set empty view string - view가 refresh 위에 있어서 string이 아무때나 보일 수 있다.
+                        setEmptyView(getString(R.string.img_empty));
+                    } else {
+                        //Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
+                        setEmptyView(getString(R.string.network_retry));
+                    }
+
+                    // set to adapter.
+                    adapter.setImages(images);
+
+                    setRefreshing(false);
                 }
-
-                // set to adapter.
-                adapter.setImages(images);
-
-                setRefreshing(false);
             }
         };
 

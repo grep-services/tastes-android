@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.tastes.app.GalleryFragment">
+
+    <!-- 갤5에서 어떻게 해도 안없어져서 minus padding으로라도 해결해야 했다. 진짜로 넓어진다 보면 되므로
+    딱 맞게 보이는 폰들에서는 각 사이드 이미지들이 1px씩은 잘릴 것이지만 어쩔 수 없다. 무시한다. -->
+    <GridView
+        android:id="@+id/fragment_gallery_grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/grid_padding"
+        android:paddingRight="@dimen/grid_padding"
+        android:numColumns="3"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="@dimen/grid_divider"
+        android:horizontalSpacing="@dimen/grid_divider"/>
+
+    <com.devspark.robototextview.widget.RobotoTextView
+        android:id="@+id/fragment_gallery_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:padding="4dp"
+        android:includeFontPadding="false"
+        android:textSize="18sp"
+        android:textColor="@color/text"
+        android:text="@string/img_empty"
+        android:visibility="gone"/><!-- wait 자체가 없기 때문에 초기를 애초에 empty string으로둔다. -->
+
+</LinearLayout>

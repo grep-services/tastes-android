@@ -54,12 +54,18 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     private static final String ARG_MIRROR = "mirror";// for ffc
     private static final String ARG_IMAGE = "image";
+    private static final String ARG_PATH = "path";// for gallery
+    private static final String ARG_TIME = "time";
     private static final String ARG_ROTATION = "rotation";
     //private static final String ARG_ADDRESS = "address";
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
 
+    private boolean internal;
+
     private boolean mirror;
+    private String path;
+    private long time;
     private int rotation;
     //private String address;
     private double latitude;
@@ -100,10 +106,20 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     private DisplayFragmentCallbacks mCallbacks;
 
     public static DisplayFragment newInstance(boolean mirror, byte[] image, int rotation, double latitude, double longitude) {
+        return DisplayFragment.newInstance(mirror, image, null, -1, rotation, latitude, longitude);
+    }
+
+    public static DisplayFragment newInstance(boolean mirror, String path, long time, int rotation, double latitude, double longitude) {
+        return DisplayFragment.newInstance(mirror, null, path, time, rotation, latitude, longitude);
+    }
+
+    public static DisplayFragment newInstance(boolean mirror, byte[] image, String path, long time, int rotation, double latitude, double longitude) {
         DisplayFragment fragment = new DisplayFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_MIRROR, mirror);
         args.putByteArray(ARG_IMAGE, image);
+        args.putString(ARG_PATH, path);
+        args.putLong(ARG_TIME, time);
         args.putInt(ARG_ROTATION, rotation);
         //args.putString(ARG_ADDRESS, address);
         args.putDouble(ARG_LATITUDE, latitude);
@@ -123,11 +139,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         if (getArguments() != null) {
             mirror = getArguments().getBoolean(ARG_MIRROR);
             image = getArguments().getByteArray(ARG_IMAGE);
+            path = getArguments().getString(ARG_PATH);
+            time = getArguments().getLong(ARG_TIME);
             rotation = getArguments().getInt(ARG_ROTATION);
             //address = getArguments().getString(ARG_ADDRESS);
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
+
+        internal = (image == null);// 혹시라도 path가 안넘어올 수도 있으므로...
 
         ViewConfiguration vc = ViewConfiguration.get(getActivity());
         mSlop = (int)(vc.getScaledTouchSlop() * 0.5); // 50퍼센트 정도가 적당하다. 대략 16dp 로 계산되는거 같다만...
@@ -137,7 +157,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_display, container, false);
 
-        if(image == null) {
+        if(image == null && path == null) {// path도 추가하면 될 것 같다.
             Toast.makeText(getActivity(), getString(R.string.upload_image), Toast.LENGTH_SHORT).show();
 
             ((MainActivity) getActivity()).onBackPressed();// 일단 이렇게 해본다.
@@ -150,7 +170,27 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             opts.inMutable = false;
             //opts.inSampleSize = 2; // 해보고 좀 아니다 싶으면 뺀다. -> 일단 별 차이 없어서 놔뒀다.
 
-            origin = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
+            if(!internal) {
+                origin = BitmapFactory.decodeByteArray(image, 0, image.length, opts);
+            } else {
+                Bitmap bitmap_ = BitmapFactory.decodeFile(path);// opts도 같이 적용해본다.
+
+                int originWidth = bitmap_.getWidth();
+                int originHeight = bitmap_.getHeight();
+                int targetWidth, targetHeight;
+
+                // 아직 가로 사진을 쓰지 않기 때문에 괜히 가로 사진 선택하면 결국 확대되어서 보일 것이다. 돌리든지 막든지 나중에 정하도록 한다.
+                if(originWidth > originHeight) {
+                    targetHeight = 720;
+                    targetWidth = originWidth * targetHeight / originHeight;
+                } else {
+                    targetWidth = 720;
+                    targetHeight = originHeight * targetWidth / originWidth;
+                }
+
+                origin = Bitmap.createScaledBitmap(bitmap_, targetWidth, targetHeight, true);
+            }
+
             int width = origin.getWidth();
             int height = origin.getHeight();
             LogWrapper.e("DISPLAY", "size : " + width + ", " + height);
@@ -255,15 +295,17 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public void setLocation(double latitude, double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+        if(!internal) {// gallery에서 온 것에 대해서는 할 필요 없으므로.
+            this.latitude = latitude;
+            this.longitude = longitude;
 
-        if(isWaiting()) {
+            if(isWaiting()) {
             /*
             wait는 두 종류 있는데, 두번째 종류는 이미 location set된 상태이므로 다시 request location 할 일이 없으므로 여기로 오지 않을 것이다.
             그러므로 그냥 첫번째 wait(request location)이라 생각하고 upload를 call하면 된다.
              */
-            upload();
+                upload();
+            }
         }
     }
 
@@ -638,7 +680,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     public void upload() {
         int position = pager.getCurrentItem();
 
-        if(mirror || position > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
+        if(mirror || internal || position > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
             Bitmap bitmap;
 
             switch(position) {
@@ -655,7 +697,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             image = stream.toByteArray();
         }
 
-        actionOKClicked(image, System.currentTimeMillis(), latitude, longitude, tags, positions, orientations, switches);
+        actionOKClicked(image, internal ? time : System.currentTimeMillis(), latitude, longitude, tags, positions, orientations, switches);
     }
 
     @Override
@@ -665,14 +707,16 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         switch(v.getId()) {
             case R.id.fragment_display_ok:
                 // check location first.
-                if(mainActivity.isLocationUpdated() == false) {
-                    if(mainActivity.isRequestingLocationUpdates()) {// 어차피 몇초 안에 끝나는 일이므로 toast보다는 dialog가 낫다. 기존 wait를 쓴다.
-                        showView(waitView);
-                    } else if(mainActivity.isRequestingLocationFailed()) {
-                        showView(locationView);
-                    }
+                if(!internal) {
+                    if(mainActivity.isLocationUpdated() == false) {
+                        if(mainActivity.isRequestingLocationUpdates()) {// 어차피 몇초 안에 끝나는 일이므로 toast보다는 dialog가 낫다. 기존 wait를 쓴다.
+                            showView(waitView);
+                        } else if(mainActivity.isRequestingLocationFailed()) {
+                            showView(locationView);
+                        }
 
-                    break;
+                        break;
+                    }
                 }
                 // check tag existence
                 if(tags == null || tags.isEmpty()) {// 애초에 remove될 때 null시키면 되겠지만 여러번 체크하는 것도 그렇고 일단 이게 최소 변경이므로 이렇게 간다.
