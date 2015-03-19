@@ -4,11 +4,13 @@
     <!-- basic colors - 파스텔 톤 느낌으로 -->
     <color name="transparent">@android:color/transparent</color><!-- 00000000 과 같을것임. 사실 00ff0000이 언제나 투명이라고 하긴 함. -->
     <color name="white">#fff7f7f7</color>
+    <color name="white_dark">#ffdfdfdf</color>
     <color name="white_overlay">#80f7f7f7</color>
     <color name="gray">#ff3f3f3f</color>
     <color name="gray_dark">#ff353535</color>
     <color name="gray_overlay">#c03f3f3f</color>
     <color name="black">#ff2b2b2b</color>
+    <color name="black_overlay">#c02b2b2b</color>
     <color name="orange">#ffef5000</color>
     <color name="orange_dark">#ffbf5100</color>
 
@@ -28,8 +30,10 @@
     <color name="list_divider">@color/gray</color>
     <color name="list_pressed">@color/gray</color>
 
-    <!-- progressbar colors -->
-    <color name="progress_bar">@color/white</color>
-    <color name="progress_rim">@color/black</color>
+    <!-- progressbar colors - bar가 main 색이다. -->
+    <color name="progress_bar">@color/black</color>
+    <color name="progress_bar_inverse">@color/white</color>
+    <color name="progress_rim">@color/white_dark</color>
+    <color name="progress_rim_inverse">@color/black</color>
 
 </resources>

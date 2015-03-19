@@ -188,7 +188,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         // high도 마찬가지로 실내에선 gps만 켜놓으면 안잡힌다. 하지만 나머지에 대해서는 속도 차이 모르겠고, 정확도가 사실 중요하다. 오히려 실외에서 gps만 있을 때 high는 잡아도 balanced는 못잡을 수 있으므로 이걸로 간다.
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setNumUpdates(1);
-        mLocationRequest.setExpirationDuration(10000);// 혹시나 이게 자체적으로 stop을 유발하는건 아닌지... 확인하고 싶지만 방법을 아직 못찾았다.
+        mLocationRequest.setExpirationDuration(LOCATION_TIMEOUT);// 혹시나 이게 자체적으로 stop을 유발하는건 아닌지... 확인하고 싶지만 방법을 아직 못찾았다.
     }
 
     // connection failed됐을 때 activity로부터 call되어 다시 connect 시도 하게 되는 module.
@@ -725,10 +725,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                     filterFragment.closeFilter();
 
+                    //filterFragment.clearEdit(); 이것도 일단 안해도 돌아간다.
+
                     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
                 }
-
-                //slidingMenu.setSlidingEnabled(true);
 
                 break;
             case 3:
@@ -1017,7 +1017,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     }
 
                     //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-                } else {
+                } else {// item,
                     fragmentManager.popBackStack();
                 }
             }
@@ -1053,16 +1053,17 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                 break;
             //case R.id.fragment_display_close:
-            case R.id.fragment_home_camera:
+            //case R.id.fragment_home_camera:
             case R.id.fragment_profile_back:
             case R.id.fragment_item_close:
                 onBackPressed();
 
                 break;
+            /*
             case R.id.fragment_home_filter:
                 viewPagerFragment.setCurrentPage(3);
 
-                break;
+                break;*/
         }
     }
 

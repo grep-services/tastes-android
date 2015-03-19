@@ -57,7 +57,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     GridView grid;
     ImageAdapter adapter;
 
-    View emptyView;
+    View emptyView, layerView;
 
     boolean isKeyboard = false;
 
@@ -131,8 +131,21 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             }
         });
 
+        layerView = view.findViewById(R.id.fragment_home_layer);
+        layerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    clearEdit();
+                }
+
+                return true;
+            }
+        });
+
         edit = (RobotoEditText) view.findViewById(R.id.fragment_home_edit);
-        edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
+        edit.setAlpha(0.5f);
+        edit.setText(Tag.HEADER + getString(R.string.search_tag));// 이것 때문에 어차피 hint는 무시된다.
         edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -152,9 +165,19 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus == true) {// 이건 자동으로 된다. 괜히 했다가 keyboard 중복 열리는 문제 생긴다.
-                    //showKeyboard();
+                    edit.setAlpha(1.0f);
+
+                    edit.setText(Tag.HEADER);
+
+                    layerView.setVisibility(View.VISIBLE);
                 } else {
                     hideKeyboard();
+
+                    layerView.setVisibility(View.GONE);
+
+                    edit.setText(Tag.HEADER + getString(R.string.search_tag));
+
+                    edit.setAlpha(0.5f);
                 }
             }
         });
@@ -187,10 +210,11 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
                     }
                 } else {
                     refresh.setEnabled(false);
-
+                    /* layerView 때문에 필요없어졌다.
                     if(scrollState == SCROLL_STATE_TOUCH_SCROLL) {// 스크롤 하는 도중 keyboard open할 수도 있지만 그건 놔둬도 괜찮을 듯 하다.
                         clearEdit();
                     }
+                    */
                 }
             }
 

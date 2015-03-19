@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -51,6 +52,8 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     private List<String> switches;
 
     SharedPreferences preferences;
+
+    View layerView;
 
     View header;
     CheckBox check;
@@ -118,7 +121,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                         if(isKeyboard == true) {
                             //((MainActivity) getActivity()).setViewPagerEnabled(true);
 
-                            edit.clearFocus();
+                            clearEdit();
 
                             isKeyboard = false;
                         }
@@ -166,8 +169,21 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             }
         });
 
+        layerView = view.findViewById(R.id.fragment_filter_layer);
+        layerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    clearEdit();
+                }
+
+                return true;
+            }
+        });
+
         edit = (RobotoEditText) view.findViewById(R.id.fragment_filter_edit);
-        edit.setText(Tag.HEADER);// 이것 때문에 어차피 hint는 무시된다.
+        edit.setAlpha(0.5f);
+        edit.setText(Tag.HEADER + getString(R.string.add_tag));// 이것 때문에 어차피 hint는 무시된다.
         edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -187,9 +203,19 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus == true) {// 이건 자동으로 된다. 괜히 했다가 keyboard 중복 열리는 문제 생긴다.
-                    //showKeyboard();
+                    edit.setAlpha(1.0f);
+
+                    edit.setText(Tag.HEADER);
+
+                    layerView.setVisibility(View.VISIBLE);
                 } else {
                     hideKeyboard();
+
+                    layerView.setVisibility(View.GONE);
+
+                    edit.setText(Tag.HEADER + getString(R.string.add_tag));
+
+                    edit.setAlpha(0.5f);
                 }
             }
         });
@@ -198,6 +224,12 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         button.setOnClickListener(this);
 
         return view;
+    }
+
+    public void clearEdit() {
+        if(edit != null) {
+            edit.clearFocus();
+        }
     }
 /*
     public void setDefaultTag(boolean defaultTag) {
@@ -323,7 +355,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
             edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "이미 존재하는 이름입니다.", Toast.LENGTH_SHORT).show();
         } else {
-            edit.clearFocus();// keyboard close부터.
+            clearEdit();// keyboard close부터.
 
             addTag(tag);
 

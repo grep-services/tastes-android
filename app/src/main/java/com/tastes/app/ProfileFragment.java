@@ -195,9 +195,11 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
 
     // 이건 setRefreshing이 필요없는 곳에서도 쓰인다.
     public void setLocationFailure() {
-        setEmptyView(getString(R.string.location_retry));
+        if(isAdded()) {// getString때문이긴 하지만 어쨌든 not attatched일 때 할 필요 없다.(종료시일 것이므로)
+            setEmptyView(getString(R.string.location_retry));
 
-        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+            adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+        }
     }
 
     public void notifyLocationFailure() {

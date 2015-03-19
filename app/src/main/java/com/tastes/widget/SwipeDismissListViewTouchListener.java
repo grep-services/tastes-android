@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.EditText;
 import android.widget.ListView;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorListenerAdapter;
@@ -157,6 +158,11 @@ public class SwipeDismissListViewTouchListener implements View.OnTouchListener {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int scrollState) {
                 setEnabled(scrollState != AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
+                /* layerView touchEvent 방식으로 처리해서 필요없어졌다.
+                if(scrollState == SCROLL_STATE_TOUCH_SCROLL) {
+                    runnable.run();
+                }
+                */
             }
 
             @Override

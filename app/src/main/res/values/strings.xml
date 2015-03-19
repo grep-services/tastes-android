@@ -26,5 +26,7 @@
     <string name="date_day">day</string>
     <string name="date_etc">s</string>
     <string name="select_all">Select all</string>
+    <string name="search_tag">Search HashTag</string>
+    <string name="add_tag">Add HashTag</string>
 
 </resources>

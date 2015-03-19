@@ -15,12 +15,13 @@
         android:gravity="center_vertical"
         android:background="@color/gray">
 
+        <!--
         <Button
             android:id="@+id/fragment_home_camera"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/camera"
-            android:onClick="mOnClick"/>
+            android:onClick="mOnClick"/>-->
         <!--
         <ImageView
             android:layout_width="99dp"
@@ -49,8 +50,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginRight="@dimen/margin"
-            android:layout_marginLeft="@dimen/margin"
             android:padding="4dp"
             android:includeFontPadding="false"
             android:inputType="text"
@@ -58,58 +57,71 @@
             android:textColor="@color/text_inverse"
             android:imeOptions="actionDone"
             android:background="@drawable/background_edit_inverse"/>
-
+<!--
         <Button
             android:id="@+id/fragment_home_filter"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="@drawable/filter"
-            android:onClick="mOnClick"/>
+            android:onClick="mOnClick"/>-->
 
     </LinearLayout>
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/fragment_home_refresh"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <FrameLayout
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/fragment_home_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- 갤5에서 어떻게 해도 안없어져서 minus padding으로라도 해결해야 했다. 진짜로 넓어진다 보면 되므로
-            딱 맞게 보이는 폰들에서는 각 사이드 이미지들이 1px씩은 잘릴 것이지만 어쩔 수 없다. 무시한다. -->
-            <GridView
-                android:id="@+id/fragment_home_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingLeft="@dimen/grid_padding"
-                android:paddingRight="@dimen/grid_padding"
-                android:numColumns="3"
-                android:stretchMode="columnWidth"
-                android:verticalSpacing="@dimen/grid_divider"
-                android:horizontalSpacing="@dimen/grid_divider"/>
-
-            <ScrollView
-                android:id="@+id/fragment_home_empty"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <com.devspark.robototextview.widget.RobotoTextView
-                    android:id="@+id/fragment_home_empty_txt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="4dp"
-                    android:includeFontPadding="false"
-                    android:textSize="18sp"
-                    android:textColor="@color/text"/><!-- wait 자체가 없기 때문에 초기를 애초에 empty string으로둔다. -->
+                <!-- 갤5에서 어떻게 해도 안없어져서 minus padding으로라도 해결해야 했다. 진짜로 넓어진다 보면 되므로
+                딱 맞게 보이는 폰들에서는 각 사이드 이미지들이 1px씩은 잘릴 것이지만 어쩔 수 없다. 무시한다. -->
+                <GridView
+                    android:id="@+id/fragment_home_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="@dimen/grid_padding"
+                    android:paddingRight="@dimen/grid_padding"
+                    android:numColumns="3"
+                    android:stretchMode="columnWidth"
+                    android:verticalSpacing="@dimen/grid_divider"
+                    android:horizontalSpacing="@dimen/grid_divider"/>
 
-            </ScrollView>
+                <ScrollView
+                    android:id="@+id/fragment_home_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-        </FrameLayout>
+                    <com.devspark.robototextview.widget.RobotoTextView
+                        android:id="@+id/fragment_home_empty_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:padding="4dp"
+                        android:includeFontPadding="false"
+                        android:textSize="18sp"
+                        android:textColor="@color/text"/><!-- wait 자체가 없기 때문에 초기를 애초에 empty string으로둔다. -->
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+                </ScrollView>
+
+            </FrameLayout>
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <View
+            android:id="@+id/fragment_home_layer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/gray_overlay"
+            android:visibility="gone"/>
+
+    </FrameLayout>
 
 </LinearLayout>
