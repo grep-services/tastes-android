@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
@@ -33,6 +34,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.util.LocationUtils;
@@ -48,7 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private QueryWrapper queryWrapper;
 
@@ -66,6 +69,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private boolean flag_taking_camera = false;// fragment 관련이 아니라, cam frag에서 taking 중일 때만 true되어서 back을 막아주는 역할을 하는 flag이다.
     private boolean flag_fragment_gallery = false;// back pressed 때문에 필요.
     private boolean flag_fragment_filter = false;
+    private boolean flag_fragment_map = false;
 
     //private SlidingMenu slidingMenu;
 
@@ -77,6 +81,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private ProfileFragment profileFragment;
     private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
+    private MapFragment_ mapFragment;
 
     // location
     private GoogleApiClient mGoogleApiClient;
@@ -122,7 +127,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         galleryFragment = GalleryFragment.newInstance(latitude, longitude);
 
-        homeFragment = HomeFragment.newInstance(latitude, longitude);
+        homeFragment = HomeFragment.newInstance(/*latitude, longitude*/);
 
         filterFragment = FilterFragment.newInstance(/*defaultTag, */tags, switches);
 
@@ -132,24 +137,6 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         splashFragment = SplashFragment.newInstance(mLocationUpdates);
         //splashFragment = SplashFragment.newInstance(false);
         addFragment(splashFragment);
-
-        /*
-        filterFragment = FilterFragment.newInstance(defaultTag, tags, switches);
-        replaceFragment(R.id.menu, filterFragment);
-
-        setSlidingMenu();
-
-        getFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                if(getFragmentManager().getBackStackEntryCount() == 0 && flag_fragment_home == true) {
-                    slidingMenu.setSlidingEnabled(true);
-                } else {
-                    slidingMenu.setSlidingEnabled(false);
-                }
-            }
-        });
-        */
     }
 
     public CameraFragment_ getCameraFragment() {
@@ -179,15 +166,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        // default 60m. 어차피 1번이므로 상관없다.
-        //mLocationRequest.setInterval(100000);
-        // default 60/6 = 10m. 이것도 상관없다.
-        //mLocationRequest.setFastestInterval(100000);
-        // 100m 정도 오차. 시간은 1초 정도. network만 쓰는게 아니라, balnaced인데, 실내에선 gps만 켜면 gps가 안잡혀서 그래서 안되는듯. 결국, msg도 그런거 고려해서 띄워주기.
-        //mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        // high도 마찬가지로 실내에선 gps만 켜놓으면 안잡힌다. 하지만 나머지에 대해서는 속도 차이 모르겠고, 정확도가 사실 중요하다. 오히려 실외에서 gps만 있을 때 high는 잡아도 balanced는 못잡을 수 있으므로 이걸로 간다.
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setNumUpdates(1);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);// 일단 지도로 세부 설정 가능하므로 배터리 위해 이렇게 갔다.
+        mLocationRequest.setNumUpdates(5);
+        mLocationRequest.setInterval(1000);
         mLocationRequest.setExpirationDuration(LOCATION_TIMEOUT);// 혹시나 이게 자체적으로 stop을 유발하는건 아닌지... 확인하고 싶지만 방법을 아직 못찾았다.
     }
 
@@ -244,6 +225,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     protected void startLocationUpdates() {
         if(servicesAvailable() == true) {
             if(mRequestingLocationUpdates == false) {
+                mLocationUpdated = false;//TODO: 아무래도 이걸 넣어야만, 초기화 격이 될 것이다.(그래야 재시도시 기존 위치 인식하게 되지 않는다.)
                 mRequestingLocationUpdates = true;
                 mRequestingLocationFailed = false;
 
@@ -258,11 +240,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 mRunnable = new Runnable(){
                     @Override
                     public void run() {
-                        if(mLocationUpdated == false) { // 물론 updated되고 나면 바로 updateUI로 가고 intent 실행되겠지만, 이거랑 시간이 비슷할 경우도 가정하지 않을 수 없다.
+                        // 그런데 밑에걸 해버리면 location 재시도(true인 상황에서) 할 때 이곳을 넘어가지 못한다.
+                        //if(mLocationUpdated == false) { // 물론 updated되고 나면 바로 updateUI로 가고 intent 실행되겠지만, 이거랑 시간이 비슷할 경우도 가정하지 않을 수 없다.
                             mRequestingLocationFailed = true;
 
                             stopLocationUpdates();
-                        }
+                        //}
                     }
                 };
 
@@ -289,35 +272,47 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public void onLocationUpdated() {
         // 당장 필요한건 update success시 home setview 하는 것 뿐일듯 하다.... display도 있을듯.
         if(mLocationUpdated) {
-            if(galleryFragment != null) {
-                galleryFragment.setLocation(latitude, longitude);
-            }
-            if(displayFragment != null) {
-                displayFragment.setLocation(latitude, longitude);
-            }
-            if(homeFragment != null) {// null인 상황은 애초에 onLocationChanged에서 저장되는 latlng가 자동으로 homeFrag 생성시 전달되어 해결될 것이다.
-                homeFragment.setLocation(latitude, longitude);
-            }
-            /*
-            여러개 있으면 최상위만 될것이고, 최상위 back되어도 2순위가 되는게 아니라 null일 것이다.
-            하지만 사실 home이든 profile이든 단 1번만 위치 받으면 되며, profile은 현재 none-location 상태로 2개 이상 존재할 수 없는 구조이다.
-            따라서 현재로서는 아무 문제가 없다. 추후 필요하다면 profileFragment ref 관리 data structure 만들어서 관리하던가 하도록 한다.
-             */
-            if(profileFragment != null) {
-                profileFragment.setLocation(latitude, longitude);
+            if(mapFragment != null) {// 일반 fragment들에 넘어가면 안된다. map에만 전달.
+                mapFragment.setLocation(latitude, longitude);
+            } else {// 여기 있는 것들은 이것들 내부에서 recall하는 일 없는 한(없다.) 1회만 실행된다.(아직은 이 방식 유지)
+                if(galleryFragment != null) {
+                    galleryFragment.setLocation(latitude, longitude);
+                }
+                if(displayFragment != null) {
+                    displayFragment.setLocation(latitude, longitude);
+                }
+                if(homeFragment != null) {// null인 상황은 애초에 onLocationChanged에서 저장되는 latlng가 자동으로 homeFrag 생성시 전달되어 해결될 것이다.
+                    homeFragment.setLocation(latitude, longitude);
+                }
+                /*
+                여러개 있으면 최상위만 될것이고, 최상위 back되어도 2순위가 되는게 아니라 null일 것이다.
+                하지만 사실 home이든 profile이든 단 1번만 위치 받으면 되며, profile은 현재 none-location 상태로 2개 이상 존재할 수 없는 구조이다.
+                따라서 현재로서는 아무 문제가 없다. 추후 필요하다면 profileFragment ref 관리 data structure 만들어서 관리하던가 하도록 한다.
+                 */
+                if(profileFragment != null) {
+                    profileFragment.setLocation(latitude, longitude);
+                }
             }
         } else {
             if(mRequestingLocationFailed) {
-                if(displayFragment != null) {// display가 살아있고
-                    if(displayFragment.isWaiting()) {// wait 중이라면
-                        displayFragment.notifyLocationFailure();// failure를 알린다.
+                if(mapFragment != null) {
+                    mapFragment.notifyLocationFailure();
+                } else {
+                    /*
+                    home, profile은 사용자 눈에 보이는 부분이므로 당장 map이 아니더라도 화면상에서 위치 실패 표시 의무 있지만
+                    display 경우 어차피 무조건 map을 거쳐야 되는 관계로 거기서 알아서 실패 인식 되도록 놔둔다.
+                    if(displayFragment != null) {// display가 살아있고
+                        if(displayFragment.isWaiting()) {// wait 중이라면
+                            displayFragment.notifyLocationFailure();// failure를 알린다.
+                        }
                     }
-                }
-                if(homeFragment != null) {
-                    homeFragment.notifyLocationFailure();
-                }
-                if(profileFragment != null) {
-                    profileFragment.notifyLocationFailure();
+                    */
+                    if(homeFragment != null) {
+                        homeFragment.notifyLocationFailure();
+                    }
+                    if(profileFragment != null) {
+                        profileFragment.notifyLocationFailure();
+                    }
                 }
             }
         }
@@ -819,16 +814,32 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     //---- display
     @Override
-    public void onDisplayActionOKClicked(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> orientations, final List<String> switches) {
+    public void onDisplayOKClicked(double latitude, double longitude) {
+        flag_fragment_map = true;
+
+        mapFragment = MapFragment_.newInstance(latitude, longitude, mLocationUpdated);
+
+        addFragment(mapFragment);
+    }
+
+    @Override
+    //public void onDisplayActionOKClicked(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> orientations, final List<String> switches) {
+    public void onDisplayUpload(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> orientations) {
         // send to server
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+
+                homeFragment.setRefreshing(true);
+            }
+
             @Override
             protected Boolean doInBackground(Void... params) {
                 try {
                     queryWrapper.addImage(file, time, latitude, longitude, tags, positions, orientations);
                 } catch (HttpHostConnectException e) {
                     LogWrapper.e("Loc", e.getMessage());
-                    //e.printStackTrace();
                     return false;
                 }
 
@@ -840,23 +851,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 super.onPostExecute(success);
 
                 if(success) {
+                    homeFragment.setView();
                     /*
-                    // tag 자체 filtering - tastes tag는 서버에는 switch와 함께 올라가더라도, 여기서는 빼 줘야 중복 안된다. - 나중에는 list 자체에 포함시켜서 이렇게 안꼬이게 한다.
-                    if(tags != null && tags.contains("tastes")) {
-                        int index = tags.indexOf("tastes");
-
-                        defaultTag = switches.get(index).equals("true");// 사실 항상 true일 것이다 ㅡ display에서는 모두 true이므로.
-                        filterFragment.setDefaultTag(defaultTag);
-
-                        tags.remove(index);
-                        switches.remove(index);
-                    }
-                    // add to pref.
-                    addPreferences(tags, switches);
-                    // set filter also.
-                    filterFragment.setTags(MainActivity.this.tags, MainActivity.this.switches); // filter가 이제 새로 뜨는게 아니라서 변경 생길 때마다 해줘야된다.(ok는 변경을 무조건 수반한다고 볼 수 있다.)
-                    */
-                    // and then, just go to home frag. => set nav frag to 1(home) and, just finish(back).
+                    TODO: 읽어보기. 성공이후 set은 한다쳐도 이동은 미리 해 있을 것이다.
                     homeFragment.setView();
 
                     if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
@@ -864,14 +861,23 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                         onBackPressed();
                     }
+                    */
                 } else {
+                    //homeFragment.setRefreshing(false);
+                    /*
+                    TODO : 나중에는 home에다가 Image obj를 이용한 retry form 만들어주도록 한다.
+                    기존과 같이 display가 아직 있는지 등을 검사할 필요도 없다.
+                    무조건 toast만 띄워준다.
+                     */
+                    // method로 하는게 낫다.
+                    homeFragment.notifyNetworkFailure();
+                    //showToast(R.string.network_retry);
+                    /*
                     if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
                         //displayFragment.showWait(false);
                         displayFragment.notifyNetworkFailure();
                     }
-
-                    // display가 닫혔든 말든 msg(toast)는 표시해주는 것이 좋을 것 같다.
-                    //Toast.makeText(MainActivity.this, getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
+                    */
                 }
             }
         };
@@ -881,10 +887,18 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    public void showToast(int resId) {
+        Toast toast = Toast.makeText(this, getString(resId), Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+    }
+
     //---- home
     @Override
     public void onHomeSearchTag(String tag) {
-        profileFragment = ProfileFragment.newInstance(latitude, longitude, tag);
+        LatLng location = homeFragment.getLocation();// 직접 받을수도 있지만 일단 통일성/확장성 위해.
+
+        profileFragment = ProfileFragment.newInstance(tag, location.latitude, location.longitude, homeFragment.isLocationAvailable());
 
         addFragment(profileFragment);
     }
@@ -894,6 +908,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         Fragment fragment = ItemFragment.newInstance(images, position);
 
         addFragment(fragment);
+    }
+
+    @Override
+    public void onHomeLocationClicked(double latitude, double longitude, boolean isLocationAvailable) {
+        flag_fragment_map = true;
+
+        mapFragment = MapFragment_.newInstance(latitude, longitude, isLocationAvailable);
+
+        addFragment(mapFragment);
     }
 
     //---- profile
@@ -909,10 +932,44 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         addFragment(fragment);
     }
 
+    //---- map
+    @Override
+    public void onMapLocationClicked(double latitude, double longitude) {
+        //TODO: keyboard back은 좀 막을 수 있다면 막아보도록 한다. 하지만 워낙 빠르기도 하고, 다른 부분들도 그대로이므로 일단 놔두고 나중에 한꺼번에 한다.
+
+        // display에서 온건지 home/profile에서 온건지 구분해야 한다.
+        if(displayFragment != null) {
+            // 1. show toast.
+            showToast(R.string.upload_wait);//TODO: 다른 서비스들 봐도 그냥 안내 없이 올린다. 그렇게 하기.
+            // 2. set display location - //TODO: upload와 같이 하고 싶지만 upload도 일단 독립적으로 둬보는게 좋을듯하다.
+            displayFragment.setLocation(latitude, longitude);
+            // 3. upload via display frag
+            displayFragment.upload();
+            // 4. close display frag.
+            onBackPressed();
+            // 5. move to home(refresh는 async post에서 될 것)
+            viewPagerFragment.setCurrentPage(2);
+        } else {
+            if(profileFragment != null) {
+                profileFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
+                profileFragment.setLocation(latitude, longitude);
+            } else {// profile에서 뜬 map의 설정시에는 home은 안 건드린다는 말과 같다.(당장은 profile에서 map 뜨지도 않으므로 상관없다.)
+                if(homeFragment != null) {
+                    homeFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
+                    homeFragment.setLocation(latitude, longitude);
+                }
+            }
+        }
+
+        onBackPressed();// 뭐가 됐든 back은 필요하다.(display 등은 2번이므로 묶어야 keyboard back 등에 의한 꼬임 발생 안할 것 같긴 하지만...)
+    }
+
     //---- filter
     @Override
     public void onFilterTagClicked(String tag) {
-        profileFragment = ProfileFragment.newInstance(latitude, longitude, tag);
+        LatLng location = homeFragment.getLocation();
+
+        profileFragment = ProfileFragment.newInstance(tag, location.latitude, location.longitude, homeFragment.isLocationAvailable());
 
         addFragment(profileFragment);
     }
@@ -969,7 +1026,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             따라서 여기서는 위치가 없으면 pass, 있으면 진행하면 된다.
             (사실 onRefres에서 위치가 있는 부분만 떼온 것이나 다름없다고 보면 된다.)
              */
-            if(mLocationUpdated) {
+            //if(mLocationUpdated) {//TODO: 이것도 HOME의 LOC AVAILABLE CHECK로 바꿔야 한다.
+            if(homeFragment.isLocationAvailable()) {
                 homeFragment.setRefreshing(true);
                 homeFragment.setView();
             }
@@ -984,9 +1042,20 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onItemActionTagClicked(String tag) {
-        profileFragment = ProfileFragment.newInstance(latitude, longitude, tag);
+        LatLng location = homeFragment.getLocation();
+
+        profileFragment = ProfileFragment.newInstance(tag, location.latitude, location.longitude, homeFragment.isLocationAvailable());
 
         addFragment(profileFragment);
+    }
+
+    @Override
+    public void onItemActionDistanceClicked(double latitude, double longitude) {
+        /*
+        Fragment fragment = MapFragment_.newInstance(latitude, longitude);
+
+        addFragment(fragment);
+        */
     }
 
     /*
@@ -1008,18 +1077,24 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                     displayFragment = null;// 쓸 일 없으면 null 처리를 해주는게 나을듯 하다.
 
-                    fragmentManager.popBackStack();
+                    //fragmentManager.popBackStack();
 
-                    if(ROTATE_TAG) {
-                        if(getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                    if (ROTATE_TAG) {
+                        if (getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
                             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                         }
                     }
 
                     //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                } else if(flag_fragment_map == true) {
+                    flag_fragment_map = false;
+
+                    mapFragment = null;
                 } else {// item,
-                    fragmentManager.popBackStack();
+                    //fragmentManager.popBackStack();
                 }
+
+                fragmentManager.popBackStack();// 이건 다 해준다.(display에서 저렇게 중간에서 해줬었는데 괜찮은지 확인해보기.)
             }
         } else {
             if(flag_fragment_gallery) {// gallery to camera.

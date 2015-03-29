@@ -1,0 +1,27 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_map_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.tastes.app.MapFragment_">
+
+    <Button
+        android:id="@+id/fragment_map_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right|bottom"
+        android:layout_marginRight="12dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/current"/>
+
+    <Button
+        android:id="@+id/fragment_map_go"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|bottom"
+        android:layout_marginLeft="12dp"
+        android:layout_marginBottom="12dp"
+        android:text="GO"/>
+
+</FrameLayout>

@@ -21,11 +21,13 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
 
 import com.devspark.robototextview.widget.RobotoEditText;
+import com.google.android.gms.maps.model.LatLng;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.content.Tag;
@@ -42,18 +44,30 @@ import org.apache.http.conn.HttpHostConnectException;
 import java.util.List;
 
 public class HomeFragment extends Fragment implements GridView.OnItemClickListener/*, Button.OnClickListener*/ {
-    private static final String ARG_LATITUDE = "latitude";
-    private static final String ARG_LONGITUDE = "longitude";
+    //TODO: 읽어보기. display나 profile처럼 init loc가 필요하지 않은, init이 존재할 수 없는 부분이다.(초기 반드시 set되는 frag이므로) 따라서 필요없다.
+    //private static final String ARG_LATITUDE = "latitude";
+    //private static final String ARG_LONGITUDE = "longitude";
 
     private double latitude;
     private double longitude;
+
+    private boolean isLocationAvailable;// main의 updated에만 의존할 수 없다. 그 이유는, map에서 manually set 가능하기 때문이다.
 
     private QueryWrapper queryWrapper;
 
     ImageLoader imageLoader;
 
     EditText edit;
+    Button button;
     SwipeRefreshLayout refresh;
+    /*
+    TODO: 읽어보기
+    기존에는 refresh가 main의 위치 존재여부에 따라 위치 받아오기를 하던가 말던가 했다면
+    이제는 home의 위치 available에 따라 start location get을 하던 말던 한다.
+    아예 refresh가 위치랑 무관하게 하자니 아무래도 map만을 이용하는데에 적응이 안되어 있을 수도 있고
+    그렇다고 무조건 main에서 받자니 위치가 꺼져있어도 home에서 manually set할 수도 있다는 것을 생각했을 때
+    main의 updated가 아니라 home의 available을 check하는게 더 맞다고 봤다.
+     */
     GridView grid;
     ImageAdapter adapter;
 
@@ -64,12 +78,14 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     private MainActivity mActivity;
     private HomeFragmentCallbacks mCallbacks;
 
-    public static HomeFragment newInstance(double latitude, double longitude) {
+    public static HomeFragment newInstance(/*double latitude, double longitude*/) {
         HomeFragment fragment = new HomeFragment();
+        /*
         Bundle args = new Bundle();
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
         fragment.setArguments(args);
+        */
         return fragment;
     }
 
@@ -80,12 +96,12 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        /*
         if (getArguments() != null) {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
         }
-
+        */
         queryWrapper = new QueryWrapper();
 
         imageLoader = ImageLoader.getInstance();
@@ -182,6 +198,14 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             }
         });
 
+        button = (Button) view.findViewById(R.id.fragment_home_location);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                locationClicked(latitude, longitude, isLocationAvailable);
+            }
+        });
+
         refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_home_refresh);
         /* 아직 안된다. 보류.
         ((SwipeRefreshLayout_) refresh).setOnActionDown(new Runnable() {
@@ -229,10 +253,19 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
                 clearEdit();// pull.
 
-                if(mActivity.isLocationUpdated()) {
+                /*
+                if(mActivity.isLocationUpdated()) {//TODO: available인지 check하는걸로 바껴야 할듯.
                     setView();
                 } else {
                     if(mActivity.isRequestingLocationFailed()) {
+                        mActivity.startLocationUpdates();
+                    }
+                }
+                */
+                if(isLocationAvailable) {
+                    setView();
+                } else {
+                    if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
                         mActivity.startLocationUpdates();
                     }
                 }
@@ -269,25 +302,57 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         }
     }
 
+    public boolean isLocationAvailable() {
+        return isLocationAvailable;
+    }
+
+    public LatLng getLocation() {
+        return new LatLng(latitude, longitude);
+    }
+
     // splash가 activity가 아닌 상황에서는 home이 먼저 등록될 수 있다.(웬만하면) 구조를 통째로 바꾸기보다 일단 method하나만 만든다.
     public void setLocation(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
 
+        isLocationAvailable = true;// 한 번 set true 되면 아직은 다시 false 될 일 없다.
+
         setView();// 특별히 location 관련 check 할 필요는 없을 것 같다.
     }
 
-    public void setEmptyView(String string) {
-        TextView text = (TextView) emptyView.findViewById(R.id.fragment_home_empty_txt);
-        text.setText(string);
+    public void setEmptyView(int resId) {
+        if(isAdded()) {
+            TextView text = (TextView) emptyView.findViewById(R.id.fragment_home_empty_txt);
+            text.setText(getString(resId));
+        }
     }
 
     public void notifyLocationFailure() {
-        setEmptyView(getString(R.string.location_retry));
+        //showToast(R.string.location_retry);// TODO: home visible일 때만 show할지는 고민해보기.
+
+        //setEmptyView(R.string.img_empty);// 이제 통일.
+        setEmptyView(R.string.location_retry);
 
         adapter.setImages(null);// server에서 받아오지 않아도 null이다.
 
         setRefreshing(false);
+    }
+
+    public void notifyNetworkFailure() {
+        //showToast(R.string.network_retry);
+
+        //setEmptyView(R.string.img_empty);// 이제 통일.
+        setEmptyView(R.string.network_retry);// 이제 통일.
+
+        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+
+        setRefreshing(false);
+    }
+
+    public void showToast(int resId) {
+        if(getActivity() != null) {
+            ((MainActivity) getActivity()).showToast(resId);
+        }
     }
 
     public void setView() {
@@ -317,20 +382,20 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             protected void onPostExecute(Boolean success) {
                 super.onPostExecute(success);
 
-                if(isAdded()) {// 재현 자주 되지는 않지만 attatched안됐는데 getString 등 한다고 error 난다. onPost에서는 주로 이렇게 해주라는 의견들이 있다.
+                //if(isAdded()) {// 재현 자주 되지는 않지만 attatched안됐는데 getString 등 한다고 error 난다. onPost에서는 주로 이렇게 해주라는 의견들이 있다.
                     if(success) {// item update는 사실 network가 안돌아갈 때까지 해줄 필요는 없다고 생각한다. 그럼 괜히 화면만 비어서 이상하다.(그래도 논의해보기.)
                         // manually set empty view string - view가 refresh 위에 있어서 string이 아무때나 보일 수 있다.
-                        setEmptyView(getString(R.string.img_empty));
+                        setEmptyView(R.string.img_empty);
+                        // set to adapter.
+                        adapter.setImages(images);
+
+                        setRefreshing(false);
                     } else {
                         //Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
-                        setEmptyView(getString(R.string.network_retry));
+                        //setEmptyView(getString(R.string.network_retry));
+                        notifyNetworkFailure();
                     }
-
-                    // set to adapter.
-                    adapter.setImages(images);
-
-                    setRefreshing(false);
-                }
+                //}
             }
         };
 
@@ -361,6 +426,12 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     public void searchTag(String tag) {
         if(mCallbacks != null) {
             mCallbacks.onHomeSearchTag(tag);
+        }
+    }
+
+    public void locationClicked(double latitude, double longitude, boolean isLocationAvailable) {
+        if(mCallbacks != null) {
+            mCallbacks.onHomeLocationClicked(latitude, longitude, isLocationAvailable);
         }
     }
 
@@ -399,5 +470,6 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     public interface HomeFragmentCallbacks {
         public void onHomeSearchTag(String tag);
         public void onHomeItemClicked(List<Image> images, int position);
+        public void onHomeLocationClicked(double latitude, double longitude, boolean isLocationAvailable);
     }
 }

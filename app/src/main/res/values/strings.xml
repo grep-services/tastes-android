@@ -2,17 +2,16 @@
 <resources>
 
     <string name="app_name"><![CDATA[#]]>tastes</string>
-
     <string name="title_fragment_camera"></string>
     <string name="title_fragment_display"></string>
     <string name="title_fragment_home">Home</string>
     <string name="title_fragment_filter">Filter</string>
     <string name="title_fragment_item">Menu</string>
-
-    <string name="distance_unit">m</string><!-- &#160; to insert space. -->
+    <string name="distance_unit">m</string> <!-- &#160; to insert space. -->
 
     <string name="location_agree">\'<![CDATA[#]]>tastes\' would like to use your current location.</string>
     <string name="location_retry">Check your location settings and try again.</string>
+    <string name="location_wait">Getting location, wait...</string>
     <string name="location_ok">OK</string>
     <string name="upload_wait">Wait...</string>
     <string name="upload_image">There is no image</string>

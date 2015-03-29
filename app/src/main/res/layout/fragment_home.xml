@@ -11,7 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/margin"
+        android:padding="8dp"
         android:gravity="center_vertical"
         android:background="@color/gray">
 
@@ -65,6 +65,18 @@
             android:background="@drawable/filter"
             android:onClick="mOnClick"/>-->
 
+        <com.devspark.robototextview.widget.RobotoButton
+            android:id="@+id/fragment_home_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="4dp"
+            android:includeFontPadding="false"
+            android:drawableLeft="@drawable/location"
+            android:background="@null"
+            android:minWidth="24dp"
+            android:textSize="18sp"
+            android:textColor="@color/text_inverse"/>
+
     </LinearLayout>
 
     <FrameLayout
@@ -107,7 +119,7 @@
                         android:padding="4dp"
                         android:includeFontPadding="false"
                         android:textSize="18sp"
-                        android:textColor="@color/text"/><!-- wait 자체가 없기 때문에 초기를 애초에 empty string으로둔다. -->
+                        android:textColor="@color/text"/>
 
                 </ScrollView>
 

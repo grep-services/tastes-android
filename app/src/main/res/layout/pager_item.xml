@@ -26,6 +26,8 @@
         android:visibility="gone"><!-- 안해도 되긴 하지만 해두는게 더 안정적인 것 같다. -->
 
         <com.devspark.robototextview.widget.RobotoTextView
+            xmlns:tools="http://schemas.android.com/tools"
+            tools:context="com.tastes.app.MainActivity"
             android:id="@+id/pager_item_distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -33,7 +35,8 @@
             android:includeFontPadding="false"
             android:textSize="@dimen/text"
             android:textColor="@color/text_inverse"
-            android:layout_alignParentLeft="true"/>
+            android:layout_alignParentLeft="true"
+            android:clickable="true"/>
 
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/pager_item_datetime"

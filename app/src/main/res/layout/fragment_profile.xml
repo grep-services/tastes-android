@@ -90,7 +90,7 @@
                     android:padding="4dp"
                     android:includeFontPadding="false"
                     android:textSize="18sp"
-                    android:textColor="@color/text"/><!-- wait 자체가 없기 때문에 초기를 애초에 empty string으로둔다. -->
+                    android:textColor="@color/text"/>
 
             </ScrollView>
 

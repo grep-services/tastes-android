@@ -206,7 +206,10 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 }
             });
 
-            ((TextView) view.findViewById(R.id.pager_item_distance)).setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
+            TextView text = ((TextView) view.findViewById(R.id.pager_item_distance));
+            text.setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
+            text.setTag((Integer) position);
+            text.setOnClickListener(ItemFragment.this);// activity mOnClick method 안됨. 아마 custom view context 관련 문제인듯.
 
             String datetime = null;
             String strTime = images.get(position).time;
@@ -277,6 +280,12 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
+    public void actionDistanceClicked(double latitude, double longitude) {
+        if (mCallbacks != null) {
+            mCallbacks.onItemActionDistanceClicked(latitude, longitude);
+        }
+    }
+
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
@@ -292,11 +301,18 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 actionTagClicked(tag);
 
                 break;
+            case R.id.pager_item_distance:
+                int index = (Integer) v.getTag();
+
+                actionDistanceClicked(images.get(index).latitude, images.get(index).longitude);
+
+                break;
         }
     }
 
     public interface ItemFragmentCallbacks {
         public void onItemActionShareClicked();
         public void onItemActionTagClicked(String tag);
+        public void onItemActionDistanceClicked(double latitude, double longitude);
     }
 }

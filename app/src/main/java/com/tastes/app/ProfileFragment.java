@@ -30,13 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProfileFragment extends Fragment implements GridView.OnItemClickListener, Button.OnClickListener {
+    private static final String ARG_TAG = "tag";
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
-    private static final String ARG_TAG = "tag";
+    private static final String ARG_AVAILABLE = "available";
 
+    private String tag;
     private double latitude;
     private double longitude;
-    private String tag;
+
+    private boolean isLocationAvailable;// main의 updated에만 의존할 수 없다. 그 이유는, map에서 manually set 가능하기 때문이다.
 
     private QueryWrapper queryWrapper;
 
@@ -54,12 +57,13 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
     private MainActivity mActivity;
     private ProfileFragmentCallbacks mCallbacks;
 
-    public static ProfileFragment newInstance(double latitude, double longitude, String tag) {
+    public static ProfileFragment newInstance(String tag, double latitude, double longitude, boolean isLocationAvailable) {
         ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
+        args.putString(ARG_TAG, tag);
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
-        args.putString(ARG_TAG, tag);
+        args.putBoolean(ARG_AVAILABLE, isLocationAvailable);
         fragment.setArguments(args);
         return fragment;
     }
@@ -73,9 +77,10 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
+            tag = getArguments().getString(ARG_TAG);
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
-            tag = getArguments().getString(ARG_TAG);
+            isLocationAvailable = getArguments().getBoolean(ARG_AVAILABLE);
         }
 
         queryWrapper = new QueryWrapper();
@@ -134,10 +139,12 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
-                if(mActivity.isLocationUpdated()) {
+                //if(mActivity.isLocationUpdated()) {//TODO: available인지 check하는걸로 바껴야 할듯.
+                if(isLocationAvailable) {
                     setView();
                 } else {
-                    if(mActivity.isRequestingLocationFailed()) {
+                    //if(mActivity.isRequestingLocationFailed()) {
+                    if(mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
                         mActivity.startLocationUpdates();
                     }
                 }
@@ -150,7 +157,8 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         if(mActivity.isRequestingLocationUpdates()) {// home에서는 이게 default이므로 이것밖에 없었다.
             setRefreshing(true);
         } else {
-            if(mActivity.isLocationUpdated()) {
+            //if(mActivity.isLocationUpdated()) {
+            if(isLocationAvailable) {//TODO: home의 것을 check하려 했으나, 일단 이게 낫고, filter에서 오는걸 생각하면 확실히 home에 의지할지도 모르겠기 때문.
                 setRefreshing(true);
 
                 setView();
@@ -185,21 +193,37 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         this.latitude = latitude;
         this.longitude = longitude;
 
+        isLocationAvailable = true;
+
         setView();// 특별히 location 관련 check 할 필요는 없을 것 같다.
     }
 
-    public void setEmptyView(String string) {
-        TextView text = (TextView) emptyView.findViewById(R.id.fragment_profile_empty_txt);
-        text.setText(string);
+    public void setEmptyView(int resId) {
+        if(isAdded()) {
+            TextView text = (TextView) emptyView.findViewById(R.id.fragment_profile_empty_txt);
+            text.setText(getString(resId));
+        }
     }
 
     // 이건 setRefreshing이 필요없는 곳에서도 쓰인다.
     public void setLocationFailure() {
-        if(isAdded()) {// getString때문이긴 하지만 어쨌든 not attatched일 때 할 필요 없다.(종료시일 것이므로)
-            setEmptyView(getString(R.string.location_retry));
+        //showToast(R.string.location_retry);// TODO: profile visible일 때만 show할지는 고민해보기.
 
-            adapter.setImages(null);// server에서 받아오지 않아도 null이다.
-        }
+        //setEmptyView(R.string.img_empty);// 이제 통일.
+        setEmptyView(R.string.location_retry);
+
+        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+    }
+
+    public void notifyNetworkFailure() {
+        //showToast(R.string.network_retry);
+
+        //setEmptyView(R.string.img_empty);// 이제 통일.
+        setEmptyView(R.string.network_retry);
+
+        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+
+        setRefreshing(false);
     }
 
     public void notifyLocationFailure() {
@@ -208,8 +232,14 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         setRefreshing(false);
     }
 
+    public void showToast(int resId) {
+        if(getActivity() != null) {
+            ((MainActivity) getActivity()).showToast(resId);
+        }
+    }
+
     public void setView() {
-        LogWrapper.e("HOME", "set view");
+        LogWrapper.e("PROFILE", "set view");
         // get tags from pref.
         //=> pull to refresh 등에서는 pref에서 tags 받아올 필요 없을 거라고 생각할수도 있지만, tag를 1번만 받아오는 구조라면, 나중에 display나 filter 등에서 넘어올 때
         // 다른 정보를 더 받아와야 되는 등, 점점더 골치아파진다.(왜냐하면 이 home frag는 한번 실행되면 계속 남아있으므로 pref도 그대로일 것이기 때문.)
@@ -238,18 +268,20 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
             protected void onPostExecute(Boolean success) {
                 super.onPostExecute(success);
 
-                if(success) {// item update는 사실 network가 안돌아갈 때까지 해줄 필요는 없다고 생각한다. 그럼 괜히 화면만 비어서 이상하다.(그래도 논의해보기.)
-                    // manually set empty view string - view가 refresh 위에 있어서 string이 아무때나 보일 수 있다.
-                    setEmptyView(getString(R.string.img_empty));
-                } else {
-                    //Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
-                    setEmptyView(getString(R.string.network_retry));
-                }
+                //if(isAdded()) {// 재현 자주 되지는 않지만 attatched안됐는데 getString 등 한다고 error 난다. onPost에서는 주로 이렇게 해주라는 의견들이 있다.
+                    if(success) {// item update는 사실 network가 안돌아갈 때까지 해줄 필요는 없다고 생각한다. 그럼 괜히 화면만 비어서 이상하다.(그래도 논의해보기.)
+                        // manually set empty view string - view가 refresh 위에 있어서 string이 아무때나 보일 수 있다.
+                        setEmptyView(R.string.img_empty);
+                        // set to adapter.
+                        adapter.setImages(images);
 
-                // set to adapter.
-                adapter.setImages(images);
-
-                setRefreshing(false);
+                        setRefreshing(false);
+                    } else {
+                        //Toast.makeText(getActivity(), getString(R.string.upload_network), Toast.LENGTH_SHORT).show();
+                        //setEmptyView(getString(R.string.network_retry));
+                        notifyNetworkFailure();
+                    }
+                //}
             }
         };
 

@@ -13,6 +13,7 @@
 
     <string name="location_agree">\'<![CDATA[#]]>tastes\'가 귀하의 현재 위치를 사용하려고 합니다.</string>
     <string name="location_retry">위치 설정 확인 후 재시도 해주세요.</string>
+    <string name="location_wait">위치 검색중...</string>
     <string name="location_ok">확인</string>
     <string name="upload_wait">업로드 중...</string>
     <string name="upload_image">사용할 사진이 없습니다.</string>

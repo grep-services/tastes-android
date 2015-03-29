@@ -52,7 +52,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     private boolean use_ffc = false;// splash ffc로 하고 main에서 flip하려니 타이밍 에러 가능성 있다. 버벅거리기도 하므로 이렇게 간다.
     private boolean mirror_ffc = true;
     // 일단, continuous가 대세다. 이걸 더 발전시킨다. take전에 autofocus는 답답함 늘릴 수 있다. 차라리 tap to autofocus나 추가한다.
-    private boolean use_autofocus = false;
+    //private boolean use_autofocus = false;
     private String mode_focus;// = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;// 이건 거의 바뀔 일 없을듯.
     private boolean use_singleshot = true;
     private boolean use_fullbleed = true;
@@ -88,6 +88,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
 
         setHost(new CameraHost_(getActivity()));
 
+        //TODO: AUTO FOCUS 꼭 필요한건 아니므로 없는것에 대해서는 DISABLE해주는 처리도 필요하다.(BOOLEAN 사용 등으로)
         gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) { // double tap과 tap 구별 가능한 method.
@@ -257,7 +258,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     }
 
     public void autoFocus(float x, float y) {
-        if(use_autofocus == true) { // host에서 알아서 바뀌는데, 이것부터 check해야 한다. 그래야 mode도 정해진다.
+        //if(use_autofocus == true) { // host에서 알아서 바뀌는데, 이것부터 check해야 한다. 그래야 mode도 정해진다.
             if(use_ffc == false) { // ffc를 쓸 때는 하면 kill된다. 어쨌든 이렇게 처리하면 된다.
                 if(isAutoFocusing == false) {
                     // 이걸 빨리 해놔야 재터치 안된다.
@@ -266,11 +267,12 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
                     setShotButtonEnabled(false);
                     // 준비 됐으면 area 띄워준다.
                     showFocusArea(x, y, true);
+
                     // v size check해보고, xy는 그냥 저렇게 하면 되고, focus size는 dp가 아니라 camera axis(fixed)에 맞춰져야 하므로 고정된 100 정도로 한다.
                     cameraView.autoFocus(layerView.getWidth(), layerView.getHeight(), x, y, 50);
                 }
             }
-        }
+        //}
     }
 
     public void flip() {
@@ -328,6 +330,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
             return mirror_ffc;
         }
 
+        //TODO: 첫 FOCUSED 이후부터는 CONTINUOUS가 안먹히는 원인 찾기.
         @Override
         public void onAutoFocus(boolean success, Camera camera) {
             super.onAutoFocus(success, camera);
@@ -341,13 +344,23 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
             // 다시 mode_focus로 복귀시킨다.
             Camera.Parameters parameters = camera.getParameters();
             // api 보면 continuous 같은 경우 resume시 재설정 해야 된다 하고, 다른 것들도 확실히 잘 모르므로, 괜히 중복 체크 하지 말고 reset해준다.
+            /*
             if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
                 mode_focus = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
+            } else if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_MACRO)) {
+                mode_focus = Camera.Parameters.FOCUS_MODE_MACRO;
             } else { // focus callback이라는거 자체가 최소 auto는 된다는 것이다.
                 mode_focus = Camera.Parameters.FOCUS_MODE_AUTO;
             }
 
-            if(parameters.getFocusMode() != mode_focus) {// 4.0이하에서는 그냥 autofocus하게 되고 그럼 cont 인채로 돌아올 수도 있다.
+            if(!parameters.getFocusMode().equals(mode_focus)) {// 4.0이하에서는 그냥 autofocus하게 되고 그럼 cont 인채로 돌아올 수도 있다.
+                parameters.setFocusMode(mode_focus);
+                camera.setParameters(parameters);
+            }
+            */
+            // 하지만 필요한 것만 하는게 낫다.
+            if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                mode_focus = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
                 parameters.setFocusMode(mode_focus);
                 camera.setParameters(parameters);
             }
@@ -363,14 +376,14 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
         public void autoFocusAvailable() {
             super.autoFocusAvailable();
 
-            use_autofocus = true;
+            //use_autofocus = true;
         }
 
         @Override
         public void autoFocusUnavailable() {
             super.autoFocusUnavailable();
 
-            use_autofocus = false;
+            //use_autofocus = false;
         }
 
         @Override
@@ -447,17 +460,19 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
             //        Camera.Parameters.FLASH_MODE_AUTO,
             //        Camera.Parameters.FLASH_MODE_ON);
 
-            if(use_autofocus) { // 일단 available해야 한다.
+            //if(use_autofocus) { // 일단 available해야 한다.
                 if(use_ffc == false) { // 이게 ffc에서는 안되는 것 같다.(focus 자체가 안되는 걸지도) => area focus 해보면 그쪽에서는 touch하면 아예 kill된다.
                     if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
                         mode_focus = Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
+                    } else if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_MACRO)) {
+                        mode_focus = Camera.Parameters.FOCUS_MODE_MACRO;
                     } else { // 마찬가지로 focus available하면 최소 auto는 있다.
                         mode_focus = Camera.Parameters.FOCUS_MODE_AUTO;
                     }
 
                     parameters.setFocusMode(mode_focus);
                 }
-            }
+            //}
 
             return super.adjustPreviewParameters(parameters);
         }

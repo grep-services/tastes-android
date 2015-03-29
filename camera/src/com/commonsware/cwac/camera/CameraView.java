@@ -418,44 +418,51 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     public void autoFocus(int w, int h, float x, float y, int r) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            int d = 1000, d_ = d * 2;
-            Rect origin = new Rect((int)(x - r), (int)(y - r), (int)(x + r), (int)(y + r));
-            Rect trans = new Rect(origin.left * d_ / w - d, origin.top * d_ / h - d, origin.right * d_ / w - d, origin.bottom * d_ / h - d);
-            //Rect trans = new Rect(origin.top * d_ / h - d, origin.right * d_ / w - d, origin.bottom * d_ / h * -1 + d, origin.left * d_ / w * -1 + d);
+        if (inPreview) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                int d = 1000, d_ = d * 2;
+                Rect origin = new Rect((int) (x - r), (int) (y - r), (int) (x + r), (int) (y + r));
+                Rect trans = new Rect(origin.left * d_ / w - d, origin.top * d_ / h - d, origin.right * d_ / w - d, origin.bottom * d_ / h - d);
+                //Rect trans = new Rect(origin.top * d_ / h - d, origin.right * d_ / w - d, origin.bottom * d_ / h * -1 + d, origin.left * d_ / w * -1 + d);
 
-            int p = 1000;
-            List<Camera.Area> list = new ArrayList<Camera.Area>();
-            list.add(new Camera.Area(trans, p));
+                int p = 1000;
+                List<Camera.Area> list = new ArrayList<Camera.Area>();
+                list.add(new Camera.Area(trans, p));
 
-            Camera.Parameters parameters = camera.getParameters();
+                Camera.Parameters parameters = camera.getParameters();
 
-            int maxNumFocusAreas = parameters.getMaxNumFocusAreas();
-            int maxNumMeteringAreas = parameters.getMaxNumMeteringAreas();
-            if(maxNumFocusAreas > 0) {
-                parameters.setFocusAreas(list);
-            }
-            if(maxNumMeteringAreas > 0) {
-                parameters.setMeteringAreas(list);
-            }
+                int maxNumFocusAreas = parameters.getMaxNumFocusAreas();
+                int maxNumMeteringAreas = parameters.getMaxNumMeteringAreas();
+                if (maxNumFocusAreas > 0) {
+                    parameters.setFocusAreas(list);
+                }
+                if (maxNumMeteringAreas > 0) {
+                    parameters.setMeteringAreas(list);
+                }
 
-            if(list != null && maxNumFocusAreas >=1 && maxNumMeteringAreas >= 1) {
-                if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_MACRO)) {
-                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
-                    Log.e("FOCUS", "macro");
+                // macro를 하기 위한 조건은 이렇다. 그리고 없을수도 있으므로 auto를 둔다.(auto 항상 있을지는 모르지만)
+                if (list != null && maxNumFocusAreas >= 1 && maxNumMeteringAreas >= 1) {
+                    if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_MACRO)) {
+                        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
+                        Log.e("FOCUS", "macro");
+                    } else {
+                        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                        Log.e("FOCUS", "auto");
+                    }
                 } else {
                     parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
                     Log.e("FOCUS", "auto");
                 }
-            } else { // get supported focus mode로 확인해보지 않아도 auto가 다 있다고 볼 수 있는지...
-                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                Log.e("FOCUS", "auto");
+
+                camera.setParameters(parameters);
             }
 
-            camera.setParameters(parameters);
-        }
+            // 4.0 이하에서는 어차피 continuous 없으므로 focus전에 새로 mode set 할 필요는 없다.
 
-        autoFocus();
+            //autoFocus();
+            camera.autoFocus(this);
+            isAutoFocusing = true;
+        }
     }
 
   public void autoFocus() {

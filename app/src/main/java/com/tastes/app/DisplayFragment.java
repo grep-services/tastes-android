@@ -58,6 +58,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     private static final String ARG_TIME = "time";
     private static final String ARG_ROTATION = "rotation";
     //private static final String ARG_ADDRESS = "address";
+    // 미리 arg로 받아둬야 하는 이유는 map을 열 때 초기값으로 줄 수 있게 하기 위함이다.(loc 선택 후 다시 loc vars가 update되는 것이 아니라 map init으로만 사용된다.)
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
 
@@ -82,7 +83,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     Button buttonOk, buttonClose;
 
-    View waitView, locationView, networkView;
+    //View waitView, locationView, networkView;
 
     List<String> tags;
     List<String> switches;
@@ -225,9 +226,11 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             pager.setAdapter(new PagerAdapter_());
             pager.setCurrentItem(0);
 
+            /*
             waitView = view.findViewById(R.id.fragment_display_wait);
             locationView = view.findViewById(R.id.fragment_display_location);
             networkView = view.findViewById(R.id.fragment_display_network);
+            */
 
             buttonOk = (Button) view.findViewById(R.id.fragment_display_ok);
             buttonClose = (Button) view.findViewById(R.id.fragment_display_close);
@@ -235,8 +238,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             //buttonOk.setOnTouchListener(this);
             //buttonClose.setOnTouchListener(this);
 
+            /*
             locationView.setOnClickListener(this);
             networkView.setOnClickListener(this);
+            */
 
             buttonOk.setOnClickListener(this);
             buttonClose.setOnClickListener(this);
@@ -280,7 +285,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         return view;
     }
-
+/*
     public void notifyNetworkFailure() {
         //showView(toolbar);// 나중에는 networkView를 만들고 그것을 띄운다.
         showView(networkView);
@@ -293,20 +298,27 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     public void notifyLocationFailure() {
         showView(locationView);
     }
-
+    */
+/*
     public void setLocation(double latitude, double longitude) {
         if(!internal) {// gallery에서 온 것에 대해서는 할 필요 없으므로.
             this.latitude = latitude;
             this.longitude = longitude;
 
             if(isWaiting()) {
-            /*
-            wait는 두 종류 있는데, 두번째 종류는 이미 location set된 상태이므로 다시 request location 할 일이 없으므로 여기로 오지 않을 것이다.
-            그러므로 그냥 첫번째 wait(request location)이라 생각하고 upload를 call하면 된다.
-             */
+            // wait는 두 종류 있는데, 두번째 종류는 이미 location set된 상태이므로 다시 request location 할 일이 없으므로 여기로 오지 않을 것이다.
+            // 그러므로 그냥 첫번째 wait(request location)이라 생각하고 upload를 call하면 된다.
                 upload();
             }
         }
+    }
+*/
+    // from main도 있고 from map도 있으므로 upload는 따로 from map일 때에 알아서 call해주도록 한다.
+    public void setLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+
+        //upload();
     }
 
     /*
@@ -376,13 +388,6 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     public void onDetach() {
         super.onDetach();
         mCallbacks = null;
-    }
-
-    // caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다.
-    public void actionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches) {
-        if (mCallbacks != null) {
-            mCallbacks.onDisplayActionOKClicked(file, time, latitude, longitude, tags, positions, orientations, switches);
-        }
     }
 
     public int addTag(String tag, float ratioX, float ratioY) {
@@ -666,6 +671,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         return mobile.isConnected() || wifi.isConnected();
     }
 
+    /*
     public void showView(View view) {
         // 이게 있으면 괜히 실행 취소 같아 보인다. 끄고 싶으면 알아서 back을 누르는 식으로 유도하는게 나을 것 같다.
         toolbar.setVisibility(View.GONE);
@@ -675,29 +681,48 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         view.setVisibility(View.VISIBLE);
     }
+    */
+
+    public void okClicked(double latitude, double longitude) {
+        if (mCallbacks != null) {
+            mCallbacks.onDisplayOKClicked(latitude, longitude);
+        }
+    }
+    /*
+    // caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다.
+    public void actionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches) {
+        if (mCallbacks != null) {
+            mCallbacks.onDisplayActionOKClicked(file, time, latitude, longitude, tags, positions, orientations, switches);
+        }
+    }
+    */
 
     // 따로 빼야 location 완료 등에서도 연결될 수 있다.
     public void upload() {
-        int position = pager.getCurrentItem();
+        if (mCallbacks != null) {
+            int position = pager.getCurrentItem();
 
-        if(mirror || internal || position > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
-            Bitmap bitmap;
+            if(mirror || internal || position > 0) {// 반전이든 필터든 필요한 만큼 적용된다.(ffc면 무조건, ffc든 아니든 0아니면 그것도.)
+                Bitmap bitmap;
 
-            switch(position) {
-                case 0:
-                    bitmap = origin;
+                switch(position) {
+                    case 0:
+                        bitmap = origin;
 
-                    break;
-                default:
-                    bitmap = filters[pager.getCurrentItem() - 1];
+                        break;
+                    default:
+                        bitmap = filters[pager.getCurrentItem() - 1];
+                }
+
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
+                image = stream.toByteArray();
             }
 
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);// jpeg format이 확실히 맞을지는 확인해봐야 할 듯.
-            image = stream.toByteArray();
+            //actionOKClicked(image, internal ? time : System.currentTimeMillis(), latitude, longitude, tags, positions, orientations, switches);
+            //TODO: caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다. 그리고 나중에 image obj로 바꿔서 간다.(for retry in home)
+            mCallbacks.onDisplayUpload(image, internal ? time : System.currentTimeMillis(), latitude, longitude, tags, positions, orientations);
         }
-
-        actionOKClicked(image, internal ? time : System.currentTimeMillis(), latitude, longitude, tags, positions, orientations, switches);
     }
 
     @Override
@@ -707,6 +732,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         switch(v.getId()) {
             case R.id.fragment_display_ok:
                 // check location first.
+                /*
                 if(!internal) {
                     if(mainActivity.isLocationUpdated() == false) {
                         if(mainActivity.isRequestingLocationUpdates()) {// 어차피 몇초 안에 끝나는 일이므로 toast보다는 dialog가 낫다. 기존 wait를 쓴다.
@@ -718,24 +744,33 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                         break;
                     }
                 }
+                */
                 // check tag existence
                 if(tags == null || tags.isEmpty()) {// 애초에 remove될 때 null시키면 되겠지만 여러번 체크하는 것도 그렇고 일단 이게 최소 변경이므로 이렇게 간다.
-                    Toast toast = Toast.makeText(getActivity(), getString(R.string.upload_tag), Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.CENTER, 0, 0);
-                    toast.show();
+                    mainActivity.showToast(R.string.upload_tag);
 
                     break;
                 }
 
-                showView(waitView);
+                //TODO: 여기서 해주나 server 보내서 확인하나 시간은 거의 차이 없으나, 종료되지 않는다는 점이 다르다.
+                if(!isNetworkAvailable()) {// 일단 여기서도 해준다. toast 형식이므로 어쨌든 해줄만큼 더 해주는게 낫다.
+                    mainActivity.showToast(R.string.network_retry);
 
-                upload();
+                    break;
+                }
+
+                //showView(waitView);
+
+                //upload();
+
+                okClicked(latitude, longitude);
 
                 break;
             case R.id.fragment_display_close:
-                ((MainActivity) getActivity()).onBackPressed();// adjustpan 때문에 disable 등등 다 안돼서 background로라도 처리해야 했고 그러려면 listener도 frag에서 처리해야 했다.
+                mainActivity.onBackPressed();// adjustpan 때문에 disable 등등 다 안돼서 background로라도 처리해야 했고 그러려면 listener도 frag에서 처리해야 했다.
 
                 break;
+            /*
             case R.id.fragment_display_location:
                 showView(waitView);
 
@@ -748,6 +783,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                 upload();
 
                 break;
+                */
         }
     }
 
@@ -851,6 +887,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public interface DisplayFragmentCallbacks {
-        public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches);
+        public void onDisplayOKClicked(double latitude, double longitude);
+        public void onDisplayUpload(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations);
+        //public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches);
     }
 }

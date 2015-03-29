@@ -18,6 +18,9 @@
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true"/>
 
     <application
         android:allowBackup="true"
@@ -28,6 +31,15 @@
 
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <!--
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyDKcn3whI9ZrmLT21XJKdpXFKykc_TQHTw"/>-->
+
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyDIwojuSZfaut6x8IF4n-BnTAjv1BoGwrU"/><!-- debug. 256으로 안해도 되는듯. -->
 
         <activity
             android:name="com.tastes.app.MainActivity"
