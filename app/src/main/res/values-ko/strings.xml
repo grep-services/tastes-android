@@ -13,6 +13,7 @@
 
     <string name="location_agree">\'<![CDATA[#]]>tastes\'가 귀하의 현재 위치를 사용하려고 합니다.</string>
     <string name="location_retry">위치 설정 확인 후 재시도 해주세요.</string>
+    <string name="location_empty">위치를 선택하세요.</string>
     <string name="location_wait">위치 검색중...</string>
     <string name="location_ok">확인</string>
     <string name="upload_wait">업로드 중...</string>
@@ -29,5 +30,12 @@
     <string name="select_all">전체선택</string>
     <string name="search_tag">해시태그 검색</string>
     <string name="add_tag">해시태그 추가</string>
+
+    <string name="msg_no_location_data_provided">no_location_data_provided</string>
+    <string name="msg_service_not_available">service_not_available</string>
+    <string name="msg_invalid_lat_long_used">invalid_lat_long_used</string>
+    <string name="msg_no_address_found">no_address_found</string>
+    <string name="msg_address_found">address_found</string>
+    <string name="msg_google_api_not_available">google_api_not_available</string>
 
 </resources>

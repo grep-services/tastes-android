@@ -139,14 +139,8 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
-                //if(mActivity.isLocationUpdated()) {//TODO: available인지 check하는걸로 바껴야 할듯.
-                if(isLocationAvailable) {
-                    setView();
-                } else {
-                    //if(mActivity.isRequestingLocationFailed()) {
-                    if(mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
-                        mActivity.startLocationUpdates();
-                    }
+                if(mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
+                    mActivity.startLocationUpdates();
                 }
             }
         });
@@ -154,18 +148,20 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         //refresh.setColorSchemeResources(R.color.orange, R.color.orange_dark, R.color.gray, R.color.gray_dark);
 
         // home과는 달리, 받는 중(2가지 경우) 뿐 아니라 다 받은 후(역시 2가지)도 있을 수 있다.
-        if(mActivity.isRequestingLocationUpdates()) {// home에서는 이게 default이므로 이것밖에 없었다.
-            setRefreshing(true);
-        } else {
+        //if(mActivity.isRequestingLocationUpdates()) {// home에서는 이게 default이므로 이것밖에 없었다.
+        //    setRefreshing(true);
+        //} else {
+        if(!mActivity.isRequestingLocationUpdates()) {// request중이라면, 알아서 setrefresh까지 되어있을 것이다.
             //if(mActivity.isLocationUpdated()) {
-            if(isLocationAvailable) {//TODO: home의 것을 check하려 했으나, 일단 이게 낫고, filter에서 오는걸 생각하면 확실히 home에 의지할지도 모르겠기 때문.
+            if(isLocationAvailable) {// home에는 이게 없다.
                 setRefreshing(true);
 
                 setView();
-            } else {
-                if(mActivity.isRequestingLocationFailed()) {
+            } else {// home에는 여기만 있다.(사실은 profile에서는 그냥 failure 처리하려다가, 어차피 filter에서 바로 넘어오는 경우에 위치를 켜도 넘어올 수도 있으므로.)
+                /*if(mActivity.isRequestingLocationFailed()) {
                     setLocationFailure();
-                }
+                }*/
+                mActivity.startLocationUpdates();
             }
         }
 
@@ -205,31 +201,48 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         }
     }
 
-    // 이건 setRefreshing이 필요없는 곳에서도 쓰인다.
+    // 이건 setRefreshing이 필요없는 곳에서도 쓰인다. -> 없는듯.
+    /*
     public void setLocationFailure() {
-        //showToast(R.string.location_retry);// TODO: profile visible일 때만 show할지는 고민해보기.
+        showToast(R.string.location_retry);// TODO: profile visible일 때만 show할지는 고민해보기. -> invisible일 때 여기로 올 일이 일단 없을 것 같다.
 
-        //setEmptyView(R.string.img_empty);// 이제 통일.
-        setEmptyView(R.string.location_retry);
+        setEmptyView(R.string.img_empty);// 이제 통일.
+        //setEmptyView(R.string.location_retry);
 
-        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+        //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+    }
+    */
+
+    public void notifyLocationFailure() {
+        showToast(R.string.location_retry);// TODO: profile visible일 때만 show할지는 고민해보기. -> invisible일 때 여기로 올 일이 일단 없을 것 같다.
+
+        if(getView() != null) {
+            setEmptyView(R.string.img_empty);// 이제 통일.
+            //setEmptyView(R.string.location_retry);
+
+            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
+            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+
+            setRefreshing(false);
+        }
     }
 
     public void notifyNetworkFailure() {
-        //showToast(R.string.network_retry);
+        showToast(R.string.network_retry);// TODO: profile visible일 때만 show할지는 고민해보기. -> invisible일 때 여기로 올 일이 일단 없을 것 같다.
 
-        //setEmptyView(R.string.img_empty);// 이제 통일.
-        setEmptyView(R.string.network_retry);
+        if(getView() != null) {
+            setEmptyView(R.string.img_empty);// 이제 통일.
+            //setEmptyView(R.string.network_retry);
 
-        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
+            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
 
-        setRefreshing(false);
+            setRefreshing(false);
+        }
     }
 
-    public void notifyLocationFailure() {
-        setLocationFailure();
-
-        setRefreshing(false);
+    public void onPreLocationUpdate() {
+        setRefreshing(true);
     }
 
     public void showToast(int resId) {

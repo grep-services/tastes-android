@@ -119,7 +119,8 @@
                         android:padding="4dp"
                         android:includeFontPadding="false"
                         android:textSize="18sp"
-                        android:textColor="@color/text"/>
+                        android:textColor="@color/text"
+                        android:text="@string/img_empty"/>
 
                 </ScrollView>
 

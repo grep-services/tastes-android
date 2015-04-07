@@ -11,22 +11,21 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.GpsStatus;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.android.mms.exif.ExifInterface;
 import com.commonsware.cwac.camera.PictureTransaction;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -34,10 +33,11 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.model.LatLng;
 import com.tastes.R;
 import com.tastes.content.Image;
+import com.tastes.util.Constants;
 import com.tastes.util.LocationUtils;
 import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener/*, LocationSource*/, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private QueryWrapper queryWrapper;
 
@@ -79,6 +79,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private DisplayFragment displayFragment;
     private HomeFragment homeFragment;
     private ProfileFragment profileFragment;
+    private ItemFragment itemFragment;
     private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
     private MapFragment_ mapFragment;
@@ -87,6 +88,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private GoogleApiClient mGoogleApiClient;
     private boolean mLocationUpdates = false;// 사실상 동의서다.(pref에 저장된 동의 여부이므로)
     private LocationRequest mLocationRequest;
+    private LocationManager mLocationManager;
+    //private OnLocationChangedListener mLocationListener = null;// for map current test
     private boolean mRequestingLocationUpdates = false;
     private boolean mLocationUpdated = false;
     private boolean mRequestingLocationFailed = false;
@@ -98,6 +101,21 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     private static final int LOCATION_TIMEOUT = 5000;
 
+    /**
+     * Tracks whether the user has requested an address. Becomes true when the user requests an
+     * address and false when the address (or an error message) is delivered.
+     * The user requests an address by pressing the Fetch Address button. This may happen
+     * before GoogleApiClient connects. This activity uses this boolean to keep track of the
+     * user's intent. If the value is true, the activity tries to fetch the address as soon as
+     * GoogleApiClient connects.
+     */
+    //protected boolean mAddressRequested;
+
+    /**
+     * Receiver registered with this activity to get the response from FetchAddressIntentService.
+     */
+    private AddressResultReceiver mResultReceiver;
+
     private static final boolean ROTATE_TAG = false;
 
     @Override
@@ -105,8 +123,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // init receiver
+        mResultReceiver = new AddressResultReceiver(new Handler());
+
         // init loc
         buildGoogleApiClient();
+        setLocationManager();
 
         // init vars.
         queryWrapper = new QueryWrapper();
@@ -156,6 +178,59 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     //---- location
+    private void setLocationManager() {
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    }
+
+    private void addGpsListener() {
+        mLocationManager.addGpsStatusListener(gpsListener);
+    }
+
+    private void removeGpsListener() {
+        mLocationManager.removeGpsStatusListener(gpsListener);
+    }
+
+    GpsStatus.Listener gpsListener = new GpsStatus.Listener() {
+        @Override
+        public void onGpsStatusChanged(int event) {
+            LogWrapper.e("GPS", "gps " + event);
+            switch(event) {
+                //TODO: START에서의 GPS ENABLED CHECK에서 USER AGREEMENT 얻기 전에 FAILURE로 넘어간다.(거의)
+                //TODO: 그래서, 아무래도 START에서 GPS ENABLED CHECK를 할지 말지를 정해주는 VAR를 넣어야 될 것 같다.
+                case GpsStatus.GPS_EVENT_STARTED://TODO: SWITCH 변환 없이 그냥 바꾸는 것(GPS, WIFI, HIGH 등 서로 변환)은 이쪽으로 오지 않는다.
+                    startLocationUpdates(true);// 어차피 requesting check는 내부에서 한다.
+
+                    break;
+                //TODO: FAILURE이 되어도 HOME NOT VIEWING이라서 TOAST가 뜨지 않는다. => 하지만 어쩔 수 없다. 정상.
+                //TODO: 하지만, GPS ON EVENT 뒤에서야만 OFF EVENT가 발생된다. DEFAULT ON에서는 OFF가 CATCH되지 않는다.
+                case GpsStatus.GPS_EVENT_STOPPED:
+                    locationUpdatesFailure(false);// pause처럼 그냥 stop하기에는 failure 변수가 set되지 않는다.
+                    // 아마도 settings 등 background 때문에 pause랑 겹치면 여기만 실행될 듯 하다.
+
+                    break;
+                    /*case GpsStatus.GPS_EVENT_FIRST_FIX:
+                        //isGpsFixed = true;
+
+                        break;
+                    case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                        //if(mLo)
+                        //isGpsFixed = (SystemClock.elapsedRealtime() - mLastLocationTime) < LOCATION_TIMEOUT;
+
+                        break;*/
+            }
+        }
+    };
+/*
+    @Override
+    public void activate(OnLocationChangedListener onLocationChangedListener) {
+        mLocationListener = onLocationChangedListener;
+    }
+
+    @Override
+    public void deactivate() {
+        mLocationListener = null;
+    }
+*/
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -166,10 +241,13 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);// 일단 지도로 세부 설정 가능하므로 배터리 위해 이렇게 갔다.
-        mLocationRequest.setNumUpdates(5);
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setExpirationDuration(LOCATION_TIMEOUT);// 혹시나 이게 자체적으로 stop을 유발하는건 아닌지... 확인하고 싶지만 방법을 아직 못찾았다.
+        //TODO: 실내 많을 것이라는 생각에 좀 그랬지만, 그래도 TIMEOUT 늘리더라도 GPS부터 하게하는게 실제 사용성 상 더 좋다. 어차피 오래 안쓴다.
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        //mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER); 너무 넓음.
+        //mLocationRequest.setNumUpdates(5);
+        //mLocationRequest.setSmallestDisplacement(3);
+        mLocationRequest.setInterval(0);// 그냥 놔두면 바로 안된다.
+        //mLocationRequest.setExpirationDuration(); update 하나의 duration을 의미하는 것이다. 현재는 별 필요 없다.
     }
 
     // connection failed됐을 때 activity로부터 call되어 다시 connect 시도 하게 되는 module.
@@ -219,52 +297,116 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         }
     }
 
+    public boolean isLocationEnabled() {
+        boolean gpsEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean networkEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        return gpsEnabled || networkEnabled;
+    }
+
+    // 기존 method들 위해.
+    protected void startLocationUpdates() {
+        startLocationUpdates(false);
+    }
     /*
     available check나 connection failed나 자기 처리 module이 있으므로, 여기서는 그냥
      */
-    protected void startLocationUpdates() {
+    protected void startLocationUpdates(boolean isGpsTurning) {
         if(servicesAvailable() == true) {
             if(mRequestingLocationUpdates == false) {
-                mLocationUpdated = false;//TODO: 아무래도 이걸 넣어야만, 초기화 격이 될 것이다.(그래야 재시도시 기존 위치 인식하게 되지 않는다.)
+                mLocationUpdated = false;
                 mRequestingLocationUpdates = true;
                 mRequestingLocationFailed = false;
 
-                //updateUI();
+                if(isLocationEnabled() || isGpsTurning) {
+                    onPreLocationUpdate();
 
-                createLocationRequest();// 할 때마다 생성해야 num = 1인 것이 문제되지 않는다.
-                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+                    createLocationRequest();// 할 때마다 생성해야 num = 1인 것이 문제되지 않는다.
+                    LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
-                // callback 같은거 특별히 없는듯. 그냥 handler 달고 해야될듯.
-                mHandler = new Handler();
+                    // callback 같은거 특별히 없는듯. 그냥 handler 달고 해야될듯.
+                    mHandler = new Handler();
 
-                mRunnable = new Runnable(){
-                    @Override
-                    public void run() {
-                        // 그런데 밑에걸 해버리면 location 재시도(true인 상황에서) 할 때 이곳을 넘어가지 못한다.
-                        //if(mLocationUpdated == false) { // 물론 updated되고 나면 바로 updateUI로 가고 intent 실행되겠지만, 이거랑 시간이 비슷할 경우도 가정하지 않을 수 없다.
-                            mRequestingLocationFailed = true;
+                    mRunnable = new Runnable(){
+                        @Override
+                        public void run() {
+                            // 그리고 어차피 이건 기본 조건으로서 있으면 좋은 것이다.
+                            if(!mLocationUpdated) {// map 없는 상황에서는 이미 remove 되었을 것이지만, 있는 상황에서는 여기가 있어야만 들어가지 않게 된다.
+                                locationUpdatesFailure(true);
+                            }
+                        }
+                    };
 
-                            stopLocationUpdates();
-                        //}
-                    }
-                };
-
-                mHandler.postDelayed(mRunnable, LOCATION_TIMEOUT);
+                    //TODO: gps turning중인 경우는, dialog로 agreement가 떠서, failure 좀 겹칠 수 있다. 하지만 onresult에서 처리하기 쉽지 않으므로 일단 pass.
+                    mHandler.postDelayed(mRunnable, LOCATION_TIMEOUT);
+                } else {
+                    locationUpdatesFailure(false);
+                }
             }
         }
     }
 
-    protected void stopLocationUpdates() {
+    public void locationUpdatesFailure(boolean remove) {// TODO: map에서 잘 받던 도중 gps off 시에도 쓸 수 있도록 따로 만든다.
+        //TODO: 여기서, 그냥 포기하지 말고, LAST KNOWN LOCATION이라도 받아본다.
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if(location != null) {
+            //TODO: onChanged랑 같지만 remove 달라서 새로 씀.
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+
+            mLocationUpdated = true;
+
+            if(mapFragment == null) {// map not null이면 계속 간다.
+                stopLocationUpdates(remove, true);
+            } else {// stop 없는 update.
+                onLocationUpdated();
+            }
+        } else {
+            mLocationUpdated = false;// main에서의 실패에서는 중복되지만 그냥 넘어간다.
+            mRequestingLocationFailed = true;
+
+            stopLocationUpdates(remove, true);// map에서는 이를 통해 결국 notify로 넘어간다.
+        }
+        /*
+        mLocationUpdated = false;// main에서의 실패에서는 중복되지만 그냥 넘어간다.
+        mRequestingLocationFailed = true;
+
+        stopLocationUpdates(remove, true);// map에서는 이를 통해 결국 notify로 넘어간다.
+        */
+    }
+
+    protected void stopLocationUpdates(boolean remove, boolean updates) {// updates를 할건지, 그냥 stop할건지.(map에서 나갈때는 그냥 stop일 것이다.)
         if(servicesAvailable() == true) {
             if(mRequestingLocationUpdates == true) {
-                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+                if(remove) {
+                    LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
 
-                // callback이 없는 경우가 있을지 - stop은 무조건 start 이후 나올 수가 있으며 그것도 정확한 1:1 매칭이므로 무조건 callback이 있다고 볼 수 있다.
-                mHandler.removeCallbacks(mRunnable);// 여기서 꺼야 재시작 하는 경우 failed가 true가 되지 않아서 항상 onResume에서 다시 시작될 수 있게 해준다.
+                    // callback이 없는 경우가 있을지 - stop은 무조건 start 이후 나올 수가 있으며 그것도 정확한 1:1 매칭이므로 무조건 callback이 있다고 볼 수 있다.
+                    if(mHandler != null) {
+                        mHandler.removeCallbacks(mRunnable);// 여기서 꺼야 재시작 하는 경우 failed가 true가 되지 않아서 항상 onResume에서 다시 시작될 수 있게 해준다.
+                    }
+                }
 
                 mRequestingLocationUpdates = false;
 
-                onLocationUpdated();
+                if(updates) {
+                    onLocationUpdated();
+                }
+            }
+        }
+    }
+
+    public void onPreLocationUpdate() {
+        if(mapFragment != null) {
+            mapFragment.onPreLocationUpdate();
+        } else {
+            if(profileFragment != null) {
+                profileFragment.onPreLocationUpdate();
+            } else {
+                if(homeFragment != null) {
+                    homeFragment.onPreLocationUpdate();
+                }
             }
         }
     }
@@ -273,24 +415,26 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         // 당장 필요한건 update success시 home setview 하는 것 뿐일듯 하다.... display도 있을듯.
         if(mLocationUpdated) {
             if(mapFragment != null) {// 일반 fragment들에 넘어가면 안된다. map에만 전달.
-                mapFragment.setLocation(latitude, longitude);
+                mapFragment.setCurrentLocation(latitude, longitude);
             } else {// 여기 있는 것들은 이것들 내부에서 recall하는 일 없는 한(없다.) 1회만 실행된다.(아직은 이 방식 유지)
-                if(galleryFragment != null) {
+                /*if(galleryFragment != null) {
                     galleryFragment.setLocation(latitude, longitude);
-                }
+                }*/
                 if(displayFragment != null) {
                     displayFragment.setLocation(latitude, longitude);
-                }
-                if(homeFragment != null) {// null인 상황은 애초에 onLocationChanged에서 저장되는 latlng가 자동으로 homeFrag 생성시 전달되어 해결될 것이다.
-                    homeFragment.setLocation(latitude, longitude);
                 }
                 /*
                 여러개 있으면 최상위만 될것이고, 최상위 back되어도 2순위가 되는게 아니라 null일 것이다.
                 하지만 사실 home이든 profile이든 단 1번만 위치 받으면 되며, profile은 현재 none-location 상태로 2개 이상 존재할 수 없는 구조이다.
                 따라서 현재로서는 아무 문제가 없다. 추후 필요하다면 profileFragment ref 관리 data structure 만들어서 관리하던가 하도록 한다.
+                -> 이제 단1번만 받으면 되는게 아니라 여러번 받을 수 있으므로, 같이 위치 받는 일은 없는게 좋다.
                  */
                 if(profileFragment != null) {
                     profileFragment.setLocation(latitude, longitude);
+                } else {
+                    if(homeFragment != null) {// null인 상황은 애초에 onLocationChanged에서 저장되는 latlng가 자동으로 homeFrag 생성시 전달되어 해결될 것이다.
+                        homeFragment.setLocation(latitude, longitude);
+                    }
                 }
             }
         } else {
@@ -307,11 +451,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                         }
                     }
                     */
-                    if(homeFragment != null) {
-                        homeFragment.notifyLocationFailure();
-                    }
                     if(profileFragment != null) {
                         profileFragment.notifyLocationFailure();
+                    } else {
+                        if(homeFragment != null) {
+                            homeFragment.notifyLocationFailure();
+                        }
                     }
                 }
             }
@@ -330,6 +475,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         return mRequestingLocationFailed;
     }
 
+    public LatLng getLocation() {// 일단 map에서 cur 받을 때 쓰기위해.
+        return new LatLng(latitude, longitude);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -341,7 +490,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     protected void onResume() {
         super.onResume();
 
-        if(mLocationUpdates == true && mRequestingLocationFailed == false) {
+        if(mLocationUpdates == true/* && mRequestingLocationFailed == false*/) {
+            addGpsListener();
             startLocationUpdates();
         }
     }
@@ -350,8 +500,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     protected void onPause() {
         super.onPause();
 
-        if(mLocationUpdates == true && mRequestingLocationFailed == false) {
-            stopLocationUpdates();
+        if(mLocationUpdates == true/* && mRequestingLocationFailed == false*/) {
+            stopLocationUpdates(true, false);//TODO: UPDATES 없게 하는게 맞는지 확인해보기.
+            removeGpsListener();
         }
     }
 
@@ -364,7 +515,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onConnected(Bundle bundle) {
-        if(mLocationUpdates == true && mRequestingLocationFailed == false) {
+        if(mLocationUpdates == true/* && mRequestingLocationFailed == false*/) {
             startLocationUpdates();
         }
     }
@@ -408,7 +559,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         mLocationUpdated = true;
 
-        stopLocationUpdates();
+        if(mapFragment == null) {// map not null이면 계속 간다.
+            stopLocationUpdates(true, true);
+        } else {// stop 없는 update.
+            onLocationUpdated();//TODO: map을 위한 것 따로 만들어도 되겠지만 일단 간다.
+        }
+/*
+        if(mLocationListener != null) {
+            mLocationListener.onLocationChanged(location);
+        }*/
     }
 
     /**
@@ -468,6 +627,86 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return mDialog;
+        }
+    }
+
+    // from map, home(, profile), item
+    public void notifyAddress(Address address, String errorMessage) {// 그리고 아직 err msg는 안쓰고 그냥 address null인 것을 이용한다.
+        // 이런 구조의 의미는, home 중 item 중 map 까지 켜지는 경우도 있을 수 있다는 것이다.
+        if(mapFragment != null) {
+            mapFragment.setPointerAddress(address);
+        } else {
+            /*
+            if(itemFragment != null) {
+                itemFragment.setAddress(address);
+            } else */{
+                if(homeFragment != null) {
+                    homeFragment.setAddress(address);
+                }
+            }
+        }
+    }
+
+    /**
+     * Runs when user clicks the Fetch Address button. Starts the service to fetch the address if
+     * GoogleApiClient is connected.
+     */
+    public void requestAddress(Location location) {
+        // We only start the service to fetch the address if GoogleApiClient is connected.
+        if (mGoogleApiClient.isConnected()) {
+            startIntentService(location);
+        } else {
+            //TODO: coords로 하라고 알려준다.
+            //Toast.makeText(MainActivity.this, "address failed - not connected", Toast.LENGTH_SHORT).show();
+            notifyAddress(null, getString(R.string.msg_google_api_not_available));
+        }
+    }
+
+    /**
+     * Creates an intent, adds location data to it as an extra, and starts the intent service for
+     * fetching an address.
+     */
+    protected void startIntentService(Location location) {
+        // Create an intent for passing to the intent service responsible for fetching the address.
+        Intent intent = new Intent(this, AddressService.class);
+
+        // Pass the result receiver as an extra to the service.
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+
+        // Pass the location data as an extra to the service.
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, location);
+
+        // Start the service. If the service isn't already running, it is instantiated and started
+        // (creating a process for it if needed); if it is running then it remains running. The
+        // service kills itself automatically once all intents are processed.
+        startService(intent);
+    }
+
+    /**
+     * Receiver for data sent from FetchAddressIntentService.
+     */
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        /**
+         *  Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
+         */
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string or an error message sent from the intent service.
+            Address result = resultData.getParcelable(Constants.RESULT_DATA_KEY);
+            String extra = resultData.getString(Constants.RESULT_DATA_EXTRA);
+            //displayAddressOutput();
+
+            // 현재는 resultCode 크게 상관없다.
+            notifyAddress(result, extra);
+
+            // Reset. Enable the Fetch Address button and stop showing the progress bar.
+            //mAddressRequested = false;
+            //updateUIWidgets();
         }
     }
 
@@ -813,11 +1052,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     //---- display
+    public boolean isDisplayViewing() {
+        return flag_fragment_display;
+    }
+
     @Override
-    public void onDisplayOKClicked(double latitude, double longitude) {
+    public void onDisplayForwardClicked(double latitude, double longitude) {
         flag_fragment_map = true;
 
-        mapFragment = MapFragment_.newInstance(latitude, longitude, mLocationUpdated);
+        mapFragment = MapFragment_.newInstance(latitude, longitude, mLocationUpdated, false);
 
         addFragment(mapFragment);
     }
@@ -894,6 +1137,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     //---- home
+    public boolean isHomeViewing() {
+        return flag_fragment_home;
+    }
+
     @Override
     public void onHomeSearchTag(String tag) {
         LatLng location = homeFragment.getLocation();// 직접 받을수도 있지만 일단 통일성/확장성 위해.
@@ -905,16 +1152,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onHomeItemClicked(List<Image> images, int position) {
-        Fragment fragment = ItemFragment.newInstance(images, position);
+        itemFragment = ItemFragment.newInstance(images, position);
 
-        addFragment(fragment);
+        addFragment(itemFragment);
     }
 
     @Override
     public void onHomeLocationClicked(double latitude, double longitude, boolean isLocationAvailable) {
         flag_fragment_map = true;
 
-        mapFragment = MapFragment_.newInstance(latitude, longitude, isLocationAvailable);
+        mapFragment = MapFragment_.newInstance(latitude, longitude, isLocationAvailable, false);
 
         addFragment(mapFragment);
     }
@@ -927,14 +1174,14 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onProfileItemClicked(List<Image> images, int position) {
-        Fragment fragment = ItemFragment.newInstance(images, position);
+        itemFragment = ItemFragment.newInstance(images, position);
 
-        addFragment(fragment);
+        addFragment(itemFragment);
     }
 
     //---- map
     @Override
-    public void onMapLocationClicked(double latitude, double longitude) {
+    public void onMapOKClicked(double latitude, double longitude) {
         //TODO: keyboard back은 좀 막을 수 있다면 막아보도록 한다. 하지만 워낙 빠르기도 하고, 다른 부분들도 그대로이므로 일단 놔두고 나중에 한꺼번에 한다.
 
         // display에서 온건지 home/profile에서 온건지 구분해야 한다.
@@ -962,6 +1209,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         }
 
         onBackPressed();// 뭐가 됐든 back은 필요하다.(display 등은 2번이므로 묶어야 keyboard back 등에 의한 꼬임 발생 안할 것 같긴 하지만...)
+    }
+
+    @Override
+    public void onMapClosed() {
+        stopLocationUpdates(true, false);
     }
 
     //---- filter
@@ -1051,11 +1303,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onItemActionDistanceClicked(double latitude, double longitude) {
-        /*
-        Fragment fragment = MapFragment_.newInstance(latitude, longitude);
+        flag_fragment_map = true;
 
-        addFragment(fragment);
-        */
+        mapFragment = MapFragment_.newInstance(latitude, longitude, true, true);
+
+        addFragment(mapFragment);
     }
 
     /*
@@ -1087,14 +1339,17 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                     //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 } else if(flag_fragment_map == true) {
+                   mapFragment.onClosed();
+
                     flag_fragment_map = false;
 
                     mapFragment = null;
                 } else {// item,
-                    //fragmentManager.popBackStack();
+                    itemFragment = null;
                 }
 
-                fragmentManager.popBackStack();// 이건 다 해준다.(display에서 저렇게 중간에서 해줬었는데 괜찮은지 확인해보기.)
+                //fragmentManager.popBackStack();// 이건 다 해준다.(display에서 저렇게 중간에서 해줬었는데 괜찮은지 확인해보기.)
+                fragmentManager.popBackStackImmediate();// display-map 간혹 안닫히는거 이렇게 하면 될지 ㅡ 일단 해놓고 보기.
             }
         } else {
             if(flag_fragment_gallery) {// gallery to camera.

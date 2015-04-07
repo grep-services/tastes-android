@@ -2,19 +2,15 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -114,7 +110,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_camera_, container, false);
+        View view = inflater.inflate(R.layout.fragment_camera, container, false);
 
         cameraView = (CameraView) super.onCreateView(inflater, container, savedInstanceState);
         ((ViewGroup) view).addView(cameraView, 0);

@@ -36,7 +36,8 @@
             android:textSize="@dimen/text"
             android:textColor="@color/text_inverse"
             android:layout_alignParentLeft="true"
-            android:clickable="true"/>
+            android:clickable="true"
+            android:text="2"/>
 
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/pager_item_datetime"

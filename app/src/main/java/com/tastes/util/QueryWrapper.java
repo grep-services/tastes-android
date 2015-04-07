@@ -99,6 +99,7 @@ public class QueryWrapper {
     }
     // get image.(get one)
     // distance는 이렇게 개개의 item을 받을 때는 넘어오지 않는다.(현재는). 따라서 id와 같이, 기존의 것을 다시 넘기고 받는다.(사실 받는 쪽에서 해도 되지만, 초기화 측면에서 여기서 했다.)
+    // 아니면 뭐, 현위치를 받은 뒤 get한 img의 loc을 가지고 계산해서 distance에 할당해줘도 되긴 할 것 같다.
     public Image getImage(int id, long distance) throws HttpHostConnectException {
         Image image = null;
 
@@ -122,6 +123,10 @@ public class QueryWrapper {
                 tags.add(tagObject.getString("name"));
             }
 
+            String point = imageObject.getString("point");
+            double latitude_ = Double.valueOf(point.split("( )")[1]);
+            double longitude_ = Double.valueOf(point.split("( )")[2]);
+
             List<String> positions = getList(imageObject.getString("positions"));
 
             List<String> orientations = getList(imageObject.getString("orientations"));
@@ -133,7 +138,7 @@ public class QueryWrapper {
                 datetime = format.format(new Date(time));
             }
 
-            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, imageObject.getString("address"), distance, tags, positions, orientations);
+            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, latitude_, longitude_, distance, tags, positions, orientations);
         } catch (JSONException e) {
             LogWrapper.e("JSON", e.getMessage());
         }
@@ -184,6 +189,10 @@ public class QueryWrapper {
                     }
                 }
 
+                String point = imageObject.getString("point");
+                double latitude_ = Double.valueOf(point.substring(point.indexOf('(') + 1, point.indexOf(')')).split("\\s")[0]);
+                double longitude_ = Double.valueOf(point.substring(point.indexOf('(') + 1, point.indexOf(')')).split("\\s")[1]);
+
                 String distString = imageObject.getString("dist");
                 long dist = Math.round(Double.valueOf(distString.replace("m", "").trim()));
 
@@ -191,7 +200,7 @@ public class QueryWrapper {
 
                 List<String> orientations = getList(imageObject.getString("orientations"));
 
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), imageObject.getString("address"), dist, tags_, positions, orientations);
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), latitude_, longitude_, dist, tags_, positions, orientations);
 
                 if(images == null) {
                     images = new ArrayList<Image>();

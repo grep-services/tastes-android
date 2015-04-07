@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.location.Address;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +24,7 @@ import android.widget.TextView;
 import com.devspark.robototextview.util.RobotoTextViewUtils;
 import com.devspark.robototextview.util.RobotoTypefaceManager;
 import com.devspark.robototextview.widget.RobotoTextView;
+import com.google.android.gms.maps.model.LatLng;
 import com.nostra13.universalimageloader.core.imageaware.ImageAware;
 import com.nostra13.universalimageloader.core.imageaware.ImageViewAware;
 import com.tastes.R;
@@ -57,8 +61,11 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
     ViewPager pager;
 
+    TextView distance;//TODO: pointer for address. 이 방법 말고 더 좋은 방법(다른 페이지들에도 주소 저장 될 수 있는) 있을지 생각해보기.
+
     //private final String HEADER = "";
 
+    private MainActivity mActivity;
     private ItemFragmentCallbacks mCallbacks;
 
     public static ItemFragment newInstance(List<Image> images, int position) {
@@ -156,7 +163,50 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
         return view;
     }
+/*
+    //TODO: npe 가능성 있음.
+    public void setAddress(Address address) {
+        if(address != null) {
+            String result = null;
 
+            List<String> stringList = new ArrayList<String>();
+
+            //TODO: addressLine join한 것과 대략 비슷한지 다른 나라들도 일일히 체크해보기.
+            stringList.add(address.getSubLocality());// null 확률 있음.(중국으로 치면 현 정도)
+            stringList.add(address.getThoroughfare());// 동 정도.
+            stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하. 번지수 정도)
+
+            for(String string : stringList) {
+                if(string != null) {
+                    if(result == null) {
+                        result = string;
+                    } else {
+                        result += " " + string;
+                    }
+                }
+            }
+
+            if(result != null) {
+                distance.setText(result);
+
+                return;
+            }// address 있어도 결국 null일 경우는 address null인 경우와 같이 처리된다.(즉, address 있으면서 실제 주소도 있는 경우만 주소가 표시되고 나머지는 좌표가 표시된다.)
+        }
+
+        int position = (Integer) distance.getTag();
+
+        distance.setText(images.get(position).latitude + ", " + images.get(position).longitude);
+    }
+
+    public void requestAddress(double latitude, double longitude, TextView text) {
+        distance = text;// args 순서는 저렇지만 여기서는 이걸 먼저 해야 안전할 것 같다.
+
+        Location location  = new Location("");
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+        mActivity.requestAddress(location);
+    }
+*/
     private class PagerAdapter_ extends PagerAdapter {
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
@@ -208,10 +258,12 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
             TextView text = ((TextView) view.findViewById(R.id.pager_item_distance));
             text.setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
-            text.setTag((Integer) position);
+            text.setTag(position);
             text.setOnClickListener(ItemFragment.this);// activity mOnClick method 안됨. 아마 custom view context 관련 문제인듯.
 
-            String datetime = null;
+            //requestAddress(images.get(position).latitude, images.get(position).longitude, text);
+
+            String datetime;
             String strTime = images.get(position).time;
             long time = strTime != null ? (strTime.equals("null") == false ? Long.valueOf(images.get(position).time) : -1) : -1;
             long sec = time != -1 ? (System.currentTimeMillis() - time) / 1000 : 0;// 물론 time이 0인지로 비교해도 되지만 아예 없는 걸 하기 위해 -1로 했다.
@@ -255,6 +307,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
+        mActivity = (MainActivity) activity;
+
         try {
             mCallbacks = (ItemFragmentCallbacks) activity;
         } catch (ClassCastException e) {

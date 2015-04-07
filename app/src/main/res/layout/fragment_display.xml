@@ -120,11 +120,11 @@
             android:background="@drawable/close"/>
 
         <Button
-            android:id="@+id/fragment_display_ok"
+            android:id="@+id/fragment_display_forward"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_alignParentRight="true"
-            android:background="@drawable/ok"/>
+            android:background="@drawable/forward"/>
 
     </RelativeLayout>
 

@@ -4,11 +4,15 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Rect;
+import android.location.Address;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.InputFilter;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -41,6 +45,7 @@ import com.tastes.widget.SwipeRefreshLayout_;
 
 import org.apache.http.conn.HttpHostConnectException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment implements GridView.OnItemClickListener/*, Button.OnClickListener*/ {
@@ -253,27 +258,21 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
                 clearEdit();// pull.
 
-                /*
-                if(mActivity.isLocationUpdated()) {//TODO: available인지 check하는걸로 바껴야 할듯.
-                    setView();
-                } else {
-                    if(mActivity.isRequestingLocationFailed()) {
-                        mActivity.startLocationUpdates();
-                    }
-                }
-                */
-                if(isLocationAvailable) {
-                    setView();
-                } else {
-                    if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
-                        mActivity.startLocationUpdates();
-                    }
+                setRefreshing(true);
+
+                if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
+                    mActivity.startLocationUpdates();
                 }
             }
         });
         // 첫번째 색 말고는 안먹힘. 일단 빼둔다.
         //refresh.setColorSchemeResources(R.color.orange, R.color.orange_dark, R.color.gray, R.color.gray_dark);
-        setRefreshing(true);
+        //setRefreshing(true); on pre에서 될듯.
+
+        // 현재 requesting중이라면 notification도 문제없고, request끝난 상태라면, 여기서 다시 될 것이므로, main의 request의 nitification이 ignored되었어도 상관없다.
+        if(!mActivity.isRequestingLocationUpdates()) {
+            mActivity.startLocationUpdates();
+        }
 
         return view;
     }
@@ -286,7 +285,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
     public void setRefreshing(boolean refreshing) {
         clearEdit();// 아직 true일 땐 쓸일 없지만 분화해놨다가 나중에 다시 통일하는것 보다 이게 낫다.
-
+        /*
         if(refreshing) {
             refresh.post(new Runnable() {
                 @Override
@@ -299,6 +298,10 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
                 // refresh 해제.
                 refresh.setRefreshing(false);
             }
+        }
+        */
+        if(refresh != null) {//TODO: 종료시 등 npe날 때 있다.
+            refresh.setRefreshing(refreshing);
         }
     }
 
@@ -317,7 +320,41 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
         isLocationAvailable = true;// 한 번 set true 되면 아직은 다시 false 될 일 없다.
 
+        requestAddress(latitude, longitude);
+
         setView();// 특별히 location 관련 check 할 필요는 없을 것 같다.
+    }
+
+    public void requestAddress(double latitude, double longitude) {
+        Location location  = new Location("");
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+        mActivity.requestAddress(location);
+    }
+
+    public void setAddress(Address address) {
+        if(address != null) {
+            String result = null;
+
+            List<String> stringList = new ArrayList<String>();
+
+            //stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하) => 번지수 될때 있음. 버림.
+            stringList.add(address.getThoroughfare());// 동 정도.
+            stringList.add(address.getSubLocality());// null 확률 있음.(중국으로 치면 현 정도)
+            stringList.add(address.getLocality());// 시 정도.
+            stringList.add(address.getAdminArea());// 도, 주 정도.
+            stringList.add(address.getCountryName());
+
+            for(String string : stringList) {
+                if(string != null) {
+                    result = string;
+
+                    break;
+                }
+            }
+
+            button.setText(result);
+        }
     }
 
     public void setEmptyView(int resId) {
@@ -328,25 +365,39 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     }
 
     public void notifyLocationFailure() {
-        //showToast(R.string.location_retry);// TODO: home visible일 때만 show할지는 고민해보기.
+        if(mActivity != null && mActivity.isHomeViewing()) {
+            showToast(R.string.location_retry);
+        }
 
-        //setEmptyView(R.string.img_empty);// 이제 통일.
-        setEmptyView(R.string.location_retry);
+        if(getView() != null) {
+            setEmptyView(R.string.img_empty);// 이제 통일.
+            //setEmptyView(R.string.location_retry);
 
-        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
+            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
 
-        setRefreshing(false);
+            setRefreshing(false);
+        }
     }
 
     public void notifyNetworkFailure() {
-        //showToast(R.string.network_retry);
+        if(mActivity != null && mActivity.isHomeViewing()) {
+            showToast(R.string.network_retry);
+        }
 
-        //setEmptyView(R.string.img_empty);// 이제 통일.
-        setEmptyView(R.string.network_retry);// 이제 통일.
+        if(getView() != null) {
+            setEmptyView(R.string.img_empty);// 이제 통일.
+            //setEmptyView(R.string.network_retry);// 이제 통일.
 
-        adapter.setImages(null);// server에서 받아오지 않아도 null이다.
+            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
+            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
 
-        setRefreshing(false);
+            setRefreshing(false);
+        }
+    }
+
+    public void onPreLocationUpdate() {
+        setRefreshing(true);
     }
 
     public void showToast(int resId) {

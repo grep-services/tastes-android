@@ -16,11 +16,9 @@ import android.support.v4.view.ViewPager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -81,7 +79,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     //ImageView imageView;
     ViewPager pager;
 
-    Button buttonOk, buttonClose;
+    Button buttonForward, buttonClose;
 
     //View waitView, locationView, networkView;
 
@@ -232,18 +230,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             networkView = view.findViewById(R.id.fragment_display_network);
             */
 
-            buttonOk = (Button) view.findViewById(R.id.fragment_display_ok);
+            buttonForward = (Button) view.findViewById(R.id.fragment_display_forward);
             buttonClose = (Button) view.findViewById(R.id.fragment_display_close);
-
-            //buttonOk.setOnTouchListener(this);
-            //buttonClose.setOnTouchListener(this);
 
             /*
             locationView.setOnClickListener(this);
             networkView.setOnClickListener(this);
             */
 
-            buttonOk.setOnClickListener(this);
+            buttonForward.setOnClickListener(this);
             buttonClose.setOnClickListener(this);
 
             toolbar = (ViewGroup) view.findViewById(R.id.fragment_display_toolbar);
@@ -683,9 +678,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
     */
 
-    public void okClicked(double latitude, double longitude) {
+    public void forwardClicked(double latitude, double longitude) {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayOKClicked(latitude, longitude);
+            mCallbacks.onDisplayForwardClicked(latitude, longitude);
         }
     }
     /*
@@ -730,7 +725,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         MainActivity mainActivity = (MainActivity) getActivity();
 
         switch(v.getId()) {
-            case R.id.fragment_display_ok:
+            case R.id.fragment_display_forward:
                 // check location first.
                 /*
                 if(!internal) {
@@ -763,7 +758,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                 //upload();
 
-                okClicked(latitude, longitude);
+                forwardClicked(latitude, longitude);
 
                 break;
             case R.id.fragment_display_close:
@@ -887,7 +882,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public interface DisplayFragmentCallbacks {
-        public void onDisplayOKClicked(double latitude, double longitude);
+        public void onDisplayForwardClicked(double latitude, double longitude);
         public void onDisplayUpload(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations);
         //public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches);
     }

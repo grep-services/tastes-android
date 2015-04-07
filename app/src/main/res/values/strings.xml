@@ -11,6 +11,7 @@
 
     <string name="location_agree">\'<![CDATA[#]]>tastes\' would like to use your current location.</string>
     <string name="location_retry">Check your location settings and try again.</string>
+    <string name="location_empty">Choose a location.</string>
     <string name="location_wait">Getting location, wait...</string>
     <string name="location_ok">OK</string>
     <string name="upload_wait">Wait...</string>
@@ -27,5 +28,12 @@
     <string name="select_all">Select all</string>
     <string name="search_tag">Search HashTag</string>
     <string name="add_tag">Add HashTag</string>
+
+    <string name="msg_no_location_data_provided">no_location_data_provided</string>
+    <string name="msg_service_not_available">service_not_available</string>
+    <string name="msg_invalid_lat_long_used">invalid_lat_long_used</string>
+    <string name="msg_no_address_found">no_address_found</string>
+    <string name="msg_address_found">address_found</string>
+    <string name="msg_google_api_not_available">google_api_not_available</string>
 
 </resources>
