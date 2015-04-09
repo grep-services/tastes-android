@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
@@ -59,6 +60,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     // 미리 arg로 받아둬야 하는 이유는 map을 열 때 초기값으로 줄 수 있게 하기 위함이다.(loc 선택 후 다시 loc vars가 update되는 것이 아니라 map init으로만 사용된다.)
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
+    private static final String ARG_AVAILABLE = "available";
 
     private boolean internal;
 
@@ -69,6 +71,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     //private String address;
     private double latitude;
     private double longitude;
+    private boolean isLocationAvailable;// from gallery 가능. 그리고 main null이라도 map에서 다시 역으로 넘어와서 upload될 수 있음.
 
     private byte[] image = null;
 
@@ -104,15 +107,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     private DisplayFragmentCallbacks mCallbacks;
 
-    public static DisplayFragment newInstance(boolean mirror, byte[] image, int rotation, double latitude, double longitude) {
-        return DisplayFragment.newInstance(mirror, image, null, -1, rotation, latitude, longitude);
+    public static DisplayFragment newInstance(boolean mirror, byte[] image, int rotation, double latitude, double longitude, boolean isLocationAvailable) {
+        return DisplayFragment.newInstance(mirror, image, null, -1, rotation, latitude, longitude, isLocationAvailable);
     }
 
-    public static DisplayFragment newInstance(boolean mirror, String path, long time, int rotation, double latitude, double longitude) {
-        return DisplayFragment.newInstance(mirror, null, path, time, rotation, latitude, longitude);
+    public static DisplayFragment newInstance(boolean mirror, String path, long time, int rotation, double latitude, double longitude, boolean isLocationAvailable) {
+        return DisplayFragment.newInstance(mirror, null, path, time, rotation, latitude, longitude, isLocationAvailable);
     }
 
-    public static DisplayFragment newInstance(boolean mirror, byte[] image, String path, long time, int rotation, double latitude, double longitude) {
+    public static DisplayFragment newInstance(boolean mirror, byte[] image, String path, long time, int rotation, double latitude, double longitude, boolean isLocationAvailable) {
         DisplayFragment fragment = new DisplayFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_MIRROR, mirror);
@@ -123,6 +126,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         //args.putString(ARG_ADDRESS, address);
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
+        args.putBoolean(ARG_AVAILABLE, isLocationAvailable);
+
         fragment.setArguments(args);
         return fragment;
     }
@@ -144,12 +149,15 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             //address = getArguments().getString(ARG_ADDRESS);
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
+            isLocationAvailable = getArguments().getBoolean(ARG_AVAILABLE);
         }
 
         internal = (image == null);// 혹시라도 path가 안넘어올 수도 있으므로...
 
         ViewConfiguration vc = ViewConfiguration.get(getActivity());
         mSlop = (int)(vc.getScaledTouchSlop() * 0.5); // 50퍼센트 정도가 적당하다. 대략 16dp 로 계산되는거 같다만...
+
+        //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
 
     @Override
@@ -312,6 +320,8 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     public void setLocation(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+
+        isLocationAvailable = true;
 
         //upload();
     }
@@ -678,9 +688,9 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
     */
 
-    public void forwardClicked(double latitude, double longitude) {
+    public void forwardClicked(double latitude, double longitude, boolean isLocationAvailable) {
         if (mCallbacks != null) {
-            mCallbacks.onDisplayForwardClicked(latitude, longitude);
+            mCallbacks.onDisplayForwardClicked(latitude, longitude, isLocationAvailable);
         }
     }
     /*
@@ -758,7 +768,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
                 //upload();
 
-                forwardClicked(latitude, longitude);
+                forwardClicked(latitude, longitude, isLocationAvailable);
 
                 break;
             case R.id.fragment_display_close:
@@ -882,7 +892,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     }
 
     public interface DisplayFragmentCallbacks {
-        public void onDisplayForwardClicked(double latitude, double longitude);
+        public void onDisplayForwardClicked(double latitude, double longitude, boolean isLocationAvailable);
         public void onDisplayUpload(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations);
         //public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches);
     }

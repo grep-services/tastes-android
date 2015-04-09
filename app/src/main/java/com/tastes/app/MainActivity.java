@@ -147,9 +147,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         cameraFragment = CameraFragment_.newInstance();
 
-        galleryFragment = GalleryFragment.newInstance(latitude, longitude);
+        //galleryFragment = GalleryFragment.newInstance(/*latitude, longitude*/);
 
-        homeFragment = HomeFragment.newInstance(/*latitude, longitude*/);
+        homeFragment = HomeFragment.newInstance(latitude, longitude, mLocationUpdated);
 
         filterFragment = FilterFragment.newInstance(/*defaultTag, */tags, switches);
 
@@ -164,11 +164,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public CameraFragment_ getCameraFragment() {
         return cameraFragment;
     }
-
+/*
     public GalleryFragment getGalleryFragment() {
         return galleryFragment;
     }
-
+*/
     public HomeFragment getHomeFragment() {
         return homeFragment;
     }
@@ -936,22 +936,25 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onViewPagerPageSelected(int position) {
         switch(position) {
-            case 0:// Gallery
+            /*case 0:// Gallery
                 flag_fragment_gallery = true;
 
-                break;
-            case 1:// Camera
+                break;*/
+            case 0:// Camera
                 // camera flag는 없으므로 pass.
-                if(flag_fragment_home) {
+                /*if(flag_fragment_home) {
                     flag_fragment_home = false;
 
                     homeFragment.clearEdit();
                 } else {
                     flag_fragment_gallery = false;
-                }
+                }*/
+                flag_fragment_home = false;
+
+                homeFragment.clearEdit();
 
                 break;
-            case 2:// Home
+            case 1:// Home
                 flag_fragment_home = true;
 
                 if(flag_fragment_filter == true) {
@@ -965,7 +968,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 }
 
                 break;
-            case 3:
+            case 2:
                 flag_fragment_home = false;
                 flag_fragment_filter = true;
 
@@ -1033,7 +1036,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         // set flag
         flag_fragment_display = true;
         //DisplayFragment.imageToShow = image;
-        displayFragment = DisplayFragment.newInstance(mirror, image, ROTATE_TAG ? rotation : 0, latitude, longitude);// 여기서도 보내야 location process 잘 맞아떨어진다.
+        displayFragment = DisplayFragment.newInstance(mirror, image, ROTATE_TAG ? rotation : 0, latitude, longitude, mLocationUpdated);// 여기서도 보내야 location process 잘 맞아떨어진다.
         addFragment(displayFragment);
 
         flag_taking_camera = false;// 최대한 늦게 하는게, 답답할 수도 있겠지만 잘못된 방향으로 흘러가는걸 막아줄 수 있다.
@@ -1041,13 +1044,14 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     //---- gallery
     @Override
-    public void onGalleryItemClicked(Image image) {
+    public void onGalleryItemClicked(Image image, boolean isLocationAvailble) {
         // set rotation : 이것도 일단 아무 값이나 둔다.
         int rotation = 0;
         // set flag
         flag_fragment_display = true;
         //DisplayFragment.imageToShow = image;
-        displayFragment = DisplayFragment.newInstance(false, image.origin, Long.valueOf(image.time), ROTATE_TAG ? rotation : 0, image.latitude, image.longitude);// 여기서도 보내야 location process 잘 맞아떨어진다.
+        displayFragment = DisplayFragment.newInstance(false, image.origin, Long.valueOf(image.time), ROTATE_TAG ? rotation : 0, image.latitude, image.longitude, isLocationAvailble);// 여기서도 보내야 location process 잘 맞아떨어진다.
+
         addFragment(displayFragment);
     }
 
@@ -1057,10 +1061,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     @Override
-    public void onDisplayForwardClicked(double latitude, double longitude) {
+    public void onDisplayForwardClicked(double latitude, double longitude, boolean isLocationAvailable) {
         flag_fragment_map = true;
 
-        mapFragment = MapFragment_.newInstance(latitude, longitude, mLocationUpdated, false);
+        mapFragment = MapFragment_.newInstance(latitude, longitude, isLocationAvailable, false);
 
         addFragment(mapFragment);
     }
@@ -1094,7 +1098,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 super.onPostExecute(success);
 
                 if(success) {
-                    homeFragment.setView();
+                    //homeFragment.setView();
+                    homeFragment.setLocation(latitude, longitude);
                     /*
                     TODO: 읽어보기. 성공이후 set은 한다쳐도 이동은 미리 해 있을 것이다.
                     homeFragment.setView();
@@ -1128,6 +1133,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         // 11부터는 serial이 default라서.
         if(Build.VERSION.SDK_INT< Build.VERSION_CODES.HONEYCOMB) task.execute();
         else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        //TODO: 여기가 중요. DISPLAY를 끄기 전에 확실히 UPLOAD를 한다.
+        onBackPressed();// 다만, 이게 display의 finish가 맞아야 한다.
     }
 
     public void showToast(int resId) {
@@ -1183,19 +1191,20 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onMapOKClicked(double latitude, double longitude) {
         //TODO: keyboard back은 좀 막을 수 있다면 막아보도록 한다. 하지만 워낙 빠르기도 하고, 다른 부분들도 그대로이므로 일단 놔두고 나중에 한꺼번에 한다.
+        onBackPressed();// 먼저 해야, loc stop without update가 되어서 loc change 안나오고 그래야 home loc reset안된다.
 
         // display에서 온건지 home/profile에서 온건지 구분해야 한다.
         if(displayFragment != null) {
             // 1. show toast.
-            showToast(R.string.upload_wait);//TODO: 다른 서비스들 봐도 그냥 안내 없이 올린다. 그렇게 하기.
+            //showToast(R.string.upload_wait);//TODO: 다른 서비스들 봐도 그냥 안내 없이 올린다. 그렇게 하기.
             // 2. set display location - //TODO: upload와 같이 하고 싶지만 upload도 일단 독립적으로 둬보는게 좋을듯하다.
             displayFragment.setLocation(latitude, longitude);
             // 3. upload via display frag
             displayFragment.upload();
-            // 4. close display frag.
-            onBackPressed();
+            // 4. close display frag. => display의 upload가 main의 callback으로 오고, 거기서 back이 된다.
+            //onBackPressed();
             // 5. move to home(refresh는 async post에서 될 것)
-            viewPagerFragment.setCurrentPage(2);
+            viewPagerFragment.setCurrentPage(1);
         } else {
             if(profileFragment != null) {
                 profileFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
@@ -1208,7 +1217,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             }
         }
 
-        onBackPressed();// 뭐가 됐든 back은 필요하다.(display 등은 2번이므로 묶어야 keyboard back 등에 의한 꼬임 발생 안할 것 같긴 하지만...)
+        //onBackPressed();// 뭐가 됐든 back은 필요하다.(display 등은 2번이므로 묶어야 keyboard back 등에 의한 꼬임 발생 안할 것 같긴 하지만...)
     }
 
     @Override
@@ -1324,7 +1333,13 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             if(flag_fragment_splash == true) {
                 finish();
             } else {
-                if(flag_fragment_display == true) {
+                if(flag_fragment_map == true) {
+                    mapFragment.onClosed();
+
+                    flag_fragment_map = false;
+
+                    mapFragment = null;
+                } else if(flag_fragment_display == true) {
                     flag_fragment_display = false;// 미리 false로 하고 pop한다.
 
                     displayFragment = null;// 쓸 일 없으면 null 처리를 해주는게 나을듯 하다.
@@ -1338,12 +1353,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     }
 
                     //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-                } else if(flag_fragment_map == true) {
-                   mapFragment.onClosed();
+                } else if(flag_fragment_gallery) {
+                    flag_fragment_gallery = false;
 
-                    flag_fragment_map = false;
-
-                    mapFragment = null;
+                    galleryFragment = null;
                 } else {// item,
                     itemFragment = null;
                 }
@@ -1352,12 +1365,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 fragmentManager.popBackStackImmediate();// display-map 간혹 안닫히는거 이렇게 하면 될지 ㅡ 일단 해놓고 보기.
             }
         } else {
-            if(flag_fragment_gallery) {// gallery to camera.
+            /*if(flag_fragment_gallery) {// gallery to camera.
                 viewPagerFragment.setCurrentPage(1);
-            } else if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
-                viewPagerFragment.setCurrentPage(1);
+            } else */if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
+                viewPagerFragment.setCurrentPage(0);
             } else if(flag_fragment_filter == true) {
-                viewPagerFragment.setCurrentPage(2);
+                viewPagerFragment.setCurrentPage(1);
             } else { // camera라 하더라도
                 if(flag_taking_camera == false) { // 사진 찍는 중은 skip한다.
                     finish();
@@ -1378,8 +1391,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             case R.id.fragment_camera_video:
                 break;
                 */
+            case R.id.fragment_camera_gallery:
+                flag_fragment_gallery = true;
+
+                galleryFragment = GalleryFragment.newInstance(latitude, longitude, mLocationUpdated);
+
+                addFragment(galleryFragment);
+
+                break;
             case R.id.fragment_camera_home:
-                viewPagerFragment.setCurrentPage(2);
+                viewPagerFragment.setCurrentPage(1);
 
                 break;
             //case R.id.fragment_display_close:

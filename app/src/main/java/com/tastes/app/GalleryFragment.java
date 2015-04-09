@@ -69,9 +69,11 @@ import java.util.List;
 public class GalleryFragment extends Fragment implements GridView.OnItemClickListener/*, Button.OnClickListener*/ {
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
+    private static final String ARG_AVAILABLE = "available";
 
     private double latitude;
     private double longitude;
+    private boolean isLocationAvailable;
 
     ImageLoader imageLoader;
 
@@ -80,17 +82,20 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
     GridView grid;
     ImageAdapter adapter;
 
-    View emptyView, waitView;
+    View emptyView/*, waitView*/;
 
     private MainActivity mActivity;
     private GalleryFragmentCallbacks mCallbacks;
 
-    public static GalleryFragment newInstance(double latitude, double longitude) {
+    public static GalleryFragment newInstance(double latitude, double longitude, boolean isLocationAvailable) {
         GalleryFragment fragment = new GalleryFragment();
+
         Bundle args = new Bundle();
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
+        args.putBoolean(ARG_AVAILABLE, isLocationAvailable);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -105,6 +110,7 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
         if (getArguments() != null) {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
+            isLocationAvailable = getArguments().getBoolean(ARG_AVAILABLE);
         }
 
         /*
@@ -128,20 +134,55 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
 
         grid = (GridView) view.findViewById(R.id.fragment_gallery_grid);
 
-        adapter = new ImageAdapter(getActivity(), inflater, imageLoader, true);
+        //adapter = new ImageAdapter(getActivity(), inflater, imageLoader, true);
+        adapter = new ImageAdapter(getActivity(), inflater, imageLoader, cursor, latitude, longitude);
 
         grid.setAdapter(adapter);
         grid.setOnItemClickListener(this);
         grid.setEmptyView(emptyView);
-
+/*
         waitView = view.findViewById(R.id.fragment_gallery_wait);
         waitView.setVisibility(View.VISIBLE);
-
-        setView();
+*/
+        //setView();
 
         return view;
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        mActivity = (MainActivity) activity;
+
+        try {
+            mCallbacks = (GalleryFragmentCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement GalleryFragmentCallbacks");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if(mCallbacks != null) {
+            //mCallbacks.onHomeItemClicked((Image) adapter.getItem(position));
+            //mCallbacks.onGalleryItemClicked(adapter.getImages().get(position));
+            Image image = (Image) view.getTag(R.id.image_adapter_tag_object);
+            mCallbacks.onGalleryItemClicked(image, isLocationAvailable || (image.distance > -2));// 저것 외에는, not available한 loc이 gallery로 들어왔을 뿐이다.
+        }
+    }
+
+    public interface GalleryFragmentCallbacks {
+        //public void onHomeSearchTag(String tag);
+        public void onGalleryItemClicked(Image image, boolean isLocationAvailable);
+    }
+/*
     // splash가 activity가 아닌 상황에서는 home이 먼저 등록될 수 있다.(웬만하면) 구조를 통째로 바꾸기보다 일단 method하나만 만든다.
     public void setLocation(double latitude, double longitude) {
         this.latitude = latitude;
@@ -281,36 +322,5 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
 
         adapter.setImages(images);
     }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-        mActivity = (MainActivity) activity;
-
-        try {
-            mCallbacks = (GalleryFragmentCallbacks) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement GalleryFragmentCallbacks");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mCallbacks = null;
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if(mCallbacks != null) {
-            //mCallbacks.onHomeItemClicked((Image) adapter.getItem(position));
-            mCallbacks.onGalleryItemClicked(adapter.getImages().get(position));
-        }
-    }
-
-    public interface GalleryFragmentCallbacks {
-        //public void onHomeSearchTag(String tag);
-        public void onGalleryItemClicked(Image image);
-    }
+*/
 }

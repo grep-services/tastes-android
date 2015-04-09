@@ -19,7 +19,7 @@ import java.util.List;
 public class ViewPagerFragment extends Fragment {
 
     private CameraFragment_ cameraFragment;
-    private GalleryFragment galleryFragment;
+    //private GalleryFragment galleryFragment;
     private HomeFragment homeFragment;
     private FilterFragment filterFragment;
 
@@ -43,7 +43,7 @@ public class ViewPagerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         cameraFragment = ((MainActivity) getActivity()).getCameraFragment();
-        galleryFragment = ((MainActivity) getActivity()).getGalleryFragment();
+        //galleryFragment = ((MainActivity) getActivity()).getGalleryFragment();
         homeFragment = ((MainActivity) getActivity()).getHomeFragment();
         filterFragment = ((MainActivity) getActivity()).getFilterFragment();
     }
@@ -69,12 +69,12 @@ public class ViewPagerFragment extends Fragment {
             }
         });
 
-        mViewPager.setOffscreenPageLimit(4);
+        mViewPager.setOffscreenPageLimit(3);
 
         // for init flag of activity.
         //mViewPager.setCurrentItem(0);
         //mOnPageSelected(0);
-        setCurrentPage(1);// camera
+        setCurrentPage(0);// camera
 
         return view;
     }
@@ -132,19 +132,19 @@ public class ViewPagerFragment extends Fragment {
             Fragment fragment = null;
 
             switch(position) {
-                case 0:
+                /*case 0:
                     fragment = galleryFragment;
 
-                    break;
-                case 1:
+                    break;*/
+                case 0:
                     fragment = cameraFragment;
 
                     break;
-                case 2:
+                case 1:
                     fragment = homeFragment;
 
                     break;
-                case 3:
+                case 2:
                     fragment = filterFragment;
             }
 
@@ -153,7 +153,7 @@ public class ViewPagerFragment extends Fragment {
 
         @Override
         public int getCount() {
-            return 4;
+            return 3;
         }
     }
 

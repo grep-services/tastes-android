@@ -50,8 +50,10 @@ import java.util.List;
 
 public class HomeFragment extends Fragment implements GridView.OnItemClickListener/*, Button.OnClickListener*/ {
     //TODO: 읽어보기. display나 profile처럼 init loc가 필요하지 않은, init이 존재할 수 없는 부분이다.(초기 반드시 set되는 frag이므로) 따라서 필요없다.
-    //private static final String ARG_LATITUDE = "latitude";
-    //private static final String ARG_LONGITUDE = "longitude";
+    //TODO: ===> 다른 곳들이 INIT이 꼭 필요해서 하는 점도 있지만 DEFAULT가 있을수록 좋기 때문도 있다. 여기도 그렇게 간다.
+    private static final String ARG_LATITUDE = "latitude";
+    private static final String ARG_LONGITUDE = "longitude";
+    private static final String ARG_AVAILABLE = "available";
 
     private double latitude;
     private double longitude;
@@ -83,14 +85,15 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     private MainActivity mActivity;
     private HomeFragmentCallbacks mCallbacks;
 
-    public static HomeFragment newInstance(/*double latitude, double longitude*/) {
+    public static HomeFragment newInstance(double latitude, double longitude, boolean isLocationAvailable) {
         HomeFragment fragment = new HomeFragment();
-        /*
+
         Bundle args = new Bundle();
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
+        args.putBoolean(ARG_AVAILABLE, isLocationAvailable);
         fragment.setArguments(args);
-        */
+
         return fragment;
     }
 
@@ -101,12 +104,13 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /*
+
         if (getArguments() != null) {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
+            isLocationAvailable = getArguments().getBoolean(ARG_AVAILABLE);
         }
-        */
+
         queryWrapper = new QueryWrapper();
 
         imageLoader = ImageLoader.getInstance();
@@ -258,10 +262,18 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
                 clearEdit();// pull.
 
-                setRefreshing(true);
-
+                /*
                 if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
                     mActivity.startLocationUpdates();
+                }
+                */
+                if(isLocationAvailable) {
+                    setRefreshing(true);
+                    setView();
+                } else {
+                    if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
+                        mActivity.startLocationUpdates();
+                    }
                 }
             }
         });
@@ -270,8 +282,19 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         //setRefreshing(true); on pre에서 될듯.
 
         // 현재 requesting중이라면 notification도 문제없고, request끝난 상태라면, 여기서 다시 될 것이므로, main의 request의 nitification이 ignored되었어도 상관없다.
+        /*
         if(!mActivity.isRequestingLocationUpdates()) {
             mActivity.startLocationUpdates();
+        }
+        */
+        // 너무 새로 받으니까 그 자체로 좀 문제고, display의 map에서 새로 set된 loc이 넘어오는데도 여기 때문에 다시 현위치로 loc set되는 문제 있는 것 같았다.
+        if(isLocationAvailable) {
+            setRefreshing(true);
+            setView();
+        } else {
+            if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
+                mActivity.startLocationUpdates();
+            }
         }
 
         return view;

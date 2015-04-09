@@ -127,7 +127,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
         MapsInitializer.initialize(getActivity());//TODO: example에서는 google play not available exception 쓰던데 실제로 해보면 not thrown이라고 안된다.
         */
-
+/*
         // and next place it, for exemple, on bottom right (as Google Maps app)
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
         // position on right bottom
@@ -135,7 +135,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
         layoutParams.setMargins(getPixel(12), 0, 0, getPixel(12));
-
+*/
         currentButton = (Button) root.findViewById(R.id.fragment_map_current);
         //currentButton.setBackgroundDrawable(locationButton.getBackground());
         currentButton.setOnClickListener(this);
@@ -310,7 +310,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
                 addressFragments.add(address.getAddressLine(i));
             }
 
-            Log.i("HOME", getString(R.string.msg_address_found));
+            Log.i("HOME", isAdded() ? getString(R.string.msg_address_found) : "address found");
 
             // 왜 blank 아니라 \n인지 모르겠지만 어차피 blank도 여러개 해도 하나만 되는 등(trim 같은 느낌) 일관성 없어서(다른 문자열들은 또 된다.) 되어 있던 separator 그대로 간다.
             result = TextUtils.join(System.getProperty("line.separator"), addressFragments);
