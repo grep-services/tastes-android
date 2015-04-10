@@ -2,9 +2,16 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -24,6 +31,8 @@ import com.commonsware.cwac.camera.PictureTransaction;
 import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.tastes.R;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.List;
 
 /*
@@ -62,6 +71,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     // 근데 이거 그런방법은 없는가? callback 그대로 쓰는 등...
     private MainActivity mActivity = null;// 쓰일 곳이 한군데이긴 하지만, attatch에 붙여서 사용하는게 더 정리되어 보인다.
     private Button shotButton, homeButton, flipButton;
+    private ImageView galleryButton;
     private CheckBox flashCheck;
 
     private ImageView focus;
@@ -125,6 +135,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
         shotButton = (Button) view.findViewById(R.id.fragment_camera_shot);
         homeButton = (Button) view.findViewById(R.id.fragment_camera_home);
         flipButton = (Button) view.findViewById(R.id.fragment_camera_flip);
+        galleryButton = (ImageView) view.findViewById(R.id.fragment_camera_gallery);
         flashCheck = (CheckBox) view.findViewById(R.id.fragment_camera_flash);
 
         //view.setOnTouchListener(this);
@@ -137,6 +148,8 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
         shotButton.setOnClickListener(this);
         flipButton.setOnClickListener(this);
 
+        galleryButton.setImageDrawable(getGalleryDrawable());
+
         flashCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -147,6 +160,78 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
         focus = (ImageView) view.findViewById(R.id.fragment_camera_focus);
 
         return view;
+    }
+
+    public Drawable getGalleryDrawable() {
+        Drawable drawable = null;
+
+        drawable = getFirstThumbnailFromGallery();
+
+        if(drawable == null) {
+            drawable = getDrawableFromResource(R.drawable.gallery);
+        }
+
+        return drawable;// 그래도 null 될 수 있다. 그땐 어쩔 수 없다.
+    }
+
+    public Drawable getFirstThumbnailFromGallery() {
+        Drawable drawable = null;
+
+        Uri thumbnail = null;
+        Bitmap bitmap = null;
+
+        Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
+
+        cursor.moveToFirst();
+        //String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+        long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+        Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+        if(cursor_ != null && cursor_.moveToFirst()) {
+            String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
+            thumbnail = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+        }
+        if(thumbnail == null) {// null이면 bitmap을 채워본다.
+            bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MICRO_KIND, null);
+
+            if (bitmap == null) {
+                bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                if(bitmap == null) {
+                    String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
+                    bitmap = BitmapFactory.decodeFile(path);
+                }
+            }
+        }
+
+        if(thumbnail != null) {
+            drawable = getDrawableFromUri(thumbnail);
+        } else {
+            if(bitmap != null) {
+                drawable = new BitmapDrawable(getResources(), bitmap);
+            }
+        }
+
+        return drawable;
+    }
+
+    public Drawable getDrawableFromResource(int resId) {
+        Drawable drawable = null;
+
+        drawable = getResources().getDrawable(resId);
+
+        return drawable;
+    }
+
+    public Drawable getDrawableFromUri(Uri uri) {
+        Drawable drawable = null;
+
+        try {
+            InputStream inputStream = mActivity.getContentResolver().openInputStream(uri);
+            drawable = Drawable.createFromStream(inputStream, uri.toString());
+        } catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return drawable;
     }
 
     @Override

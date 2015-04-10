@@ -64,12 +64,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <Button
+                <ImageView
                     android:id="@+id/fragment_camera_gallery"
                     android:layout_width="39dp"
                     android:layout_height="39dp"
                     android:layout_centerHorizontal="true"
-                    android:background="@drawable/grid"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/gallery"
                     android:onClick="mOnClick"/>
 
             </RelativeLayout>
