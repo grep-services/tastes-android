@@ -177,18 +177,19 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     public Drawable getFirstThumbnailFromGallery() {
         Drawable drawable = null;
 
-        Uri thumbnail = null;
+        Uri uri = null;// null set 하긴 하지만, 어차피 thumbnail dependant하다.
         Bitmap bitmap = null;
+        String thumbnail = null;
 
         Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
 
         cursor.moveToFirst();
-        //String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
         long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
         Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
         if(cursor_ != null && cursor_.moveToFirst()) {
             String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
-            thumbnail = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+            uri = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+            thumbnail = uri.toString();
         }
         if(thumbnail == null) {// null이면 bitmap을 채워본다.
             bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MICRO_KIND, null);
@@ -202,8 +203,8 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
             }
         }
 
-        if(thumbnail != null) {
-            drawable = getDrawableFromUri(thumbnail);
+        if(thumbnail != null) {//TODO: 이렇게 비교하는 이유는, GALLERY FRAGMENT, IMAGE ADAPTER에서 검증된 방식을 그대로 이어가기 위함이다.
+            drawable = getDrawableFromUri(uri);
         } else {
             if(bitmap != null) {
                 drawable = new BitmapDrawable(getResources(), bitmap);
