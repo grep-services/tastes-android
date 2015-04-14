@@ -253,6 +253,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
         UiSettings uiSettings = googleMap.getUiSettings();
         uiSettings.setCompassEnabled(false);// for other devices(such as s3)
+        uiSettings.setRotateGesturesEnabled(false);
 
         if(isLocationAvailable) {// location off 상태의 home에서 set된 loc 올 수도 있다.
             setPointerMarker(pointerLatitude, pointerLongitude);
