@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -163,7 +164,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     }
 
     public Drawable getGalleryDrawable() {
-        Drawable drawable = null;
+        Drawable drawable;
 
         drawable = getFirstThumbnailFromGallery();
 
@@ -179,43 +180,57 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
 
         Uri uri = null;// null set 하긴 하지만, 어차피 thumbnail dependant하다.
         Bitmap bitmap = null;
-        String thumbnail = null;
+        //String thumbnail = null;
 
         Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
 
-        cursor.moveToFirst();
-        long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
-        Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
-        if(cursor_ != null && cursor_.moveToFirst()) {
-            String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
-            uri = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
-            thumbnail = uri.toString();
-        }
-        if(thumbnail == null) {// null이면 bitmap을 채워본다.
-            bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MICRO_KIND, null);
+        if(cursor.moveToLast()) {
+            String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+            long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+            Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+            if(cursor_ != null && cursor_.moveToFirst()) {
+                String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
+                uri = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+                //thumbnail = uri.toString();
+            }
+            cursor_.close();
 
-            if (bitmap == null) {
-                bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
-                if(bitmap == null) {
-                    String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
-                    bitmap = BitmapFactory.decodeFile(path);
+            //uri null이라도 bitmap 만들 수 있어야 하기 때문에 null check 하지 않는다. 어차피 null이면 drawable null로 돌아온다.
+            drawable = getDrawableFromUri(uri);
+
+            if(drawable == null) {// uil에서의 failure와 같은 곳.
+                bitmap = getBitmapFromInfo(id, origin);
+
+                if(bitmap != null) {// 거의 not null이겠지만, null이면 그냥 null drawable return 되는 것이다.
+                    drawable = new BitmapDrawable(getResources(), bitmap);
                 }
             }
         }
 
-        if(thumbnail != null) {//TODO: 이렇게 비교하는 이유는, GALLERY FRAGMENT, IMAGE ADAPTER에서 검증된 방식을 그대로 이어가기 위함이다.
-            drawable = getDrawableFromUri(uri);
-        } else {
-            if(bitmap != null) {
-                drawable = new BitmapDrawable(getResources(), bitmap);
-            }
-        }
+        cursor.close();
 
         return drawable;
     }
 
+    // id, path 등 여러 information들로부터 thumbnail을 최대한 뽑는다.
+    public Bitmap getBitmapFromInfo(long id, String path) {
+        Bitmap bitmap = null;
+
+        bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MICRO_KIND, null);
+
+        if (bitmap == null) {
+            bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+            if(bitmap == null) {
+                Uri origin_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+                bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(origin_.getPath()), 240, 240);
+            }
+        }
+
+        return bitmap;
+    }
+
     public Drawable getDrawableFromResource(int resId) {
-        Drawable drawable = null;
+        Drawable drawable;
 
         drawable = getResources().getDrawable(resId);
 
@@ -229,6 +244,8 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
             InputStream inputStream = mActivity.getContentResolver().openInputStream(uri);
             drawable = Drawable.createFromStream(inputStream, uri.toString());
         } catch(FileNotFoundException e) {
+            e.printStackTrace();
+        } catch(Exception e) {// npe 생기기도 한다.(note2)
             e.printStackTrace();
         }
 

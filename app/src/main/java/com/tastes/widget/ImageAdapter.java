@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.media.ExifInterface;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 
 import com.devspark.robototextview.widget.RobotoTextView;
 import com.google.android.gms.maps.model.LatLng;
+import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ViewScaleType;
 import com.nostra13.universalimageloader.core.imageaware.ImageAware;
 import com.nostra13.universalimageloader.core.imageaware.ImageViewAware;
@@ -29,7 +31,9 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -55,6 +59,8 @@ public class ImageAdapter extends BaseAdapter {
     double latitude;
     double longitude;
 
+    DisplayImageOptions options;
+
     public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader) {
         this(context, inflater, imageLoader, new ArrayList<Image>(), null, 0, 0);
     }
@@ -72,6 +78,23 @@ public class ImageAdapter extends BaseAdapter {
         this.cursor = cursor;
         this.latitude = latitude;
         this.longitude = longitude;
+
+        options = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.stub)
+                .showImageForEmptyUri(R.drawable.fail)
+                .showImageOnFail(R.drawable.fail)
+                        //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
+                        //TODO: STRONG REF만 CACHE하는 LRU MEM CACHE로 해보도록.
+                .cacheInMemory(false)// images, cursor의 null 상태가 서로 확실히 not 관계는 아니지만, 어차피 둘다 null일 때는 이쪽으로 올 일이 없다고 생각.
+                .cacheOnDisk(false)
+                .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
+                .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
+                        //.displayer(new FadeInBitmapDisplayer(500)) // 여긴 넣어두는게 자연스럽게 쌓이는 것 같아 보일 것 같다.
+                .build();
+    }
+
+    public ImageLoader getImageLoader() {
+        return imageLoader;
     }
 
     public void setImages(List<Image> images) {
@@ -135,47 +158,37 @@ public class ImageAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag(R.id.image_adapter_tag_holder);
         }
 
-        DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .showImageOnLoading(R.drawable.stub)
-                .showImageForEmptyUri(R.drawable.fail)
-                .showImageOnFail(R.drawable.fail)
-                //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
-                .cacheInMemory(true) // 이건 작으니까 일단 해제하지 않고 놔둬본다.
-                .cacheOnDisk(false)
-                .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
-                .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
-                //.displayer(new FadeInBitmapDisplayer(500)) // 여긴 넣어두는게 자연스럽게 쌓이는 것 같아 보일 것 같다.
-                .build();
-
-        final Image image;
-        String uri = null;
-        Bitmap bitmap = null;
-
         if(images != null) {
-            image = images.get(position);
-            uri = "http://54.65.1.56:3639" + image.thumbnail;
+            final Image image = images.get(position);
+            String uri = "http://54.65.1.56:3639" + image.thumbnail;
+
+            imageLoader.displayImage(uri, viewHolder.image, options, new SimpleImageLoadingListener() {
+                //imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, new ImageViewAware(viewHolder.image, false), options, new SimpleImageLoadingListener() {
+                @Override
+                public void onLoadingStarted(String imageUri, View view) {
+                    viewHolder.distance.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    viewHolder.distance.setVisibility(View.VISIBLE);
+                    viewHolder.distance.setText(String.valueOf(image.distance) + context.getResources().getString(R.string.distance_unit));
+                }
+            });
         } else {
-            cursor.moveToPosition(position);
-            String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
-            long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+            cursor.moveToPosition((getCount() - 1) - position);
+            final String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+            final long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
             String thumbnail = null;// 일단 먼저 uri부터 채울 시도를 한다.
-            Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+            Uri uri_ = null;// 무조건 not null 아니다.
+            final Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
             if(cursor_ != null && cursor_.moveToFirst()) {
                 String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
-                Uri uri_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+                uri_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
                 thumbnail = uri_.toString();
             }
-            if(thumbnail == null) {// null이면 bitmap을 채워본다.
-                bitmap = MediaStore.Images.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MICRO_KIND, null);
+            cursor_.close();
 
-                if (bitmap == null) {
-                    bitmap = MediaStore.Images.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
-                    if(bitmap == null) {
-                        String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
-                        bitmap = BitmapFactory.decodeFile(path);
-                    }
-                }
-            }
             String time = String.valueOf(System.currentTimeMillis());
             // laglng 없을수도 있다.(시작하고 바로 켜면 주로 그럴듯.)
             double latitude_ = latitude;
@@ -208,34 +221,52 @@ public class ImageAdapter extends BaseAdapter {
                 e.printStackTrace();
             }
 
-            image = new Image(origin, thumbnail, time, latitude_, longitude_, distance);
+            final Image image = new Image(origin, thumbnail, time, latitude_, longitude_, distance);
+            String uri = image.thumbnail;
 
-            uri = image.thumbnail;
+            if(uri != null) {
+                imageLoader.displayImage(uri, viewHolder.image, options, new SimpleImageLoadingListener() {
+                    //imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, new ImageViewAware(viewHolder.image, false), options, new SimpleImageLoadingListener() {
+                    @Override
+                    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                        //super.onLoadingFailed(imageUri, view, failReason);
+                        Bitmap bitmap = getBitmapFromInfo(id, origin);
+
+                        if (bitmap != null) {// 그래도 null인 경우는 이렇게 check해줘야 비어있지 않고 failure img로 set된다.
+                            viewHolder.image.setImageBitmap(bitmap);
+                        }
+                    }
+                });
+            } else {// null str는 fail로 안넘어가는 것 같다. 그리고 이정도로 fail과 code 겹치는건 최소한이므로 어쩔 수 없다.
+                Bitmap bitmap = getBitmapFromInfo(id, origin);
+
+                if (bitmap != null) {// 그래도 null인 경우는 이렇게 check해줘야 비어있지 않고 failure img로 set된다.
+                    viewHolder.image.setImageBitmap(bitmap);
+                } else {// 물론 not null이겠지만, path 잘못되어서 null일 가능성도 있다. display와 달리 수동으로 img set.
+                    viewHolder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.fail));
+                }
+            }
 
             convertView.setTag(R.id.image_adapter_tag_object, image);
         }
 
-        if(uri != null) {// 일단 되면 여기부터 간다.(thumbnail도 여기 있을 수 있다.)
-            imageLoader.displayImage(uri, viewHolder.image, options, new SimpleImageLoadingListener() {
-                //imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, new ImageViewAware(viewHolder.image, false), options, new SimpleImageLoadingListener() {
-                @Override
-                public void onLoadingStarted(String imageUri, View view) {
-                    viewHolder.distance.setVisibility(View.GONE);
-                }
+        return convertView;
+    }
 
-                @Override
-                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                    //viewHolder.distance.setVisibility(View.VISIBLE);
-                    if(image.distance >= 0) {
-                        viewHolder.distance.setVisibility(View.VISIBLE);
-                        viewHolder.distance.setText(String.valueOf(image.distance) + context.getResources().getString(R.string.distance_unit));
-                    }
-                }
-            });
-        } else {// 하지만 thumbnail이 bitmap마저도 없을 수 있다.(하지만 null check를 하지 않는 이유는 어차피 null set될 것이기 때문이다.(view gone은 안됨)
-            viewHolder.image.setImageBitmap(bitmap);
+    // id, path 등 여러 information들로부터 thumbnail을 최대한 뽑는다.
+    public Bitmap getBitmapFromInfo(long id, String path) {
+        Bitmap bitmap = null;
+
+        bitmap = MediaStore.Images.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MICRO_KIND, null);
+
+        if (bitmap == null) {
+            bitmap = MediaStore.Images.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
+            if(bitmap == null) {
+                Uri origin_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+                bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(origin_.getPath()), 240, 240);
+            }
         }
 
-        return convertView;
+        return bitmap;
     }
 }

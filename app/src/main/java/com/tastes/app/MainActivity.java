@@ -35,6 +35,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.model.LatLng;
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.util.Constants;
@@ -141,6 +142,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 //.threadPoolSize(3) Default
                 //.threadPriority(Thread.NORM_PRIORITY - 2) Default
                 .denyCacheImageMultipleSizesInMemory() // image size 변할 상황 없으므로 deny.
+                // 쓰려면 100mb정도는 써야 1page의 vp를 담당할 수 있을텐데, 가볍게 가자는 취지로 일단 하지 않는다.(options에서도 false)
+                //.memoryCache(new LruMemoryCache(100 * 1024 * 1024)) default는 lru에다가 size는 app available size의 1/8이라 한다.
                 .writeDebugLogs()
                 .build();
         ImageLoader.getInstance().init(configuration);

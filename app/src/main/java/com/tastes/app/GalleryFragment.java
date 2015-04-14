@@ -33,6 +33,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.devspark.robototextview.widget.RobotoEditText;
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.content.Tag;
@@ -140,6 +141,9 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
         grid.setAdapter(adapter);
         grid.setOnItemClickListener(this);
         grid.setEmptyView(emptyView);
+        //TODO: scroll false로 하면, touch시에 결국 update를 하긴 하지만, 필요할 것 같아서 넣는다.(그래도 fling자체에는 안된다는 점에서 괜찮긴 하다.)
+        //TODO: 하지만, scroll false로 해봤더니, 더 많은 사진들 있는 곳에서는 너무 느리다. 일단 true.
+        grid.setOnScrollListener(new PauseOnScrollListener(adapter.getImageLoader(), true, true));
 /*
         waitView = view.findViewById(R.id.fragment_gallery_wait);
         waitView.setVisibility(View.VISIBLE);
@@ -166,6 +170,12 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
     public void onDetach() {
         super.onDetach();
         mCallbacks = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        cursor.close();
     }
 
     @Override

@@ -58,6 +58,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     private QueryWrapper queryWrapper;
 
     ImageLoader imageLoader;
+    DisplayImageOptions options;
 
     ViewPager pager;
 
@@ -92,6 +93,18 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         queryWrapper = new QueryWrapper();
 
         imageLoader = ImageLoader.getInstance();
+
+        options = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.stub_large)
+                .showImageForEmptyUri(R.drawable.fail_large)
+                .showImageOnFail(R.drawable.fail_large)
+                        //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
+                .cacheInMemory(false)// -> memory 위해 해제할까 하다가 뜨는 시간 줄이려면 차라리 넣어 두는게 나을 것 같았다.(대신 img 저장할 때 size 자체를 줄인다.)
+                .cacheOnDisk(false)//TODO: 용량 많이 들어서 빼둠.
+                .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
+                .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
+                        //.displayer(new FadeInBitmapDisplayer(500)) 이건 차라리 빼는게 더 빨라 보인다.
+                .build();
     }
 
     public int getPixel(int dp) {
@@ -216,17 +229,6 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             final ViewGroup container_ = (ViewGroup) view.findViewById(R.id.pager_item_container);
             final View properties = view.findViewById(R.id.pager_item_properties);
 
-            DisplayImageOptions options = new DisplayImageOptions.Builder()
-                    .showImageOnLoading(R.drawable.stub_large)
-                    .showImageForEmptyUri(R.drawable.fail_large)
-                    .showImageOnFail(R.drawable.fail_large)
-                    //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
-                    .cacheInMemory(true)// -> memory 위해 해제할까 하다가 뜨는 시간 줄이려면 차라리 넣어 두는게 나을 것 같았다.(대신 img 저장할 때 size 자체를 줄인다.)
-                    .cacheOnDisk(false)//TODO: 용량 많이 들어서 빼둠.
-                    .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
-                    .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
-                    //.displayer(new FadeInBitmapDisplayer(500)) 이건 차라리 빼는게 더 빨라 보인다.
-                    .build();
             imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).origin, image, options, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingStarted(String imageUri, View view) { // 나중에 refresh를 할 때면 필요할 수도 있다.
