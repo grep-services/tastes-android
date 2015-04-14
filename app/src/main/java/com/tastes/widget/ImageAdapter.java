@@ -180,12 +180,33 @@ public class ImageAdapter extends BaseAdapter {
             final String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
             final long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
             String thumbnail = null;// 일단 먼저 uri부터 채울 시도를 한다.
-            Uri uri_ = null;// 무조건 not null 아니다.
+            //Uri uri_ = null;// 무조건 not null 아니다.
             final Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
-            if(cursor_ != null && cursor_.moveToFirst()) {
+            if(cursor_ != null && cursor_.moveToFirst()) {// 실질적으로 thumbnail이 있으면.
                 String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
-                uri_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
+                Uri uri_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
                 thumbnail = uri_.toString();
+
+                imageLoader.displayImage(thumbnail, viewHolder.image, options, new SimpleImageLoadingListener() {
+                    //imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, new ImageViewAware(viewHolder.image, false), options, new SimpleImageLoadingListener() {
+                    @Override
+                    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                        //super.onLoadingFailed(imageUri, view, failReason);
+                        Bitmap bitmap = getBitmapFromInfo(id, origin);
+
+                        if (bitmap != null) {// 그래도 null인 경우는 이렇게 check해줘야 비어있지 않고 failure img로 set된다.
+                            viewHolder.image.setImageBitmap(bitmap);
+                        }
+                    }
+                });
+            } else {// 없으면 새로 만들도록 한다.(display의 fail로 안넘어가길래 이렇게 뺐다. 중복은 이게 최소다.)
+                Bitmap bitmap = getBitmapFromInfo(id, origin);
+
+                if (bitmap != null) {// 그래도 null인 경우는 이렇게 check해줘야 비어있지 않고 failure img로 set된다.
+                    viewHolder.image.setImageBitmap(bitmap);
+                } else {// 물론 not null이겠지만, path 잘못되어서 null일 가능성도 있다. display와 달리 수동으로 img set.
+                    viewHolder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.fail));
+                }
             }
             cursor_.close();
 
@@ -222,30 +243,6 @@ public class ImageAdapter extends BaseAdapter {
             }
 
             final Image image = new Image(origin, thumbnail, time, latitude_, longitude_, distance);
-            String uri = image.thumbnail;
-
-            if(uri != null) {
-                imageLoader.displayImage(uri, viewHolder.image, options, new SimpleImageLoadingListener() {
-                    //imageLoader.displayImage("http://54.65.1.56:3639"+images.get(position).thumbnail, new ImageViewAware(viewHolder.image, false), options, new SimpleImageLoadingListener() {
-                    @Override
-                    public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                        //super.onLoadingFailed(imageUri, view, failReason);
-                        Bitmap bitmap = getBitmapFromInfo(id, origin);
-
-                        if (bitmap != null) {// 그래도 null인 경우는 이렇게 check해줘야 비어있지 않고 failure img로 set된다.
-                            viewHolder.image.setImageBitmap(bitmap);
-                        }
-                    }
-                });
-            } else {// null str는 fail로 안넘어가는 것 같다. 그리고 이정도로 fail과 code 겹치는건 최소한이므로 어쩔 수 없다.
-                Bitmap bitmap = getBitmapFromInfo(id, origin);
-
-                if (bitmap != null) {// 그래도 null인 경우는 이렇게 check해줘야 비어있지 않고 failure img로 set된다.
-                    viewHolder.image.setImageBitmap(bitmap);
-                } else {// 물론 not null이겠지만, path 잘못되어서 null일 가능성도 있다. display와 달리 수동으로 img set.
-                    viewHolder.image.setImageDrawable(context.getResources().getDrawable(R.drawable.fail));
-                }
-            }
 
             convertView.setTag(R.id.image_adapter_tag_object, image);
         }
@@ -262,8 +259,7 @@ public class ImageAdapter extends BaseAdapter {
         if (bitmap == null) {
             bitmap = MediaStore.Images.Thumbnails.getThumbnail(context.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
             if(bitmap == null) {
-                Uri origin_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
-                bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(origin_.getPath()), 240, 240);
+                bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(path), 240, 240);
             }
         }
 

@@ -967,7 +967,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                     //filterFragment.clearEdit(); 이것도 일단 안해도 돌아간다.
 
-                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+                    //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
                 }
 
                 break;
@@ -977,7 +977,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                 //homeFragment.clearEdit(); 일단 안해도 돌아간다.
 
-                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
                 break;
         }

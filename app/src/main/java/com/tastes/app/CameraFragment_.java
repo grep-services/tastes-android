@@ -178,28 +178,23 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
     public Drawable getFirstThumbnailFromGallery() {
         Drawable drawable = null;
 
-        Uri uri = null;// null set 하긴 하지만, 어차피 thumbnail dependant하다.
-        Bitmap bitmap = null;
-        //String thumbnail = null;
-
         Cursor cursor = getActivity().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
 
         if(cursor.moveToLast()) {
             String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
             long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+            Uri uri = null;// null set 하긴 하지만, 어차피 thumbnail dependant하다.
             Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
             if(cursor_ != null && cursor_.moveToFirst()) {
                 String path = cursor_.getString(cursor_.getColumnIndex(MediaStore.Images.Thumbnails._ID));
                 uri = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
-                //thumbnail = uri.toString();
+
+                drawable = getDrawableFromUri(uri);
             }
             cursor_.close();
 
-            //uri null이라도 bitmap 만들 수 있어야 하기 때문에 null check 하지 않는다. 어차피 null이면 drawable null로 돌아온다.
-            drawable = getDrawableFromUri(uri);
-
             if(drawable == null) {// uil에서의 failure와 같은 곳.
-                bitmap = getBitmapFromInfo(id, origin);
+                Bitmap bitmap = getBitmapFromInfo(id, origin);
 
                 if(bitmap != null) {// 거의 not null이겠지만, null이면 그냥 null drawable return 되는 것이다.
                     drawable = new BitmapDrawable(getResources(), bitmap);
@@ -221,8 +216,7 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
         if (bitmap == null) {
             bitmap = MediaStore.Images.Thumbnails.getThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
             if(bitmap == null) {
-                Uri origin_ = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, path);
-                bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(origin_.getPath()), 240, 240);
+                bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(path), 240, 240);
             }
         }
 
