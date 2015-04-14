@@ -128,7 +128,6 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
          */
         // Inflate the layout for this fragment
         final View view = inflater.inflate(R.layout.fragment_home, container, false);
-        /*
         // tree observer 이용한 visible view height(keyboard 위쪽) 재는 방식 쓰려 했으나 adjustPan일 경우 가능하고, 다시말해 view들이 움직이게 된다는 말이어서 실패했다.
         view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { // 하지만 이렇게 사용하긴 하도록 한다.
             @Override
@@ -155,7 +154,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
                 }
             }
         });
-        */
+
         layerView = view.findViewById(R.id.fragment_home_layer);
         layerView.setOnTouchListener(new View.OnTouchListener() {
             @Override

@@ -26,7 +26,7 @@ public class RobotoTypefaceSpan extends MetricAffectingSpan {
      */
     public RobotoTypefaceSpan(Context context) {
         //this(context, RobotoTypefaceManager.Typeface.ROBOTO_REGULAR);
-        this(context, RobotoTypefaceManager.Typeface.NOTO_SANS_CJK_KR_REGUALR);
+        this(context, RobotoTypefaceManager.Typeface.NOTO_SANS_CJK_KR_DEMILIGHT);
     }
 
     /**

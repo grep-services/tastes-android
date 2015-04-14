@@ -643,8 +643,12 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             if(itemFragment != null) {
                 itemFragment.setAddress(address);
             } else */{
-                if(homeFragment != null) {
-                    homeFragment.setAddress(address);
+                if(profileFragment != null) {
+                    profileFragment.setAddress(address);
+                } else {
+                    if(homeFragment != null) {
+                        homeFragment.setAddress(address);
+                    }
                 }
             }
         }
@@ -1181,6 +1185,15 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onProfileActionAddClicked(String tag) {
         filterFragment.addTag(tag);
+    }
+
+    @Override
+    public void onProfileLocationClicked(double latitude, double longitude, boolean isLocationAvailable) {
+        flag_fragment_map = true;
+
+        mapFragment = MapFragment_.newInstance(latitude, longitude, isLocationAvailable, false);
+
+        addFragment(mapFragment);
     }
 
     @Override

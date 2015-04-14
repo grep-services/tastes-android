@@ -2,6 +2,8 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.location.Address;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,6 +49,7 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
 
     TextView text;
     Button button;// add btn
+    Button locationButton;
 
     SwipeRefreshLayout refresh;
     GridView grid;
@@ -105,8 +108,12 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         text.setText(Tag.HEADER + tag);
 
         button = (Button) view.findViewById(R.id.fragment_profile_add);
-        button.setVisibility(((MainActivity) getActivity()).getFilterFragment().checkTag(tag) ? View.GONE : View.VISIBLE);
-        button.setOnClickListener(this);
+        //button.setVisibility(((MainActivity) getActivity()).getFilterFragment().checkTag(tag) ? View.GONE : View.VISIBLE);
+        //button.setOnClickListener(this);
+        button.setVisibility(View.GONE);//TODO: 일단, loc icon 때문에, gone시켜둔다.
+
+        locationButton = (Button) view.findViewById(R.id.fragment_profile_location);
+        locationButton.setOnClickListener(this);
 
         refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_profile_refresh);
 
@@ -156,6 +163,8 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
             if(isLocationAvailable) {// home에는 이게 없다.
                 setRefreshing(true);
 
+                requestAddress(latitude, longitude);// set loc 처럼. 그리고 arg로 안받는 이유는, 일단 이렇게 해보기 위해서이다.
+
                 setView();
             } else {// home에는 여기만 있다.(사실은 profile에서는 그냥 failure 처리하려다가, 어차피 filter에서 바로 넘어오는 경우에 위치를 켜도 넘어올 수도 있으므로.)
                 /*if(mActivity.isRequestingLocationFailed()) {
@@ -191,7 +200,41 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
 
         isLocationAvailable = true;
 
+        requestAddress(latitude, longitude);
+
         setView();// 특별히 location 관련 check 할 필요는 없을 것 같다.
+    }
+
+    public void requestAddress(double latitude, double longitude) {
+        Location location  = new Location("");
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+        mActivity.requestAddress(location);
+    }
+
+    public void setAddress(Address address) {
+        if(address != null) {
+            String result = null;
+
+            List<String> stringList = new ArrayList<String>();
+
+            //stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하) => 번지수 될때 있음. 버림.
+            stringList.add(address.getThoroughfare());// 동 정도.
+            stringList.add(address.getSubLocality());// null 확률 있음.(중국으로 치면 현 정도)
+            stringList.add(address.getLocality());// 시 정도.
+            stringList.add(address.getAdminArea());// 도, 주 정도.
+            stringList.add(address.getCountryName());
+
+            for(String string : stringList) {
+                if(string != null) {
+                    result = string;
+
+                    break;
+                }
+            }
+
+            locationButton.setText(result);
+        }
     }
 
     public void setEmptyView(int resId) {
@@ -328,6 +371,12 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
         }
     }
 
+    public void locationClicked(double latitude, double longitude, boolean isLocationAvailable) {
+        if(mCallbacks != null) {
+            mCallbacks.onProfileLocationClicked(latitude, longitude, isLocationAvailable);
+        }
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if(mCallbacks != null) {
@@ -345,11 +394,16 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
                 actionAddClicked();
 
                 break;
+            case R.id.fragment_profile_location:
+                locationClicked(latitude, longitude, isLocationAvailable);
+
+                break;
         }
     }
 
     public interface ProfileFragmentCallbacks {
         public void onProfileActionAddClicked(String tag);
+        public void onProfileLocationClicked(double latitude, double longitude, boolean isLocationAvailable);
         public void onProfileItemClicked(List<Image> images, int position);
     }
 }

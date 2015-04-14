@@ -34,7 +34,9 @@
             android:id="@+id/fragment_profile_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            android:layout_toRightOf="@id/fragment_profile_back"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/margin"
             android:padding="4dp"
             android:includeFontPadding="false"
             android:textSize="18sp"
@@ -50,6 +52,20 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:background="@drawable/plus"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:id="@+id/fragment_profile_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:padding="4dp"
+            android:includeFontPadding="false"
+            android:drawableLeft="@drawable/location"
+            android:background="@null"
+            android:minWidth="24dp"
+            android:textSize="18sp"
+            android:textColor="@color/text_inverse"/>
 
     </RelativeLayout>
 
