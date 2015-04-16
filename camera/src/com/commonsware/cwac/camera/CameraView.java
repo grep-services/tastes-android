@@ -454,7 +454,13 @@ public class CameraView extends ViewGroup implements AutoFocusCallback {
                     Log.e("FOCUS", "auto");
                 }
 
-                camera.setParameters(parameters);
+                try {
+                    camera.setParameters(parameters);
+                } catch(RuntimeException e) {// setParameters failed 나는 곳.
+                    Log.e("FOCUS", "runtime exception");
+                } catch(Exception e) {// 혹시 모르니 일단 해둔다.
+                    Log.e("FOCUS", "exception");
+                }
             }
 
             // 4.0 이하에서는 어차피 continuous 없으므로 focus전에 새로 mode set 할 필요는 없다.

@@ -19,6 +19,7 @@ import java.util.Locale;
 public class QueryWrapper {
     // query process까지 3단계로 하면, 그게 나중에 필요할진 몰라도, 구조는 좋아도, 헷까린다. 일단 간단하게 간다.
     private static final String PATH_ADD_IMAGE = "/image/add/";
+    private static final String PATH_DELETE_IMAGE = "/image/delete/";
     private static final String PATH_TAG_IMAGE = "/image/tag/";
     private static final String PATH_GET_IMAGE = "/image/get/";
     private static final String PATH_GET_IMAGES = "/image/list/";
@@ -81,7 +82,20 @@ public class QueryWrapper {
         // get result
         String response = networkProcessor.getResponse(PATH_ADD_IMAGE, parameters, file);
 
-        if(response.contains("502 Bad Gateway")) {
+        if(response != null && response.contains("502 Bad Gateway")) {
+            // 여기도 어차피 가만히 놔두면 json exception으로 넘어간다.
+            throw new HttpHostConnectException(null, null);// null 괜찮은지 모르겠다.(일단 괜찮은 것 같긴 하다.)
+        }
+        // parse
+    }
+    public void deleteImage(int id) throws HttpHostConnectException {
+        // set params
+        List<NameValuePair> parameters = new ArrayList<NameValuePair>();
+        parameters.add(new BasicNameValuePair("id", String.valueOf(id)));
+        // get result
+        String response = networkProcessor.getResponse(PATH_DELETE_IMAGE, parameters, null);
+LogWrapper.e("DELETE", response);
+        if(response != null && response.contains("502 Bad Gateway")) {
             // 여기도 어차피 가만히 놔두면 json exception으로 넘어간다.
             throw new HttpHostConnectException(null, null);// null 괜찮은지 모르겠다.(일단 괜찮은 것 같긴 하다.)
         }

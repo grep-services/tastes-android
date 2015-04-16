@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
@@ -21,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.devspark.robototextview.util.RobotoTextViewUtils;
 import com.devspark.robototextview.util.RobotoTypefaceManager;
 import com.devspark.robototextview.widget.RobotoTextView;
@@ -30,11 +32,14 @@ import com.nostra13.universalimageloader.core.imageaware.ImageViewAware;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.content.Tag;
+import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+
+import org.apache.http.conn.HttpHostConnectException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,8 +177,6 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
         pager.setCurrentItem(position);
 
-        //((Button) view.findViewById(R.id.fragment_item_share)).setOnClickListener(this);
-
         return view;
     }
 /*
@@ -258,6 +261,10 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 }
             });
 
+            Button button = ((Button) view.findViewById(R.id.pager_item_more));
+            button.setTag(position);
+            button.setOnClickListener(ItemFragment.this);
+
             TextView text = ((TextView) view.findViewById(R.id.pager_item_distance));
             text.setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
             text.setTag(position);
@@ -306,6 +313,12 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
+    public void showToast(int resId) {
+        if(getActivity() != null) {
+            ((MainActivity) getActivity()).showToast(resId);
+        }
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -337,6 +350,12 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
+    public void moreClicked(int id) {
+        if (mCallbacks != null) {
+            mCallbacks.onItemMoreClicked(id);
+        }
+    }
+
     public void actionDistanceClicked(double latitude, double longitude) {
         if (mCallbacks != null) {
             mCallbacks.onItemActionDistanceClicked(latitude, longitude);
@@ -352,6 +371,13 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
                 break;
                 */
+            case R.id.pager_item_more:
+                //showDialog((Integer) v.getTag());
+                int id = images.get((Integer) v.getTag()).id;
+
+                moreClicked(id);
+
+                break;
             case R.id.fragment_item_tag:
                 String tag = (String) v.getTag();
 
@@ -370,6 +396,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     public interface ItemFragmentCallbacks {
         public void onItemActionShareClicked();
         public void onItemActionTagClicked(String tag);
+        public void onItemMoreClicked(int id);
         public void onItemActionDistanceClicked(double latitude, double longitude);
     }
 }

@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- From: file:/D:/Work/ATS/ho/app/tastes/androidImageFilter/src/main/res/values/strings.xml -->
-    <eat-comment />
-
+    <eat-comment/>
     <string name="libname">AndroidImageFilter</string>
-
 </resources>

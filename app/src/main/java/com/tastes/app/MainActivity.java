@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.commonsware.cwac.camera.PictureTransaction;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -66,6 +67,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
+    private boolean flag_fragment_profile = false;
+    private boolean flag_fragment_item = false;
     private boolean flag_fragment_display = false;// 보낼 때 true가 된다.
     private boolean flag_taking_camera = false;// fragment 관련이 아니라, cam frag에서 taking 중일 때만 true되어서 back을 막아주는 역할을 하는 flag이다.
     private boolean flag_fragment_gallery = false;// back pressed 때문에 필요.
@@ -1160,6 +1163,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public void onHomeSearchTag(String tag) {
         LatLng location = homeFragment.getLocation();// 직접 받을수도 있지만 일단 통일성/확장성 위해.
 
+        flag_fragment_profile = true;
+
         profileFragment = ProfileFragment.newInstance(tag, location.latitude, location.longitude, homeFragment.isLocationAvailable());
 
         addFragment(profileFragment);
@@ -1167,6 +1172,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onHomeItemClicked(List<Image> images, int position) {
+        flag_fragment_item = true;
+
         itemFragment = ItemFragment.newInstance(images, position);
 
         addFragment(itemFragment);
@@ -1198,6 +1205,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onProfileItemClicked(List<Image> images, int position) {
+        flag_fragment_item = true;
+
         itemFragment = ItemFragment.newInstance(images, position);
 
         addFragment(itemFragment);
@@ -1245,6 +1254,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     @Override
     public void onFilterTagClicked(String tag) {
         LatLng location = homeFragment.getLocation();
+
+        flag_fragment_profile = true;
 
         profileFragment = ProfileFragment.newInstance(tag, location.latitude, location.longitude, homeFragment.isLocationAvailable());
 
@@ -1321,9 +1332,81 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public void onItemActionTagClicked(String tag) {
         LatLng location = homeFragment.getLocation();
 
+        flag_fragment_profile = true;
+
         profileFragment = ProfileFragment.newInstance(tag, location.latitude, location.longitude, homeFragment.isLocationAvailable());
 
         addFragment(profileFragment);
+    }
+
+    @Override
+    public void onItemMoreClicked(final int id) {
+        new MaterialDialog.Builder(this)
+                .items(R.array.items)
+                .itemsCallback(new MaterialDialog.ListCallback() {
+                    @Override
+                    public void onSelection(MaterialDialog materialDialog, View view, int i, CharSequence charSequence) {
+                        switch (i) {// 일단 1개뿐이다. 더 생겨도, 굳이 array 받아와서 str 비교까지 해야 될 필요가 있을지는 모르겠다.
+                            case 0:
+                                onBackPressed();//TODO: 일단 ITEM을 잘 CLOSE하긴 한다. 아마 DIALOG는 ITEM FRAG 안에 있어서 상관없는듯 하다.
+
+                                AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+                                    @Override
+                                    protected void onPreExecute() {
+                                        super.onPreExecute();
+
+                                        if(profileFragment != null) {
+                                            profileFragment.setRefreshing(true);
+                                        } else {
+                                            if(homeFragment != null) {
+                                                homeFragment.setRefreshing(true);
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    protected Boolean doInBackground(Void... params) {
+                                        try {
+                                            queryWrapper.deleteImage(id);
+                                        } catch (HttpHostConnectException e) {
+                                            LogWrapper.e("Delete", e.getMessage());
+                                            return false;
+                                        }
+
+                                        return true;
+                                    }
+
+                                    @Override
+                                    protected void onPostExecute(Boolean success) {
+                                        super.onPostExecute(success);
+
+                                        if(success) {
+                                            if(profileFragment != null) {
+                                                profileFragment.setView();
+                                            } else {
+                                                if(homeFragment != null) {
+                                                    homeFragment.setView();
+                                                }
+                                            }
+                                        } else {// 여긴 사실 그냥 toast 해도 된다. 하지만 refresh false 등도 있고, 앞으로 확장성 생각해서 이렇게 해둔다.
+                                            if(profileFragment != null) {
+                                                profileFragment.notifyNetworkFailure();
+                                            } else {
+                                                if(homeFragment != null) {
+                                                    homeFragment.notifyNetworkFailure();
+                                                }
+                                            }
+                                        }
+                                    }
+                                };
+
+                                // 11부터는 serial이 default라서.
+                                if(Build.VERSION.SDK_INT< Build.VERSION_CODES.HONEYCOMB) task.execute();
+                                else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
+                    }
+                })
+                .show();
     }
 
     @Override
@@ -1373,8 +1456,14 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     flag_fragment_gallery = false;
 
                     galleryFragment = null;
-                } else {// item,
+                } else if(flag_fragment_item) {
+                    flag_fragment_item = false;
+
                     itemFragment = null;
+                } else if(flag_fragment_profile) {
+                    flag_fragment_profile = false;
+
+                    profileFragment = null;
                 }
 
                 //fragmentManager.popBackStack();// 이건 다 해준다.(display에서 저렇게 중간에서 해줬었는데 괜찮은지 확인해보기.)
