@@ -84,7 +84,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     Button buttonForward, buttonClose;
 
-    //View waitView, locationView, networkView;
+    private boolean forwardClicked = false;
 
     List<String> tags;
     List<String> switches;
@@ -730,65 +730,41 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         }
     }
 
+    public void setForwardClicked(boolean clicked) {
+        forwardClicked = clicked;
+    }
+
     @Override
     public void onClick(View v) {
         MainActivity mainActivity = (MainActivity) getActivity();
 
         switch(v.getId()) {
             case R.id.fragment_display_forward:
-                // check location first.
-                /*
-                if(!internal) {
-                    if(mainActivity.isLocationUpdated() == false) {
-                        if(mainActivity.isRequestingLocationUpdates()) {// 어차피 몇초 안에 끝나는 일이므로 toast보다는 dialog가 낫다. 기존 wait를 쓴다.
-                            showView(waitView);
-                        } else if(mainActivity.isRequestingLocationFailed()) {
-                            showView(locationView);
-                        }
+                if(!forwardClicked) {
+                    forwardClicked = true;// TODO: enabled도 잘 안될만큼, 최대한 빠른 click 올 수 있다고 생각하고, 바로 set한다.
+
+                    // check tag existence
+                    if(tags == null || tags.isEmpty()) {// 애초에 remove될 때 null시키면 되겠지만 여러번 체크하는 것도 그렇고 일단 이게 최소 변경이므로 이렇게 간다.
+                        mainActivity.showToast(R.string.upload_tag);
 
                         break;
                     }
+
+                    //TODO: 여기서 해주나 server 보내서 확인하나 시간은 거의 차이 없으나, 종료되지 않는다는 점이 다르다.
+                    if(!isNetworkAvailable()) {// 일단 여기서도 해준다. toast 형식이므로 어쨌든 해줄만큼 더 해주는게 낫다.
+                        mainActivity.showToast(R.string.network_retry);
+
+                        break;
+                    }
+
+                    forwardClicked(latitude, longitude, isLocationAvailable);
                 }
-                */
-                // check tag existence
-                if(tags == null || tags.isEmpty()) {// 애초에 remove될 때 null시키면 되겠지만 여러번 체크하는 것도 그렇고 일단 이게 최소 변경이므로 이렇게 간다.
-                    mainActivity.showToast(R.string.upload_tag);
-
-                    break;
-                }
-
-                //TODO: 여기서 해주나 server 보내서 확인하나 시간은 거의 차이 없으나, 종료되지 않는다는 점이 다르다.
-                if(!isNetworkAvailable()) {// 일단 여기서도 해준다. toast 형식이므로 어쨌든 해줄만큼 더 해주는게 낫다.
-                    mainActivity.showToast(R.string.network_retry);
-
-                    break;
-                }
-
-                //showView(waitView);
-
-                //upload();
-
-                forwardClicked(latitude, longitude, isLocationAvailable);
 
                 break;
             case R.id.fragment_display_close:
                 mainActivity.onBackPressed();// adjustpan 때문에 disable 등등 다 안돼서 background로라도 처리해야 했고 그러려면 listener도 frag에서 처리해야 했다.
 
                 break;
-            /*
-            case R.id.fragment_display_location:
-                showView(waitView);
-
-                mainActivity.startLocationUpdates();
-
-                break;
-            case R.id.fragment_display_network:// location, tag check를 다 넘어가야 upload 자체가 되고, upload로부터 나오는 exception에서 나오므로, 다른건 더 필요없다.
-                showView(waitView);
-
-                upload();
-
-                break;
-                */
         }
     }
 

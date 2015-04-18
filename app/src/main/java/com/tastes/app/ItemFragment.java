@@ -3,6 +3,8 @@ package com.tastes.app;
 import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Bitmap;
+import android.graphics.BlurMaskFilter;
+import android.graphics.EmbossMaskFilter;
 import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Location;
@@ -133,6 +135,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         text.setTextColor(getResources().getColor(R.color.text_inverse));
         text.setSingleLine(true);
         //text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+        //text.setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient_circular));
+        //text.getPaint().setMaskFilter(new EmbossMaskFilter(new float[]{0f, -1.0f, 0.5f}, 0.8f, 15f, 1f));
         text.setId(R.id.fragment_item_tag);
         text.setTag(tag);// getText도 되지만 cast하고 parsing하는것보다 이게 더 편하다.
         text.setOnClickListener(this);

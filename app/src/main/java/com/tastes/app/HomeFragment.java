@@ -199,7 +199,9 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
                     layerView.setVisibility(View.GONE);
 
+                    edit.setFilters(new InputFilter[]{});// filter에 flag를 거는 것도 있겠지만, 일단 그것보다는 단순하게 이렇게 간다.
                     edit.setText(Tag.HEADER + getString(R.string.search_tag));
+                    edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
 
                     edit.setAlpha(0.5f);
                 }

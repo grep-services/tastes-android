@@ -175,6 +175,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         return galleryFragment;
     }
 */
+    public DisplayFragment getDisplayFragment() {
+        return displayFragment;
+    }
+
     public HomeFragment getHomeFragment() {
         return homeFragment;
     }
@@ -1080,7 +1084,6 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     @Override
-    //public void onDisplayActionOKClicked(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> orientations, final List<String> switches) {
     public void onDisplayUpload(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> orientations) {
         // send to server
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
@@ -1108,34 +1111,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 super.onPostExecute(success);
 
                 if(success) {
-                    //homeFragment.setView();
                     homeFragment.setLocation(latitude, longitude);
-                    /*
-                    TODO: 읽어보기. 성공이후 set은 한다쳐도 이동은 미리 해 있을 것이다.
-                    homeFragment.setView();
-
-                    if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
-                        viewPagerFragment.setCurrentPage(2);
-
-                        onBackPressed();
-                    }
-                    */
                 } else {
-                    //homeFragment.setRefreshing(false);
-                    /*
-                    TODO : 나중에는 home에다가 Image obj를 이용한 retry form 만들어주도록 한다.
-                    기존과 같이 display가 아직 있는지 등을 검사할 필요도 없다.
-                    무조건 toast만 띄워준다.
-                     */
-                    // method로 하는게 낫다.
+                    //TODO : 나중에는 home에다가 Image obj를 이용한 retry form 만들어주도록 한다.
                     homeFragment.notifyNetworkFailure();
-                    //showToast(R.string.network_retry);
-                    /*
-                    if(flag_fragment_display == true) { // false란 건 중간에 미리 껐다는 것이므로 그냥 둔다.
-                        //displayFragment.showWait(false);
-                        displayFragment.notifyNetworkFailure();
-                    }
-                    */
                 }
             }
         };
@@ -1145,7 +1124,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         else task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         //TODO: 여기가 중요. DISPLAY를 끄기 전에 확실히 UPLOAD를 한다.
-        onBackPressed();// 다만, 이게 display의 finish가 맞아야 한다.
+        //onBackPressed();// 다만, 이게 display의 finish가 맞아야 한다.
     }
 
     public void showToast(int resId) {
@@ -1226,10 +1205,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             displayFragment.setLocation(latitude, longitude);
             // 3. upload via display frag
             displayFragment.upload();
-            // 4. close display frag. => display의 upload가 main의 callback으로 오고, 거기서 back이 된다.
-            //onBackPressed();
-            // 5. move to home(refresh는 async post에서 될 것)
+            // 4. move to home(refresh는 async post에서 될 것)
             viewPagerFragment.setCurrentPage(1);
+            // 5. close display frag. => display의 upload가 main의 callback으로 오고, 거기서 back이 된다. => 그럴 필요 없다. home으로 돌려놓고 바로 close하면 된다.
+            onBackPressed();
         } else {
             if(profileFragment != null) {
                 profileFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.

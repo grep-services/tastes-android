@@ -213,7 +213,9 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
                     layerView.setVisibility(View.GONE);
 
+                    edit.setFilters(new InputFilter[]{});
                     edit.setText(Tag.HEADER + getString(R.string.add_tag));
+                    edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
 
                     edit.setAlpha(0.5f);
                 }

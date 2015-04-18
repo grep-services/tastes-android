@@ -1,6 +1,8 @@
 package com.tastes.app;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.StateListDrawable;
 import android.location.Address;
 import android.location.Location;
 import android.os.Bundle;
@@ -27,6 +29,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.tastes.R;
 import com.tastes.util.LogWrapper;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
@@ -114,19 +117,6 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         root.addView(mapView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-        /*
-        view = (MapView) root.findViewById(R.id.fragment_map_view);
-        view.onCreate(savedInstanceState);
-        view.getMapAsync(this);
-        */
-        /*
-        GoogleMapOptions options = new GoogleMapOptions().liteMode(true);
-        view = new MapView(getActivity(), options);
-        root.addView(view, 0);
-        view.getMapAsync(this);
-
-        MapsInitializer.initialize(getActivity());//TODO: example에서는 google play not available exception 쓰던데 실제로 해보면 not thrown이라고 안된다.
-        */
 /*
         // and next place it, for exemple, on bottom right (as Google Maps app)
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
@@ -137,7 +127,8 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         layoutParams.setMargins(getPixel(12), 0, 0, getPixel(12));
 */
         currentButton = (Button) root.findViewById(R.id.fragment_map_current);
-        //currentButton.setBackgroundDrawable(locationButton.getBackground());
+        Drawable selector = getSelectorFromSelector((StateListDrawable) locationButton.getBackground());
+        currentButton.setBackgroundDrawable(selector);
         currentButton.setOnClickListener(this);
         currentButton.setEnabled(mActivity.isLocationUpdated());//TODO: start가 updated false로 만든다. 그리고 changed가 true로 만든다.
 
@@ -157,6 +148,32 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         getMapAsync(this);
 
         return root;
+    }
+
+    //TODO: color filter를 적용할 수도 있겠지만, 나중에는 image 새로 만드는게 나을 것 같기도 하다.
+    public Drawable getSelectorFromSelector(StateListDrawable selector) {
+        StateListDrawable result = new StateListDrawable();
+
+        result.addState(new int[]{-android.R.attr.state_enabled}, getDrawableFromSelector(selector, new int[]{android.R.attr.state_pressed}));
+        result.addState(new int[]{android.R.attr.state_pressed}, getDrawableFromSelector(selector, new int[]{android.R.attr.state_pressed}));
+        result.addState(new int[]{}, getDrawableFromSelector(selector, new int[]{}));
+
+        return result;
+    }
+
+    public Drawable getDrawableFromSelector(StateListDrawable selector, int[] state) {
+        Drawable drawable = null;
+
+        try {
+            Method getStateDrawableIndex = StateListDrawable.class.getMethod("getStateDrawableIndex", int[].class);
+            Method getStateDrawable = StateListDrawable.class.getMethod("getStateDrawable", int.class);
+            int index = (int) getStateDrawableIndex.invoke(selector, state);
+            drawable = (Drawable) getStateDrawable.invoke(selector, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return drawable;
     }
 
     public int getPixel(int dp) {
@@ -289,6 +306,9 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
                 break;
             case R.id.fragment_map_close:
+                if(mActivity.isDisplayViewing()) {
+                    mActivity.getDisplayFragment().setForwardClicked(false);
+                }
                 mActivity.onBackPressed();
 
                 break;
@@ -302,6 +322,10 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
     }
 
     public void setPointerAddress(Address address) {
+        if(pointerMarker == null) {//TODO: getView로는 안되는 것 같다.
+            return;
+        }
+
         if(address != null) {
             String result;
 
