@@ -65,7 +65,8 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
     private MapView view;
     private GoogleMap map;
-    private Marker currentMarker, pointerMarker;
+    private Marker currentMarker;
+    private Marker pointerMarker;
 
     private Button currentButton;
     private Button okButton, closeButton;
@@ -117,7 +118,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         root.addView(mapView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-/*
+
         // and next place it, for exemple, on bottom right (as Google Maps app)
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
         // position on right bottom
@@ -125,10 +126,11 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
         layoutParams.setMargins(getPixel(12), 0, 0, getPixel(12));
-*/
+
         currentButton = (Button) root.findViewById(R.id.fragment_map_current);
         Drawable selector = getSelectorFromSelector((StateListDrawable) locationButton.getBackground());
         currentButton.setBackgroundDrawable(selector);
+        //currentButton.setBackgroundDrawable(locationButton.getBackground());
         currentButton.setOnClickListener(this);
         currentButton.setEnabled(mActivity.isLocationUpdated());//TODO: start가 updated false로 만든다. 그리고 changed가 true로 만든다.
 
@@ -142,7 +144,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         closeButton.setOnClickListener(this);
 
         if(mActivity.isDisplayViewing()) {
-            closeButton.setBackgroundResource(R.drawable.back);
+            closeButton.setBackgroundResource(R.drawable.back_dark);
         }
 
         getMapAsync(this);
@@ -265,8 +267,14 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
             }
         });
 
-        //googleMap.setMyLocationEnabled(true);
-        //googleMap.setLocationSource(mActivity);
+        googleMap.setLocationSource(mActivity);
+        googleMap.setMyLocationEnabled(true);
+        googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                return true;
+            }
+        });
 
         UiSettings uiSettings = googleMap.getUiSettings();
         uiSettings.setCompassEnabled(false);// for other devices(such as s3)

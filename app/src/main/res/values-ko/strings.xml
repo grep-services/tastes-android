@@ -4,6 +4,8 @@
     <string name="app_name"><![CDATA[#]]>tastes</string>
 
     <string name="title_fragment_camera"></string>
+    <string name="title_fragment_gallery">갤러리</string>
+    <string name="title_fragment_picture">사진 선택</string>
     <string name="title_fragment_display"></string>
     <string name="title_fragment_home">홈</string>
     <string name="title_fragment_filter">Filter</string>
@@ -20,7 +22,7 @@
     <string name="upload_image">사용할 사진이 없습니다.</string>
     <string name="network_retry">네트워크 설정 확인 후 재시도 해주세요.</string>
     <string name="upload_tag">태그를 추가해주세요.</string>
-    <string name="tag_empty">표시할 태그가 없습니다.</string>
+    <string name="tag_empty">표시할 태그가 없습니다.</string>범
     <string name="img_empty">표시할 사진이 없습니다.</string>
     <string name="date_sec">초 전</string>
     <string name="date_min">분 전</string>

@@ -6,7 +6,8 @@
     <!-- widget dimens -->
 
     <!-- view -->
-    <dimen name="margin">12dp</dimen> <!-- default margin that can be used for any view. -->
+    <dimen name="margin">12dp</dimen><!-- default margin that can be used for any view. -->
+    <dimen name="margin_narrow">8dp</dimen>
 
     <!-- text -->
     <dimen name="text">18sp</dimen>

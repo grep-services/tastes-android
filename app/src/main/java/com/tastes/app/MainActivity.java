@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener/*, LocationSource*/, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, PictureFragment.PictureFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationSource, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, PictureFragment.PictureFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private QueryWrapper queryWrapper;
 
@@ -93,7 +93,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private boolean mLocationUpdates = false;// 사실상 동의서다.(pref에 저장된 동의 여부이므로)
     private LocationRequest mLocationRequest;
     private LocationManager mLocationManager;
-    //private OnLocationChangedListener mLocationListener = null;// for map current test
+    private OnLocationChangedListener mLocationListener = null;// for map current test
     private boolean mRequestingLocationUpdates = false;
     private boolean mLocationUpdated = false;
     private boolean mRequestingLocationFailed = false;
@@ -230,7 +230,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             }
         }
     };
-/*
+
     @Override
     public void activate(OnLocationChangedListener onLocationChangedListener) {
         mLocationListener = onLocationChangedListener;
@@ -240,7 +240,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public void deactivate() {
         mLocationListener = null;
     }
-*/
+
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -574,10 +574,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         } else {// stop 없는 update.
             onLocationUpdated();//TODO: map을 위한 것 따로 만들어도 되겠지만 일단 간다.
         }
-/*
+
         if(mLocationListener != null) {
             mLocationListener.onLocationChanged(location);
-        }*/
+        }
     }
 
     /**
@@ -1513,6 +1513,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 break;
             //case R.id.fragment_display_close:
             //case R.id.fragment_home_camera:
+            case R.id.fragment_gallery_close:
             case R.id.fragment_profile_back:
             case R.id.fragment_item_close:
             case R.id.fragment_picture_close:

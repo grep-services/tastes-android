@@ -3,6 +3,8 @@
 
     <string name="app_name"><![CDATA[#]]>tastes</string>
     <string name="title_fragment_camera"></string>
+    <string name="title_fragment_gallery">Gallery</string>
+    <string name="title_fragment_picture">Select Picture</string>
     <string name="title_fragment_display"></string>
     <string name="title_fragment_home">Home</string>
     <string name="title_fragment_filter">Filter</string>

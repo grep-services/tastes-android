@@ -18,13 +18,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:gravity="center_vertical"
-        android:padding="8dp">
+        android:padding="8dp"
+        android:background="@color/white_overlay">
 
         <Button
             android:id="@+id/fragment_map_close"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:background="@drawable/close"/>
+            android:background="@drawable/close_dark"/>
 
         <com.devspark.robototextview.widget.RobotoEditText
             android:id="@+id/fragment_map_edit"
@@ -44,17 +45,16 @@
             android:id="@+id/fragment_map_ok"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:background="@drawable/ok"/>
+            android:background="@drawable/ok_dark"/>
 
     </LinearLayout>
-
+<!--
     <Button
         android:id="@+id/fragment_map_current"
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_gravity="left|bottom"
         android:layout_marginLeft="12dp"
-        android:layout_marginBottom="12dp"
-        android:background="@drawable/selector_button_current"/>
-
+        android:layout_marginBottom="12dp"/>
+-->
 </FrameLayout>

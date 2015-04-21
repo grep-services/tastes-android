@@ -12,7 +12,9 @@ import android.provider.MediaStore;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -26,10 +28,12 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.tastes.R;
 import com.tastes.content.Image;
 import com.tastes.content.Tag;
+import com.tastes.util.LogWrapper;
 import com.tastes.util.QueryWrapper;
 
 import java.io.File;
@@ -58,7 +62,10 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
     ImageLoader imageLoader;
     DisplayImageOptions options;
 
+    GestureDetector gestureDetector;
+
     ViewPager pager;
+    View toolbar;
     Button forwardButton;
 
     private MainActivity mActivity;
@@ -110,9 +117,27 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_picture, container, false);
 
+        toolbar = view.findViewById(R.id.fragment_picture_toolbar);
+
+        gestureDetector = new GestureDetector(mActivity, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {// 추후 double tap to zoom 등 위해 이렇게 간다.
+                //return super.onSingleTapConfirmed(e);
+                toggleToolbar();
+
+                return true;
+            }
+        });
+
         // set pager
         pager = (ViewPager) view.findViewById(R.id.fragment_picture_pager);
         pager.setAdapter(new PagerAdapter_());
+        pager.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
 
         pager.setCurrentItem(position);
 
@@ -120,6 +145,15 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
         forwardButton.setOnClickListener(this);
 
         return view;
+    }
+
+    public void toggleToolbar() {
+        LogWrapper.e("PICTURE", "TOGGLE TOOLBAR");
+        if(toolbar.getVisibility() == View.VISIBLE) {
+            toolbar.setVisibility(View.GONE);
+        } else {
+            toolbar.setVisibility(View.VISIBLE);
+        }
     }
 
     private class PagerAdapter_ extends PagerAdapter {
