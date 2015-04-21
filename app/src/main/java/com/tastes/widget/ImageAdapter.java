@@ -56,28 +56,28 @@ public class ImageAdapter extends BaseAdapter {
     Cursor cursor;
 
     // 그냥 쓸 수도 있지만, location은 최대한 arg로 쓰는게 좋다.
-    double latitude;
-    double longitude;
+    //double latitude;
+    //double longitude;
 
     DisplayImageOptions options;
 
     public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader) {
-        this(context, inflater, imageLoader, new ArrayList<Image>(), null, 0, 0);
+        this(context, inflater, imageLoader, new ArrayList<Image>(), null/*, 0, 0*/);
     }
 
-    public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader, Cursor cursor, double latitude, double longitude) {
-        this(context, inflater, imageLoader, null, cursor, latitude, longitude);
+    public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader, Cursor cursor/*, double latitude, double longitude*/) {
+        this(context, inflater, imageLoader, null, cursor/*, latitude, longitude*/);
     }
 
-    public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader, List<Image> images, Cursor cursor, double latitude, double longitude) {
+    public ImageAdapter(Context context, LayoutInflater inflater, ImageLoader imageLoader, List<Image> images, Cursor cursor/*, double latitude, double longitude*/) {
         this.context = context;
         this.inflater = inflater;
         this.imageLoader = imageLoader;
         this.images = images;
         //this.internal = internal;
         this.cursor = cursor;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        //this.latitude = latitude;
+        //this.longitude = longitude;
 
         options = new DisplayImageOptions.Builder()
                 .showImageOnLoading(R.drawable.stub)
@@ -153,9 +153,9 @@ public class ImageAdapter extends BaseAdapter {
             viewHolder.image = (ImageView) convertView.findViewById(R.id.grid_item_image);
             viewHolder.distance = (RobotoTextView) convertView.findViewById(R.id.grid_item_distance);
 
-            convertView.setTag(R.id.image_adapter_tag_holder, viewHolder);
+            convertView.setTag(viewHolder);
         } else {
-            viewHolder = (ViewHolder) convertView.getTag(R.id.image_adapter_tag_holder);
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
         if(images != null) {
@@ -209,7 +209,7 @@ public class ImageAdapter extends BaseAdapter {
                 }
             }
             cursor_.close();
-
+/*
             String time = String.valueOf(System.currentTimeMillis());
             // laglng 없을수도 있다.(시작하고 바로 켜면 주로 그럴듯.)
             double latitude_ = latitude;
@@ -245,6 +245,7 @@ public class ImageAdapter extends BaseAdapter {
             final Image image = new Image(origin, thumbnail, time, latitude_, longitude_, distance);
 
             convertView.setTag(R.id.image_adapter_tag_object, image);
+            */
         }
 
         return convertView;

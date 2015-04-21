@@ -62,12 +62,13 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     private List<Image> images;
     private int position;
 
-    private QueryWrapper queryWrapper;
+    //private QueryWrapper queryWrapper;
 
     ImageLoader imageLoader;
     DisplayImageOptions options;
 
     ViewPager pager;
+    Button moreButton;
 
     TextView distance;//TODO: pointer for address. 이 방법 말고 더 좋은 방법(다른 페이지들에도 주소 저장 될 수 있는) 있을지 생각해보기.
 
@@ -97,7 +98,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             position = getArguments().getInt(ARG_POSITION);
         }
 
-        queryWrapper = new QueryWrapper();
+        //queryWrapper = new QueryWrapper();
 
         imageLoader = ImageLoader.getInstance();
 
@@ -180,6 +181,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         pager.setAdapter(new PagerAdapter_());
 
         pager.setCurrentItem(position);
+
+        moreButton = (Button) view.findViewById(R.id.fragment_item_more);
+        moreButton.setOnClickListener(this);
 
         return view;
     }
@@ -265,9 +269,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 }
             });
 
-            Button button = ((Button) view.findViewById(R.id.pager_item_more));
-            button.setTag(position);
-            button.setOnClickListener(ItemFragment.this);
+            //Button button = ((Button) view.findViewById(R.id.pager_item_more));
+            //button.setTag(position);
+            //button.setOnClickListener(ItemFragment.this);
 
             TextView text = ((TextView) view.findViewById(R.id.pager_item_distance));
             text.setText(images.get(position).distance + getActivity().getResources().getString(R.string.distance_unit));
@@ -375,9 +379,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
 
                 break;
                 */
-            case R.id.pager_item_more:
+            case R.id.fragment_item_more:
                 //showDialog((Integer) v.getTag());
-                int id = images.get((Integer) v.getTag()).id;
+                int id = images.get(pager.getCurrentItem()).id;
 
                 moreClicked(id);
 

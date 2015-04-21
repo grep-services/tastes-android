@@ -4,10 +4,10 @@
     android:layout_height="match_parent"
     android:background="@color/gray_dark"
     android:clickable="true"
-    tools:context="com.tastes.app.ItemFragment">
+    tools:context="com.tastes.app.PictureFragment">
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/fragment_item_pager"
+        android:id="@+id/fragment_picture_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
@@ -18,7 +18,7 @@
         android:padding="@dimen/margin">
 
         <Button
-            android:id="@+id/fragment_item_close"
+            android:id="@+id/fragment_picture_close"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_alignParentLeft="true"
@@ -26,11 +26,11 @@
             android:onClick="mOnClick"/>
 
         <Button
-            android:id="@+id/fragment_item_more"
+            android:id="@+id/fragment_picture_forward"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_alignParentRight="true"
-            android:background="@drawable/more"/>
+            android:background="@drawable/forward"/>
 
     </RelativeLayout>
 

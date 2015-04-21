@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.InputFilter;
 import android.view.KeyEvent;
@@ -68,6 +69,7 @@ import java.util.List;
 결론 : 위치 있으면 거리순 정렬과 거리 달아 표시, 위치 없으면 그냥 갤러리 그대로 표시.(위치 달려 있는 것을 필터링은 하기). 따라서 refresh 필요 없다.
  */
 public class GalleryFragment extends Fragment implements GridView.OnItemClickListener/*, Button.OnClickListener*/ {
+    /*
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
     private static final String ARG_AVAILABLE = "available";
@@ -75,8 +77,10 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
     private double latitude;
     private double longitude;
     private boolean isLocationAvailable;
-
+    */
     ImageLoader imageLoader;
+
+    ViewPager pager;
 
     Cursor cursor;
 
@@ -88,13 +92,14 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
     private MainActivity mActivity;
     private GalleryFragmentCallbacks mCallbacks;
 
-    public static GalleryFragment newInstance(double latitude, double longitude, boolean isLocationAvailable) {
+    //public static GalleryFragment newInstance(double latitude, double longitude, boolean isLocationAvailable) {
+    public static GalleryFragment newInstance() {
         GalleryFragment fragment = new GalleryFragment();
 
         Bundle args = new Bundle();
-        args.putDouble(ARG_LATITUDE, latitude);
+        /*args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
-        args.putBoolean(ARG_AVAILABLE, isLocationAvailable);
+        args.putBoolean(ARG_AVAILABLE, isLocationAvailable);*/
         fragment.setArguments(args);
 
         return fragment;
@@ -107,13 +112,13 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+/*
         if (getArguments() != null) {
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
             isLocationAvailable = getArguments().getBoolean(ARG_AVAILABLE);
         }
-
+*/
         /*
         thumbnail 없을수도 있고, 있어도 kind가 나눠지는 등, 일단 기본으로 cursor를 잡는다.
         일단 테스트로, thumbnail부터 받고, 실제 img를 보내는 방식 해본다.
@@ -136,7 +141,7 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
         grid = (GridView) view.findViewById(R.id.fragment_gallery_grid);
 
         //adapter = new ImageAdapter(getActivity(), inflater, imageLoader, true);
-        adapter = new ImageAdapter(getActivity(), inflater, imageLoader, cursor, latitude, longitude);
+        adapter = new ImageAdapter(getActivity(), inflater, imageLoader, cursor/*, latitude, longitude*/);
 
         grid.setAdapter(adapter);
         grid.setOnItemClickListener(this);
@@ -181,12 +186,14 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if(mCallbacks != null) {
-            Image image = (Image) view.getTag(R.id.image_adapter_tag_object);
-            mCallbacks.onGalleryItemClicked(image, isLocationAvailable || (image.distance > -2));// 저것 외에는, not available한 loc이 gallery로 들어왔을 뿐이다.
+            //Image image = (Image) view.getTag(R.id.image_adapter_tag_object);
+            //mCallbacks.onGalleryItemClicked(image, isLocationAvailable || (image.distance > -2));// 저것 외에는, not available한 loc이 gallery로 들어왔을 뿐이다.
+            mCallbacks.onGalleryItemClicked(position);
         }
     }
 
     public interface GalleryFragmentCallbacks {
-        public void onGalleryItemClicked(Image image, boolean isLocationAvailable);
+        //public void onGalleryItemClicked(Image image, boolean isLocationAvailable);
+        public void onGalleryItemClicked(int position);
     }
 }

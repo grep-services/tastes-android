@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener/*, LocationSource*/, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener/*, LocationSource*/, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, PictureFragment.PictureFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
 
     private QueryWrapper queryWrapper;
 
@@ -1058,13 +1058,32 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     //---- gallery
     @Override
-    public void onGalleryItemClicked(Image image, boolean isLocationAvailble) {
+    //public void onGalleryItemClicked(Image image, boolean isLocationAvailable) {
+    public void onGalleryItemClicked(int position) {
+        /*
         // set rotation : 이것도 일단 아무 값이나 둔다.
         int rotation = 0;
         // set flag
         flag_fragment_display = true;
         //DisplayFragment.imageToShow = image;
-        displayFragment = DisplayFragment.newInstance(false, image.origin, Long.valueOf(image.time), ROTATE_TAG ? rotation : 0, image.latitude, image.longitude, isLocationAvailble);// 여기서도 보내야 location process 잘 맞아떨어진다.
+        displayFragment = DisplayFragment.newInstance(false, image.origin, Long.valueOf(image.time), ROTATE_TAG ? rotation : 0, image.latitude, image.longitude, isLocationAvailable);// 여기서도 보내야 location process 잘 맞아떨어진다.
+
+        addFragment(displayFragment);
+        */
+        Fragment fragment = PictureFragment.newInstance(position, latitude, longitude, mLocationUpdated);
+
+        addFragment(fragment);
+    }
+
+    //---- picture
+    @Override
+    public void onPictureForwardClicked(Image image, boolean isLocationAvailable) {
+        // set rotation : 이것도 일단 아무 값이나 둔다.
+        int rotation = 0;
+        // set flag
+        flag_fragment_display = true;
+        //DisplayFragment.imageToShow = image;
+        displayFragment = DisplayFragment.newInstance(false, image.origin, Long.valueOf(image.time), ROTATE_TAG ? rotation : 0, image.latitude, image.longitude, isLocationAvailable);// 여기서도 보내야 location process 잘 맞아떨어진다.
 
         addFragment(displayFragment);
     }
@@ -1209,6 +1228,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             viewPagerFragment.setCurrentPage(1);
             // 5. close display frag. => display의 upload가 main의 callback으로 오고, 거기서 back이 된다. => 그럴 필요 없다. home으로 돌려놓고 바로 close하면 된다.
             onBackPressed();
+
+            if(galleryFragment != null) {
+                onBackPressed();// close gallery
+                onBackPressed();// close picture - item, profile이 gallery 다음 check 대상이지만, 아직 item, profile이 켜진 상태에서 picture이 열릴 경우는 없으므로 괜찮다.
+            }
         } else {
             if(profileFragment != null) {
                 profileFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
@@ -1478,7 +1502,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             case R.id.fragment_camera_gallery:
                 flag_fragment_gallery = true;
 
-                galleryFragment = GalleryFragment.newInstance(latitude, longitude, mLocationUpdated);
+                galleryFragment = GalleryFragment.newInstance(/*latitude, longitude, mLocationUpdated*/);
 
                 addFragment(galleryFragment);
 
@@ -1491,6 +1515,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             //case R.id.fragment_home_camera:
             case R.id.fragment_profile_back:
             case R.id.fragment_item_close:
+            case R.id.fragment_picture_close:
                 onBackPressed();
 
                 break;
