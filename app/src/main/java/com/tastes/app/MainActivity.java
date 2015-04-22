@@ -370,7 +370,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             if(mapFragment == null) {// map not null이면 계속 간다.
                 stopLocationUpdates(remove, true);
             } else {// stop 없는 update.
-                onLocationUpdated();
+                //TODO: 사실 LAST까지 SOURCE로 인해 되는지는 잘 모르겠다. 만약 LAST를 받는 것이라면, 아마 이 FAILURE쪽으로 넘어오지 않았을 것이다.
+                //onLocationUpdated();
             }
         } else {
             mLocationUpdated = false;// main에서의 실패에서는 중복되지만 그냥 넘어간다.
@@ -425,7 +426,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         // 당장 필요한건 update success시 home setview 하는 것 뿐일듯 하다.... display도 있을듯.
         if(mLocationUpdated) {
             if(mapFragment != null) {// 일반 fragment들에 넘어가면 안된다. map에만 전달.
-                mapFragment.setCurrentLocation(latitude, longitude);
+                //TODO: 현재 일단 제외 상태다. 하지만 BLOCK은 유지할 필요 있다.
+                //mapFragment.setCurrentLocation(latitude, longitude);
             } else {// 여기 있는 것들은 이것들 내부에서 recall하는 일 없는 한(없다.) 1회만 실행된다.(아직은 이 방식 유지)
                 /*if(galleryFragment != null) {
                     galleryFragment.setLocation(latitude, longitude);
@@ -572,7 +574,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         if(mapFragment == null) {// map not null이면 계속 간다.
             stopLocationUpdates(true, true);
         } else {// stop 없는 update.
-            onLocationUpdated();//TODO: map을 위한 것 따로 만들어도 되겠지만 일단 간다.
+            //TODO: 현재는 할 필요 없다.
+            //onLocationUpdated();//TODO: map을 위한 것 따로 만들어도 되겠지만 일단 간다.
         }
 
         if(mLocationListener != null) {

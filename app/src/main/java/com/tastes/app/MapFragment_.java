@@ -55,8 +55,8 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
     private double pointerLatitude;
     private double pointerLongitude;
-    private double currentLatitude;
-    private double currentLongitude;
+    //private double currentLatitude;
+    //private double currentLongitude;
 
     private boolean isLocationAvailable;// main updated 안됐어도 map manually set 된 것 넘어올 수 있다.
     private boolean readOnly;
@@ -65,10 +65,11 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
     private MapView view;
     private GoogleMap map;
-    private Marker currentMarker;
+    //private Marker currentMarker;
     private Marker pointerMarker;
 
     private Button currentButton;
+    //private View locationButton;
     private Button okButton, closeButton;
 
     private boolean setManually;
@@ -116,24 +117,33 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         View mapView = super.onCreateView(inflater, container, savedInstanceState);
 
         root.addView(mapView, 0, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+/*
+        locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+        Drawable selector = getSelectorFromSelector((StateListDrawable) locationButton.getBackground());
+        locationButton.setBackgroundDrawable(selector);
+        locationButton.setEnabled(mActivity.isLocationUpdated());//TODO: start가 updated false로 만든다. 그리고 changed가 true로 만든다.
 
         // and next place it, for exemple, on bottom right (as Google Maps app)
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
         // position on right bottom
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);// disable 해야 bottom이 된다.
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
         layoutParams.setMargins(getPixel(12), 0, 0, getPixel(12));
 
+        locationButton.setLayoutParams(layoutParams);
+*/
+        currentButton = (Button) root.findViewById(R.id.fragment_map_current);
+        currentButton.setOnClickListener(this);
+        currentButton.setEnabled(mActivity.isLocationUpdated());//TODO: start가 updated false로 만든다. 그리고 changed가 true로 만든다.
+/*
         currentButton = (Button) root.findViewById(R.id.fragment_map_current);
         Drawable selector = getSelectorFromSelector((StateListDrawable) locationButton.getBackground());
         currentButton.setBackgroundDrawable(selector);
         //currentButton.setBackgroundDrawable(locationButton.getBackground());
         currentButton.setOnClickListener(this);
         currentButton.setEnabled(mActivity.isLocationUpdated());//TODO: start가 updated false로 만든다. 그리고 changed가 true로 만든다.
-
+*/
         okButton = (Button) root.findViewById(R.id.fragment_map_ok);
         if(readOnly) {
             okButton.setVisibility(View.GONE);
@@ -151,7 +161,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
         return root;
     }
-
+/*
     //TODO: color filter를 적용할 수도 있겠지만, 나중에는 image 새로 만드는게 나을 것 같기도 하다.
     public Drawable getSelectorFromSelector(StateListDrawable selector) {
         StateListDrawable result = new StateListDrawable();
@@ -185,7 +195,8 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
         return (int)(dp * density);
     }
-
+    */
+/*
     public void setCurrentLocation(double latitude, double longitude) {
         if(getView() != null && map != null) {// view 뿐만 아니라 map 도 check 필요하다. cur, pnt 등에서 해주자니, bool flag 등 걸리는 것들이 많다.
             // 현위치 효과를 준다.
@@ -211,6 +222,28 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
             currentButton.setEnabled(true);// clicked뿐만 아니라 onCreate에서도 온다. 그리고 현재 method는 기본적으로 updated true 동반이다.
         }
     }
+*/
+    private void setCurrentLocation(Location location) {
+        if(setManually) {// start(처음, 그이후 여러 background), button
+            // 처음, 그중에서 pointer가 있을 경우 - 를 빼고는 다 해준다.
+            if(!(isFirstSet && isLocationAvailable)) {//TODO: pointer말고 이걸 한 이유는, 혹시라도 이거 바로 뒤에 ready 될까봐. 어차피 avilable이면 pointer 있으므로.
+                if(!readOnly) {// 그래도 item에서는 pointer 바뀌면 안된다.
+                    setPointerMarker(location.getLatitude(), location.getLongitude());
+                }
+
+                setCameraView(location.getLatitude(), location.getLongitude());
+            }
+
+            if(isFirstSet) {
+                isFirstSet = false;
+            }
+
+            setManually = false;
+        }
+
+        //locationButton.setEnabled(true);// clicked뿐만 아니라 onCreate에서도 온다. 그리고 현재 method는 기본적으로 updated true 동반이다.
+        currentButton.setEnabled(true);
+    }
 
     public void notifyLocationFailure() {
         //TODO: clicked에 의해서만 toast를 띄울 수도 있다고 생각함. => 일단 현재 이 NOTI 자체가 MANUALLY 에서만 적용됨.
@@ -219,10 +252,13 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         }
 
         if(getView() != null) {
-            if(currentMarker != null) {
+            /*if(currentMarker != null) {
                 currentMarker.remove();
 
                 currentMarker = null;
+            }*/
+            if(map != null) {//TODO: SOURCE는 안해도 될지. STOP은?(왜냐면, LOC BTN CLICK시 START할 수 있게) => 이미 되어서 온다.
+                map.setMyLocationEnabled(false);
             }
 
             if(setManually) {
@@ -230,14 +266,22 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
             }
 
             currentButton.setEnabled(true);
+            //locationButton.setEnabled(true);
         }
     }
 
     public void onPreLocationUpdate() {
-        setManually = true;
+        setManually = true;// background에서 올라오는 start라던가, 여러가지가 있을 수 있다.
 
         if(currentButton != null) {// 어차피 이게 없다는 말은 아직 onCreateView 전이란 말이므로 거기서 될 것이다.
             currentButton.setEnabled(false);
+        }/*
+        if(locationButton != null) {// 어차피 이게 없다는 말은 아직 onCreateView 전이란 말이므로 거기서 될 것이다.
+            locationButton.setEnabled(false);
+        }*/
+
+        if(map != null) {//TODO: SOURCE는 안해도 될지.
+            map.setMyLocationEnabled(true);
         }
     }
 
@@ -255,7 +299,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
                 }
             });
         }
-
+/* 수동 current marker 안쓰므로 일단 뺀다.
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -266,17 +310,41 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
                 return false;
             }
         });
-
+*/
         googleMap.setLocationSource(mActivity);
         googleMap.setMyLocationEnabled(true);
+        /*
         googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
+                // pre와 겹치지만, 아래 if때문에 일단 그냥 놔둔다. => 이제 안되므로 뺀다. => flag들이므로, 겹치더라도 일단 넣어준다.
+                setManually = true;// button enabled랑 같이 갈 수 있지만 btn state 다변화를 위해 이렇게 분리.
+
+                currentButton.setEnabled(false);
+                //locationButton.setEnabled(false);
+
+                // TODO: update로 판가름하기에는 update는 시작시에 false되는 관계로 언제 unavailable되었는지 확인하기 힘들다. 따라서 requesting으로 확인한다.
+                if(mActivity.isRequestingLocationUpdates()) {//TODO: GPS STATUS CHECK후 UNAVAILABLE하면 그쪽에서 STOP하므로 여기서는 무조건 CUR AVAILABLE이다.
+                    //setCurrentLocation(currentLatitude, currentLongitude);// 새로 만들어도 되지만 일단 이렇게.
+                    setCurrentLocation(googleMap.getMyLocation());
+                } else {
+                    mActivity.startLocationUpdates();
+                }
+
+                //mActivity.startLocationUpdates();// 종료되어야 다시 enabled되므로 중복은 안된다.
+
                 return true;
+            }
+        });*/
+        googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                setCurrentLocation(location);
             }
         });
 
         UiSettings uiSettings = googleMap.getUiSettings();
+        uiSettings.setMyLocationButtonEnabled(false);
         uiSettings.setCompassEnabled(false);// for other devices(such as s3)
         uiSettings.setRotateGesturesEnabled(false);
 
@@ -291,13 +359,18 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
     public void onClick(View v) {
         switch(v.getId()) {
             case R.id.fragment_map_current://TODO: 실내 GPS상황도 알아서 TIME DIFF로 처리되어야만, 여기에서 괜히 같은 CUR CAM SET하지 않는다.
-                // pre와 겹치지만, 아래 if때문에 일단 그냥 놔둔다.
+                // pre와 겹치지만, 아래 if때문에 일단 그냥 놔둔다. => 이제 안되므로 뺀다. => flag들이므로, 겹치더라도 일단 넣어준다.
                 setManually = true;// button enabled랑 같이 갈 수 있지만 btn state 다변화를 위해 이렇게 분리.
+
                 currentButton.setEnabled(false);
+                //locationButton.setEnabled(false);
 
                 // TODO: update로 판가름하기에는 update는 시작시에 false되는 관계로 언제 unavailable되었는지 확인하기 힘들다. 따라서 requesting으로 확인한다.
                 if(mActivity.isRequestingLocationUpdates()) {//TODO: GPS STATUS CHECK후 UNAVAILABLE하면 그쪽에서 STOP하므로 여기서는 무조건 CUR AVAILABLE이다.
-                    setCurrentLocation(currentLatitude, currentLongitude);// 새로 만들어도 되지만 일단 이렇게.
+                    //setCurrentLocation(currentLatitude, currentLongitude);// 새로 만들어도 되지만 일단 이렇게.
+                    if(map != null) {
+                        setCurrentLocation(map.getMyLocation());
+                    }
                 } else {
                     mActivity.startLocationUpdates();
                 }
@@ -364,7 +437,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
         location.setLongitude(longitude);
         mActivity.requestAddress(location);
     }
-
+/*
     public void setCurrentMarker(double latitude, double longitude) {
         currentLatitude = latitude;
         currentLongitude = longitude;
@@ -380,7 +453,7 @@ public class MapFragment_ extends MapFragment implements OnMapReadyCallback, Vie
 
         LogWrapper.e("Map", latitude + ", " + longitude);
     }
-
+*/
     public void setPointerMarker(double latitude, double longitude) {
         pointerLatitude = latitude;
         pointerLongitude = longitude;

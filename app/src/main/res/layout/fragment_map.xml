@@ -48,13 +48,14 @@
             android:background="@drawable/ok_dark"/>
 
     </LinearLayout>
-<!--
+
     <Button
         android:id="@+id/fragment_map_current"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="69dp"
+        android:layout_height="69dp"
         android:layout_gravity="left|bottom"
         android:layout_marginLeft="12dp"
-        android:layout_marginBottom="12dp"/>
--->
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/selector_button_current"/>
+
 </FrameLayout>
