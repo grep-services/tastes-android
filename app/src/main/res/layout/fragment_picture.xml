@@ -14,21 +14,20 @@
     <RelativeLayout
         android:id="@+id/fragment_picture_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/view"
         android:layout_gravity="top"
-        android:padding="@dimen/margin_narrow"
+        android:padding="@dimen/margin"
         android:background="@color/black_overlay">
 
         <Button
             android:id="@+id/fragment_picture_close"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/button"
+            android:layout_height="@dimen/button"
             android:layout_alignParentLeft="true"
             android:background="@drawable/close_light"
             android:onClick="mOnClick"/>
 
         <com.devspark.robototextview.widget.RobotoTextView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/fragment_picture_close"
@@ -36,19 +35,16 @@
             android:layout_marginLeft="@dimen/margin"
             android:padding="4dp"
             android:includeFontPadding="false"
-            android:textSize="18sp"
+            android:textSize="@dimen/text"
             android:textColor="@color/text_inverse"
-            android:text="@string/title_fragment_picture"
-            app:fontFamily="noto_sans_cjk_kr"
-            app:textWeight="demilight"
-            app:textStyle="normal"/>
+            android:text="@string/title_fragment_picture"/>
 
         <Button
             android:id="@+id/fragment_picture_forward"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/button"
+            android:layout_height="@dimen/button"
             android:layout_alignParentRight="true"
-            android:background="@drawable/forward_light"/>
+            android:background="@drawable/ok_light"/>
 
     </RelativeLayout>
 

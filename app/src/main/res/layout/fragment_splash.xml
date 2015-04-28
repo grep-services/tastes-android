@@ -39,17 +39,18 @@
                 android:padding="@dimen/margin"
                 android:includeFontPadding="false"
                 android:gravity="bottom|center_horizontal"
-                android:textSize="18sp"
+                android:textSize="@dimen/text"
                 android:text="@string/location_agree"/>
 
             <com.devspark.robototextview.widget.RobotoButton
                 android:id="@+id/fragment_splash_location_agree_btn"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:padding="4dp"
+                android:layout_height="@dimen/view"
+                android:layout_marginTop="@dimen/margin"
+                android:padding="@dimen/margin"
                 android:includeFontPadding="false"
                 android:background="@drawable/selector_button"
-                android:textSize="18sp"
+                android:textSize="@dimen/text"
                 android:textColor="@color/text_inverse"
                 android:text="@string/location_ok"
                 android:onClick="mOnClick"/>

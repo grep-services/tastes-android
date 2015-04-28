@@ -6,6 +6,7 @@
     <color name="white">#fff7f7f7</color>
     <color name="white_dark">#ffdfdfdf</color>
     <color name="white_overlay">#80f7f7f7</color>
+    <color name="gray_light">#ff7f7f7f</color>
     <color name="gray">#ff3f3f3f</color>
     <color name="gray_dark">#ff353535</color>
     <color name="gray_overlay">#c03f3f3f</color>
@@ -16,10 +17,12 @@
 
     <!-- view colors -->
     <color name="view">@color/white</color>
+    <color name="view_medium">@color/white_dark</color>
     <color name="view_inverse">@color/black</color>
 
     <!-- text colors -->
     <color name="text">@color/gray</color>
+    <color name="text_medium">@color/gray_light</color>
     <color name="text_inverse">@color/white</color>
 
     <!-- button colors -->

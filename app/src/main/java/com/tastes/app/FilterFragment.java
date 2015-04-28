@@ -221,6 +221,19 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 }
             }
         });
+        edit.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                String tag = edit.getText().subSequence(Tag.HEADER.length(), edit.length()).toString();
+
+                if(tag == null || tag.isEmpty() || tag.equals(getString(R.string.add_tag))) { // 빈 내용이면 pass해서 setspan관련 crash 막는다.
+                    //return true;
+                    return false;
+                } else {
+                    return false;
+                }
+            }
+        });
 
         button = (Button) view.findViewById(R.id.fragment_filter_add);
         button.setOnClickListener(this);
@@ -345,7 +358,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         Animation shake = AnimationUtils.loadAnimation(getActivity(), R.anim.shake);
 
         // 최대한 msg는 없앤다.
-        if(tag == null || tag.isEmpty()) { // 빈 내용이면 그냥 놔두면 된다.
+        if(tag == null || tag.isEmpty() || tag.equals(getString(R.string.add_tag))) { // 빈 내용이면 그냥 놔두면 된다.
             //YoYo.with(Techniques.Shake).playOn(edit);
             edit.startAnimation(shake);
             //Toast.makeText(getActivity(), "내용을 입력해주세요.", Toast.LENGTH_SHORT).show();

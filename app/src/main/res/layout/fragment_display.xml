@@ -22,18 +22,6 @@
         android:focusable="true"
         android:focusableInTouchMode="true"/>
 
-    <!--
-    <TextView
-        android:id="@+id/fragment_display_wait"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/gray_overlay"
-        android:gravity="center"
-        android:textSize="18sp"
-        android:textColor="@color/text_inverse"
-        android:text="@string/upload_wait"
-        android:visibility="gone"/>-->
-
     <RelativeLayout
         android:id="@+id/fragment_display_wait"
         android:layout_width="match_parent"
@@ -124,7 +112,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_alignParentRight="true"
-            android:background="@drawable/forward"/>
+            android:background="@drawable/ok"/>
 
     </RelativeLayout>
 

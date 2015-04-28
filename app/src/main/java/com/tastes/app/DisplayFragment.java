@@ -67,7 +67,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     private boolean mirror;
     private String path;
     private long time;
-    private int rotation;
+    private int rotation;//TODO: 이제는 PORT에서 회전되어야 할 값(기존에는 0 중심으로 +- 90이었다.)으로 쓰인다.
     //private String address;
     private double latitude;
     private double longitude;
@@ -202,6 +202,21 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
             int height = origin.getHeight();
             LogWrapper.e("DISPLAY", "size : " + width + ", " + height);
 
+            // matrix 처리 - mirror는 scale, 그리고 rotation for gallery (from camera는 일단 제외)
+            if(mirror || rotation != 0) {
+                Matrix matrix = new Matrix();
+
+                if(mirror) {
+                    matrix.setScale(-1, 1);
+                }
+
+                if(rotation != 0) {
+                    matrix.setRotate(rotation, (float) width / 2, (float) height / 2);
+                }
+
+                origin = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
+            }
+/*
             if(mirror) {
                 // mirrorffc가 안되니깐 이렇게라도 해야된다.
                 Matrix matrix = new Matrix();
@@ -220,7 +235,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
                     origin = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
                 }
             }
-
+*/
             filters = new Bitmap[indexes.length];
             for(int i = 0; i < indexes.length; i++) {
                 // 사진을 찍을 때마다 filters를 set null 해줘야 한다.
@@ -406,6 +421,10 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
         if(positions == null) positions = new ArrayList<String>();
 
+        positions.add(ratioX + "|" + ratioY);
+
+        // 일단 position은 고정하고, orientation은 저장하지 않는걸로 간다.
+/*
         if(rotation == -90 || rotation == 90) {// orientation 안바꿔도 될 때까지는 이렇게 해야 home에서(port) 정상적으로 보인다.
             // 그리고 이렇게 분류하는 것도 찍은 그대로 나오게 하기 위해서이다.(나중을 생각해도 이게 맞다.)
             if(rotation == -90) {
@@ -420,7 +439,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
         if(orientations == null) orientations = new ArrayList<String>();
 
         orientations.add(String.valueOf(((rotation * -1) + 360) % 360));// minus를 string에 쓰긴 그렇고, -90은 90, 90은 270(-90)이므로 이렇게 했다.
-
+*/
         return tags.indexOf(tag);
     }
 

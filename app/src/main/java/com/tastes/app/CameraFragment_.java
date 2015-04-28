@@ -5,9 +5,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +35,7 @@ import com.commonsware.cwac.camera.SimpleCameraHost;
 import com.tastes.R;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -167,11 +170,11 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
         Drawable drawable;
 
         drawable = getFirstThumbnailFromGallery();
-
+/*
         if(drawable == null) {
             drawable = getDrawableFromResource(R.drawable.gallery);
         }
-
+*/
         return drawable;// 그래도 null 될 수 있다. 그땐 어쩔 수 없다.
     }
 
@@ -182,6 +185,9 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
 
         if(cursor.moveToLast()) {
             String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+
+            rotateImageIfNeeded(origin, galleryButton);
+
             long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
             Uri uri = null;// null set 하긴 하지만, 어차피 thumbnail dependant하다.
             Cursor cursor_ = MediaStore.Images.Thumbnails.queryMiniThumbnail(mActivity.getContentResolver(), id, MediaStore.Images.Thumbnails.MINI_KIND, null);
@@ -205,6 +211,60 @@ public class CameraFragment_ extends CameraFragment implements View.OnTouchListe
         cursor.close();
 
         return drawable;
+    }
+
+    // return값 안쓰여도 image adapter와 맞추는게 더 낫다.
+    public int rotateImageIfNeeded(String path, View view) {
+        int rotation = 0;
+
+        try {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(path, options);
+            int width = options.outWidth;
+            int height = options.outHeight;
+            int factor = width > height ? 90 : 0;
+
+            ExifInterface exifInterface = new ExifInterface(path);
+
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
+
+            if(orientation != -1) {
+                int degree = 0;
+                int temp;
+
+                switch(orientation) {
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        temp = width; width = height; height = temp;
+
+                        degree = 90;
+
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        degree = 180;
+
+                        break;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        temp = width; width = height; height = temp;
+
+                        degree = 270;
+
+                        break;
+                }
+
+                factor = width > height ? 90 : 0;// TODO: exif 있을 때에는 factor를 수정해줘야 한다.(가로 세로가 크기 뿐 아니라 degree에 의해서 함께 결정되므로)
+
+                rotation = degree + factor;// TODO: 가로에 대해서는 90을 더해서 돌려준다.(세로는 그냥 맞춰서 돌려준다는 뜻도 있음.)
+            } else {
+                rotation = factor;// TODO: EXIF 없는 스샷 등은 방향으로만 돌려준다.(세로는 그냥 놔두면 된다는 뜻도 있음.)
+            }
+
+            view.setRotation(rotation);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return rotation;
     }
 
     // id, path 등 여러 information들로부터 thumbnail을 최대한 뽑는다.

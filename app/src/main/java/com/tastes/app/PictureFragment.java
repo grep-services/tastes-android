@@ -2,8 +2,12 @@ package com.tastes.app;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -28,7 +32,6 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.tastes.R;
 import com.tastes.content.Image;
@@ -48,6 +51,7 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
 
     // cursor는 받지 않고 그냥 생성해서 position과 함께 사용한다.
     private static final String ARG_POSITION = "position";
+    private static final String ARG_ROTATION = "rotation";
     private static final String ARG_LATITUDE = "latitude";
     private static final String ARG_LONGITUDE = "longitude";
     private static final String ARG_AVAILABLE = "available";
@@ -58,6 +62,7 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
 
     private Cursor cursor;
     private int position;
+    private int rotation;
 
     ImageLoader imageLoader;
     DisplayImageOptions options;
@@ -71,10 +76,11 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
     private MainActivity mActivity;
     private PictureFragmentCallbacks mCallbacks;
 
-    public static PictureFragment newInstance(int position, double latitude, double longitude, boolean isLocationAvailable) {
+    public static PictureFragment newInstance(int position, int rotation, double latitude, double longitude, boolean isLocationAvailable) {
         PictureFragment fragment = new PictureFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_POSITION, position);
+        args.putInt(ARG_ROTATION, rotation);
         args.putDouble(ARG_LATITUDE, latitude);
         args.putDouble(ARG_LONGITUDE, longitude);
         args.putBoolean(ARG_AVAILABLE, isLocationAvailable);
@@ -91,6 +97,7 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
 
         if (getArguments() != null) {
             position = getArguments().getInt(ARG_POSITION);
+            rotation = getArguments().getInt(ARG_ROTATION);
             latitude = getArguments().getDouble(ARG_LATITUDE);
             longitude = getArguments().getDouble(ARG_LONGITUDE);
             isLocationAvailable = getArguments().getBoolean(ARG_AVAILABLE);
@@ -108,8 +115,8 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
                 .cacheInMemory(false)// -> memory 위해 해제할까 하다가 뜨는 시간 줄이려면 차라리 넣어 두는게 나을 것 같았다.(대신 img 저장할 때 size 자체를 줄인다.)
                 .cacheOnDisk(false)//TODO: 용량 많이 들어서 빼둠.
                 .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
-                .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
-                        //.displayer(new FadeInBitmapDisplayer(500)) 이건 차라리 빼는게 더 빨라 보인다.
+                //.bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
+                //.displayer(new FadeInBitmapDisplayer(500)) 이건 차라리 빼는게 더 빨라 보인다.
                 .build();
     }
 
@@ -156,22 +163,61 @@ public class PictureFragment extends Fragment implements Button.OnClickListener 
         }
     }
 
+    public Uri getUriFromPath(String path) {
+        //String filePath = imageFile.getAbsolutePath();
+        Cursor cursor = mActivity.getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID },
+                MediaStore.Images.Media.DATA + "=? ",
+                new String[] { path }, null);
+
+        if(cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+
+            return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "" + id);
+        } else {
+            // 사실 cursor가 image origin을 갖고 하는거라서, image null일 일은 없다.
+            /*if (imageFile.exists()) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DATA, path);
+
+                return mActivity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            } else {
+                return null;
+            }*/
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, path);
+
+            return mActivity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        }
+    }
+
     private class PagerAdapter_ extends PagerAdapter {
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            ImageView view = new ImageView(getActivity());
-            view.setLayoutParams(new ViewGroup.LayoutParams(ViewPager.LayoutParams.MATCH_PARENT, ViewPager.LayoutParams.MATCH_PARENT));
-            view.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            final ImageView image = new ImageView(getActivity());
+            image.setLayoutParams(new ViewGroup.LayoutParams(ViewPager.LayoutParams.MATCH_PARENT, ViewPager.LayoutParams.MATCH_PARENT));
+            image.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
             cursor.moveToPosition((getCount() - 1) - position);
-            String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
-            Uri uri = Uri.fromFile(new File(origin));
+            final String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
 
-            imageLoader.displayImage(uri.toString(), view, options);
+            Uri uri = getUriFromPath(origin);
 
-            container.addView(view);
+            imageLoader.displayImage(uri.toString(), image, options, new SimpleImageLoadingListener() {
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    //super.onLoadingComplete(imageUri, view, loadedImage);
+                    Matrix matrix = new Matrix();
+                    //TODO: 여기서 중단. 일단 ROTATION이 변하는 값이 아니다. 사용불가. 그리고 ROTATION 자체가 느리다. FRAG 있어서 복잡성만 늘어나고, 사용 취소.
+                    matrix.postRotate(rotation);
+                    image.setImageBitmap(Bitmap.createBitmap(loadedImage, 0, 0, loadedImage.getWidth(), loadedImage.getHeight(), matrix, true));
+                }
+            });
 
-            return view;
+            container.addView(image);
+
+            return image;
         }
 
         @Override

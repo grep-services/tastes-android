@@ -49,6 +49,7 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
 
     TextView text;
     Button button;// add btn
+    TextView locationText;
     Button locationButton;
 
     SwipeRefreshLayout refresh;
@@ -109,10 +110,13 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
 
         button = (Button) view.findViewById(R.id.fragment_profile_add);
         //button.setVisibility(((MainActivity) getActivity()).getFilterFragment().checkTag(tag) ? View.GONE : View.VISIBLE);
-        //button.setOnClickListener(this);
-        button.setVisibility(View.GONE);//TODO: 일단, loc icon 때문에, gone시켜둔다.
+        button.setVisibility(((MainActivity) getActivity()).checkTag(tag) ? View.GONE : View.VISIBLE);
+        button.setOnClickListener(this);
+        //button.setVisibility(View.GONE);//TODO: 일단, loc icon 때문에, gone시켜둔다.
 
-        locationButton = (Button) view.findViewById(R.id.fragment_profile_location);
+        locationText = (TextView) view.findViewById(R.id.fragment_profile_location_text);
+
+        locationButton = (Button) view.findViewById(R.id.fragment_profile_location_button);
         locationButton.setOnClickListener(this);
 
         refresh = (SwipeRefreshLayout) view.findViewById(R.id.fragment_profile_refresh);
@@ -141,35 +145,33 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
             }
         });
 
-        //((Button) view.findViewById(R.id.fragment_home_filter)).setOnClickListener(this);
-
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
-                if(mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
-                    mActivity.startLocationUpdates();
+                if(!mActivity.isRequestingLocationUpdates()) {// request중이라면, 알아서 setrefresh까지 되어있을 것이다.
+                    if(isLocationAvailable) {
+                        setRefreshing(true);
+
+                        requestAddress(latitude, longitude);// set loc 처럼. 그리고 arg로 안받는 이유는, 일단 이렇게 해보기 위해서이다.
+
+                        setView();
+                    } else {
+                        mActivity.startLocationUpdates();
+                    }
                 }
             }
         });
         // 첫번째 색 말고는 안먹힘. 일단 빼둔다.
         //refresh.setColorSchemeResources(R.color.orange, R.color.orange_dark, R.color.gray, R.color.gray_dark);
 
-        // home과는 달리, 받는 중(2가지 경우) 뿐 아니라 다 받은 후(역시 2가지)도 있을 수 있다.
-        //if(mActivity.isRequestingLocationUpdates()) {// home에서는 이게 default이므로 이것밖에 없었다.
-        //    setRefreshing(true);
-        //} else {
         if(!mActivity.isRequestingLocationUpdates()) {// request중이라면, 알아서 setrefresh까지 되어있을 것이다.
-            //if(mActivity.isLocationUpdated()) {
-            if(isLocationAvailable) {// home에는 이게 없다.
+            if(isLocationAvailable) {
                 setRefreshing(true);
 
                 requestAddress(latitude, longitude);// set loc 처럼. 그리고 arg로 안받는 이유는, 일단 이렇게 해보기 위해서이다.
 
                 setView();
-            } else {// home에는 여기만 있다.(사실은 profile에서는 그냥 failure 처리하려다가, 어차피 filter에서 바로 넘어오는 경우에 위치를 켜도 넘어올 수도 있으므로.)
-                /*if(mActivity.isRequestingLocationFailed()) {
-                    setLocationFailure();
-                }*/
+            } else {
                 mActivity.startLocationUpdates();
             }
         }
@@ -218,22 +220,24 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
 
             List<String> stringList = new ArrayList<String>();
 
-            //stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하) => 번지수 될때 있음. 버림.
-            stringList.add(address.getThoroughfare());// 동 정도.
-            stringList.add(address.getSubLocality());// null 확률 있음.(중국으로 치면 현 정도)
-            stringList.add(address.getLocality());// 시 정도.
+            //stringList.add(address.getCountryName());
             stringList.add(address.getAdminArea());// 도, 주 정도.
-            stringList.add(address.getCountryName());
+            stringList.add(address.getLocality());// 시 정도.
+            stringList.add(address.getSubLocality());// null 확률 있음.(중국으로 치면 현 정도)
+            stringList.add(address.getThoroughfare());// 동 정도.
+            //stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하) => 번지수 될때 있음. 버림.
 
             for(String string : stringList) {
                 if(string != null) {
-                    result = string;
-
-                    break;
+                    if(result == null) {
+                        result = string;
+                    } else {
+                        result += " " + string;
+                    }
                 }
             }
 
-            locationButton.setText(result);
+            locationText.setText(result);
         }
     }
 
@@ -394,7 +398,7 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
                 actionAddClicked();
 
                 break;
-            case R.id.fragment_profile_location:
+            case R.id.fragment_profile_location_button:
                 locationClicked(latitude, longitude, isLocationAvailable);
 
                 break;

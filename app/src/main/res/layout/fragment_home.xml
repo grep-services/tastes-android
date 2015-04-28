@@ -1,4 +1,5 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.tastes.widget.SlidingLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,73 +11,94 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
+        android:layout_height="@dimen/view"
+        android:paddingLeft="@dimen/margin"
+        android:paddingRight="@dimen/margin"
         android:gravity="center_vertical"
-        android:background="@color/gray">
+        android:background="@color/view_inverse">
 
-        <!--
         <Button
             android:id="@+id/fragment_home_camera"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/button"
+            android:layout_height="@dimen/button"
             android:background="@drawable/camera"
-            android:onClick="mOnClick"/>-->
-        <!--
-        <ImageView
-            android:layout_width="99dp"
-            android:layout_height="36dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/title"
-            android:scaleType="centerInside"/>
-            -->
-        <!--
-        <com.devspark.robototextview.widget.RobotoTextView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:padding="4dp"
-            android:includeFontPadding="false"
-            android:text="@string/title_fragment_home"
-            android:textSize="24sp"
-            android:textColor="@color/text_inverse"
-            app:fontFamily="noto_sans_cjk_kr"
-            app:textWeight="regular"
-            app:textStyle="normal"/>
-            -->
+            android:onClick="mOnClick"/>
+
         <com.devspark.robototextview.widget.RobotoEditText
             android:id="@+id/fragment_home_edit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="4dp"
+            android:layout_marginLeft="@dimen/margin"
+            android:layout_marginRight="@dimen/margin"
+            android:padding="6dp"
             android:includeFontPadding="false"
             android:inputType="text"
-            android:textSize="18sp"
-            android:textColor="@color/text_inverse"
+            android:textSize="@dimen/text"
+            android:textColor="@color/text_medium"
             android:imeOptions="actionDone"
-            android:background="@drawable/background_edit_inverse"/>
-<!--
+            android:background="@drawable/background_edit_rounded"/>
+
         <Button
             android:id="@+id/fragment_home_filter"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/button"
+            android:layout_height="@dimen/button"
             android:background="@drawable/filter"
-            android:onClick="mOnClick"/>-->
+            android:onClick="mOnClick"/>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/view_narrow"
+        android:gravity="center_vertical"
+        android:paddingLeft="@dimen/margin"
+        android:paddingRight="@dimen/margin"
+        android:background="@color/gray">
+
+        <com.devspark.robototextview.widget.RobotoTextView
+            android:id="@+id/fragment_home_location_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="4dp"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:textSize="@dimen/text_small"
+            android:textColor="@color/text_medium"/>
+
+        <View
+            android:layout_width="@dimen/divider"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/margin"
+            android:layout_marginRight="@dimen/margin"
+            android:background="@color/text_medium"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:id="@+id/fragment_home_location_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/button"
+            android:padding="4dp"
+            android:includeFontPadding="false"
+            android:background="@null"
+            android:text="@string/location_change"
+            android:textSize="@dimen/text_small"
+            android:textColor="@color/text_medium"/>
+<!--
         <com.devspark.robototextview.widget.RobotoButton
             android:id="@+id/fragment_home_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="4dp"
             android:includeFontPadding="false"
             android:drawableLeft="@drawable/location"
             android:background="@null"
             android:minWidth="24dp"
-            android:textSize="18sp"
+            android:minHeight="24dp"
+            android:textSize="@dimen/text_small"
             android:textColor="@color/text_inverse"/>
-
+-->
     </LinearLayout>
 
     <FrameLayout
@@ -87,7 +109,8 @@
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/fragment_home_refresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/view_medium">
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -118,7 +141,7 @@
                         android:layout_gravity="center"
                         android:padding="4dp"
                         android:includeFontPadding="false"
-                        android:textSize="18sp"
+                        android:textSize="@dimen/text"
                         android:textColor="@color/text"
                         android:text="@string/img_empty"/>
 
@@ -137,4 +160,4 @@
 
     </FrameLayout>
 
-</LinearLayout>
+</com.tastes.widget.SlidingLinearLayout>

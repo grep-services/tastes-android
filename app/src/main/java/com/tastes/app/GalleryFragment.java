@@ -34,6 +34,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.devspark.robototextview.widget.RobotoEditText;
+import com.google.android.gms.maps.model.LatLng;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import com.tastes.R;
 import com.tastes.content.Image;
@@ -183,17 +184,60 @@ public class GalleryFragment extends Fragment implements GridView.OnItemClickLis
         cursor.close();
     }
 
+    public Image getImageFromCursor(int position) {
+        cursor.moveToPosition((cursor.getCount() - 1) - position);
+        String origin = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+
+        String time = String.valueOf(System.currentTimeMillis());
+
+        double latitude_ = 0;// init이지만 안쓰인다.(coord로 0 init은 무의미)
+        double longitude_ = 0;// init이지만 안쓰인다.(coord로 0 init은 무의미)
+        long distance = -2;
+
+        try {
+            ExifInterface exifInterface = new ExifInterface(origin);
+
+            float[] latlng = new float[2];
+
+            if(exifInterface.getLatLong(latlng)) {// 현재는 위치 있는것만 표시하는게 아니라 있는건 있는대로 표시하는 방식이다.
+                latitude_ = latlng[0];
+                longitude_ = latlng[1];
+
+                distance = -1;//TODO: BOOL 만들지 말고, DIST 표시는 안하지만 LATLNG AVAILABLE 하다는 표시로 단다.
+            }
+
+            String datetime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME);
+            if (datetime != null) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+                Date date = format.parse(datetime);
+                time = String.valueOf(date.getTime());//TODO: check existence first
+            }
+        } catch (IOException e) {// for exif
+            e.printStackTrace();
+        } catch (ParseException e) {// for parse date
+            e.printStackTrace();
+        } catch (Exception e) {// 끝까지 exception 잡아줘야 crash 안된다.(시작시 바로 종료하면 cursor때문에 npe난다.)
+            e.printStackTrace();
+        }
+
+        Image image = new Image(origin, null, time, latitude_, longitude_, distance);
+
+        return image;
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if(mCallbacks != null) {
-            //Image image = (Image) view.getTag(R.id.image_adapter_tag_object);
-            //mCallbacks.onGalleryItemClicked(image, isLocationAvailable || (image.distance > -2));// 저것 외에는, not available한 loc이 gallery로 들어왔을 뿐이다.
-            mCallbacks.onGalleryItemClicked(position);
+            Image image = getImageFromCursor(position);
+
+            int rotation = (Integer) ((ImageAdapter.ViewHolder) view.getTag()).image.getTag();
+
+            mCallbacks.onGalleryItemClicked(image, rotation);
         }
     }
 
     public interface GalleryFragmentCallbacks {
         //public void onGalleryItemClicked(Image image, boolean isLocationAvailable);
-        public void onGalleryItemClicked(int position);
+        public void onGalleryItemClicked(Image image, int rotation);
     }
 }

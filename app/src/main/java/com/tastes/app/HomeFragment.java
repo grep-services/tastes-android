@@ -65,7 +65,8 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     ImageLoader imageLoader;
 
     EditText edit;
-    Button button;
+    TextView locationText;
+    Button locationButton;
     SwipeRefreshLayout refresh;
     /*
     TODO: 읽어보기
@@ -168,7 +169,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         });
 
         edit = (RobotoEditText) view.findViewById(R.id.fragment_home_edit);
-        edit.setAlpha(0.5f);
+        //edit.setAlpha(0.5f);
         edit.setText(Tag.HEADER + getString(R.string.search_tag));// 이것 때문에 어차피 hint는 무시된다.
         edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
         edit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -189,9 +190,11 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus == true) {// 이건 자동으로 된다. 괜히 했다가 keyboard 중복 열리는 문제 생긴다.
-                    edit.setAlpha(1.0f);
+                    //edit.setAlpha(1.0f);
 
                     edit.setText(Tag.HEADER);
+
+                    edit.setTextColor(getResources().getColor(R.color.text_inverse));
 
                     layerView.setVisibility(View.VISIBLE);
                 } else {
@@ -203,13 +206,28 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
                     edit.setText(Tag.HEADER + getString(R.string.search_tag));
                     edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
 
-                    edit.setAlpha(0.5f);
+                    //edit.setAlpha(0.5f);
+                    edit.setTextColor(getResources().getColor(R.color.text_medium));
+                }
+            }
+        });
+        edit.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                String tag = edit.getText().subSequence(Tag.HEADER.length(), edit.length()).toString();
+
+                if(tag == null || tag.isEmpty() || tag.equals(getString(R.string.search_tag))) { // 빈 내용이면 pass해서 setspan관련 crash 막는다.
+                    return true;
+                } else {
+                    return false;
                 }
             }
         });
 
-        button = (Button) view.findViewById(R.id.fragment_home_location);
-        button.setOnClickListener(new View.OnClickListener() {
+        locationText = (TextView) view.findViewById(R.id.fragment_home_location_text);
+
+        locationButton = (Button) view.findViewById(R.id.fragment_home_location_button);
+        locationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 locationClicked(latitude, longitude, isLocationAvailable);
@@ -263,16 +281,14 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
             public void onRefresh() { // 다른 곳에서 set false를 해줘야 되는듯 하다.
                 clearEdit();// pull.
 
-                /*
-                if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
-                    mActivity.startLocationUpdates();
-                }
-                */
-                if(isLocationAvailable) {
-                    setRefreshing(true);
-                    setView();
-                } else {
-                    if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
+                if(!mActivity.isRequestingLocationUpdates()) {// request중이라면, 알아서 setrefresh까지 되어있을 것이다.
+                    if (isLocationAvailable) {
+                        setRefreshing(true);
+
+                        requestAddress(latitude, longitude);// set loc 처럼. 그리고 arg로 안받는 이유는, 일단 이렇게 해보기 위해서이다.
+
+                        setView();
+                    } else {
                         mActivity.startLocationUpdates();
                     }
                 }
@@ -280,20 +296,15 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
         });
         // 첫번째 색 말고는 안먹힘. 일단 빼둔다.
         //refresh.setColorSchemeResources(R.color.orange, R.color.orange_dark, R.color.gray, R.color.gray_dark);
-        //setRefreshing(true); on pre에서 될듯.
 
-        // 현재 requesting중이라면 notification도 문제없고, request끝난 상태라면, 여기서 다시 될 것이므로, main의 request의 nitification이 ignored되었어도 상관없다.
-        /*
-        if(!mActivity.isRequestingLocationUpdates()) {
-            mActivity.startLocationUpdates();
-        }
-        */
-        // 너무 새로 받으니까 그 자체로 좀 문제고, display의 map에서 새로 set된 loc이 넘어오는데도 여기 때문에 다시 현위치로 loc set되는 문제 있는 것 같았다.
-        if(isLocationAvailable) {
-            setRefreshing(true);
-            setView();
-        } else {
-            if(!mActivity.isRequestingLocationUpdates()) {// 안해도 어차피 refresh중에는 refresh안되고 되어도 requesting중에는 requesting 안된다.
+        if(!mActivity.isRequestingLocationUpdates()) {// request중이라면, 알아서 setrefresh까지 되어있을 것이다.
+            if (isLocationAvailable) {
+                setRefreshing(true);
+
+                requestAddress(latitude, longitude);// set loc 처럼. 그리고 arg로 안받는 이유는, 일단 이렇게 해보기 위해서이다.
+
+                setView();
+            } else {
                 mActivity.startLocationUpdates();
             }
         }
@@ -362,22 +373,24 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
             List<String> stringList = new ArrayList<String>();
 
-            //stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하) => 번지수 될때 있음. 버림.
-            stringList.add(address.getThoroughfare());// 동 정도.
-            stringList.add(address.getSubLocality());// null 확률 있음.(중국으로 치면 현 정도)
-            stringList.add(address.getLocality());// 시 정도.
+            //stringList.add(address.getCountryName());
             stringList.add(address.getAdminArea());// 도, 주 정도.
-            stringList.add(address.getCountryName());
+            stringList.add(address.getLocality());// 시 정도.
+            stringList.add(address.getSubLocality());// null 확률 있음.(중국으로 치면 현 정도)
+            stringList.add(address.getThoroughfare());// 동 정도.
+            //stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하) => 번지수 될때 있음. 버림.
 
             for(String string : stringList) {
                 if(string != null) {
-                    result = string;
-
-                    break;
+                    if(result == null) {
+                        result = string;
+                    } else {
+                        result += " " + string;
+                    }
                 }
             }
 
-            button.setText(result);
+            locationText.setText(result);
         }
     }
 

@@ -108,7 +108,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 .showImageOnFail(R.drawable.fail_large)
                         //.resetViewBeforeLoading()// iv null set 하는건데, gc는 한꺼번에 하므로, 이렇게 조금이라도 더 하는게 좋을 것 같다. -> 뭔지 잘 모르겠지만 빼둠.
                 .cacheInMemory(false)// -> memory 위해 해제할까 하다가 뜨는 시간 줄이려면 차라리 넣어 두는게 나을 것 같았다.(대신 img 저장할 때 size 자체를 줄인다.)
-                .cacheOnDisk(false)//TODO: 용량 많이 들어서 빼둠.
+                //.cacheOnDisk(false)//TODO: 용량 많이 들어서 빼둠.
+                .cacheOnDisc(false)
                 .imageScaleType(ImageScaleType.EXACTLY) // 속도, 메모리 절약 위해.(not stretched. computed later at center crop)
                 .bitmapConfig(Bitmap.Config.RGB_565)// default보다 2배 덜쓴다 한다. -> 너무 누렇게 나온다.
                         //.displayer(new FadeInBitmapDisplayer(500)) 이건 차라리 빼는게 더 빨라 보인다.
@@ -132,7 +133,8 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         text.setPadding(p, p, p, p);
         text.setIncludeFontPadding(false);// noto top bottom padding 없애기 위해.
         text.setText(Tag.HEADER + tag);
-        text.setTextSize(18);
+        //text.setTextSize(getResources().getDimension(R.dimen.text));
+        text.setTextSize(16);
         text.setTextColor(getResources().getColor(R.color.text_inverse));
         text.setSingleLine(true);
         //text.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));

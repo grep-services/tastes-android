@@ -20,37 +20,30 @@
     <RelativeLayout
         android:id="@+id/pager_item_properties"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/view"
+        android:layout_gravity="bottom"
         android:padding="@dimen/margin"
+        android:background="@drawable/gradient"
         android:visibility="gone"><!-- 안해도 되긴 하지만 해두는게 더 안정적인 것 같다. -->
-<!--
-        <Button
-            android:id="@+id/pager_item_more"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/more"/>
--->
+
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/pager_item_distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
             android:padding="4dp"
             android:includeFontPadding="false"
             android:textSize="@dimen/text"
             android:textColor="@color/text_inverse"
-            android:clickable="true"
-            android:text="2"/>
+            android:clickable="true"/>
 
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/pager_item_datetime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:padding="4dp"
             android:includeFontPadding="false"
             android:textSize="@dimen/text"

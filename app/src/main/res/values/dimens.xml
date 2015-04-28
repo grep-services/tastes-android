@@ -6,20 +6,28 @@
     <!-- widget dimens -->
 
     <!-- view -->
-    <dimen name="margin">12dp</dimen><!-- default margin that can be used for any view. -->
-    <dimen name="margin_narrow">8dp</dimen>
+    <dimen name="view">48dp</dimen><!-- usually, height -->
+    <dimen name="view_narrow">36dp</dimen><!-- usually, height -->
+    <dimen name="margin">8dp</dimen><!-- default margin that can be used for any view. -->
+    <dimen name="margin_narrow">4dp</dimen>
 
     <!-- text -->
-    <dimen name="text">18sp</dimen>
+    <dimen name="text">16sp</dimen>
+    <dimen name="text_small">14sp</dimen>
 
     <!-- button -->
-    <dimen name="button_width">32dp</dimen>
-    <dimen name="button_height">32dp</dimen>
+    <dimen name="button">32dp</dimen>
+    <!--<dimen name="button_small">24dp</dimen>-->
+    <dimen name="button_large">64dp</dimen>
+
+    <!-- check -->
+    <dimen name="check">32dp</dimen>
 
     <!-- listview -->
-    <dimen name="list_divider">1px</dimen>
+    <dimen name="divider">1px</dimen>
+    <dimen name="list_divider">@dimen/divider</dimen>
     <dimen name="grid_divider">2dp</dimen>
     <dimen name="grid_padding">-1px</dimen><!-- 좌우 흰줄 없애기 위한 방법... 다른 방법이 마땅히 없다. -->
-    <dimen name="navigation_drawer_width">300dp</dimen>
+    <!--<dimen name="navigation_drawer_width">300dp</dimen>-->
 
 </resources>

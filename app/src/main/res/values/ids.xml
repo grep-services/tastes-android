@@ -2,5 +2,8 @@
 <resources>
 
     <item name="fragment_item_tag" type="id"/>
-
+<!--
+    <item name="image_adapter_tag_holder" type="id"/>
+    <item name="image_adapter_tag_rotation" type="id"/>
+-->
 </resources>

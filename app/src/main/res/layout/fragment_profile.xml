@@ -8,28 +8,20 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/view"
         android:padding="@dimen/margin"
-        android:background="@color/gray">
+        android:background="@color/view_inverse">
 
         <Button
             android:id="@+id/fragment_profile_back"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/button"
+            android:layout_height="@dimen/button"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/back"
+            android:background="@drawable/back_light"
             android:onClick="mOnClick"/>
-        <!--
-        <ImageView
-            android:layout_width="99dp"
-            android:layout_height="36dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/title"
-            android:scaleType="centerInside"/>
-            -->
+
         <com.devspark.robototextview.widget.RobotoTextView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/fragment_profile_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,80 +30,117 @@
             android:layout_marginLeft="@dimen/margin"
             android:padding="4dp"
             android:includeFontPadding="false"
-            android:textSize="18sp"
-            android:textColor="@color/text_inverse"
-            app:fontFamily="noto_sans_cjk_kr"
-            app:textWeight="demilight"
-            app:textStyle="normal"/>
-
-        <Button
-            android:id="@+id/fragment_profile_add"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:background="@drawable/plus"/>
+            android:textSize="@dimen/text"
+            android:textColor="@color/text_inverse"/>
 
         <com.devspark.robototextview.widget.RobotoButton
-            android:id="@+id/fragment_profile_location"
+            android:id="@+id/fragment_profile_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
+            android:minWidth="@dimen/button"
             android:padding="4dp"
             android:includeFontPadding="false"
-            android:drawableLeft="@drawable/location"
             android:background="@null"
-            android:minWidth="24dp"
-            android:textSize="18sp"
+            android:text="@string/follow_tag"
+            android:textSize="@dimen/text"
             android:textColor="@color/text_inverse"/>
 
     </RelativeLayout>
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/fragment_profile_refresh"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/view_narrow"
+        android:gravity="center_vertical"
+        android:paddingLeft="@dimen/margin"
+        android:paddingRight="@dimen/margin"
+        android:background="@color/gray">
+
+        <com.devspark.robototextview.widget.RobotoTextView
+            android:id="@+id/fragment_profile_location_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="4dp"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:textSize="@dimen/text_small"
+            android:textColor="@color/text_medium"/>
+
+        <View
+            android:layout_width="@dimen/divider"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/margin"
+            android:layout_marginRight="@dimen/margin"
+            android:background="@color/text_medium"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:id="@+id/fragment_profile_location_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/button"
+            android:padding="4dp"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:background="@null"
+            android:text="@string/location_change"
+            android:textSize="@dimen/text_small"
+            android:textColor="@color/text_medium"/>
+
+    </LinearLayout>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@color/view">
+        android:layout_weight="1">
 
-        <FrameLayout
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/fragment_profile_refresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/view_medium">
 
-            <!-- 갤5에서 어떻게 해도 안없어져서 minus padding으로라도 해결해야 했다. 진짜로 넓어진다 보면 되므로
-            딱 맞게 보이는 폰들에서는 각 사이드 이미지들이 1px씩은 잘릴 것이지만 어쩔 수 없다. 무시한다. -->
-            <GridView
-                android:id="@+id/fragment_profile_grid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingLeft="@dimen/grid_padding"
-                android:paddingRight="@dimen/grid_padding"
-                android:numColumns="3"
-                android:stretchMode="columnWidth"
-                android:verticalSpacing="@dimen/grid_divider"
-                android:horizontalSpacing="@dimen/grid_divider"/>
-
-            <ScrollView
-                android:id="@+id/fragment_profile_empty"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <com.devspark.robototextview.widget.RobotoTextView
-                    android:id="@+id/fragment_profile_empty_txt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="4dp"
-                    android:includeFontPadding="false"
-                    android:textSize="18sp"
-                    android:textColor="@color/text"
-                    android:text="@string/img_empty"/>
+                <!-- 갤5에서 어떻게 해도 안없어져서 minus padding으로라도 해결해야 했다. 진짜로 넓어진다 보면 되므로
+                딱 맞게 보이는 폰들에서는 각 사이드 이미지들이 1px씩은 잘릴 것이지만 어쩔 수 없다. 무시한다. -->
+                <GridView
+                    android:id="@+id/fragment_profile_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="@dimen/grid_padding"
+                    android:paddingRight="@dimen/grid_padding"
+                    android:numColumns="3"
+                    android:stretchMode="columnWidth"
+                    android:verticalSpacing="@dimen/grid_divider"
+                    android:horizontalSpacing="@dimen/grid_divider"/>
 
-            </ScrollView>
+                <ScrollView
+                    android:id="@+id/fragment_profile_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-        </FrameLayout>
+                    <com.devspark.robototextview.widget.RobotoTextView
+                        android:id="@+id/fragment_profile_empty_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:padding="4dp"
+                        android:includeFontPadding="false"
+                        android:textSize="18sp"
+                        android:textColor="@color/text"
+                        android:text="@string/img_empty"/>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+                </ScrollView>
+
+            </FrameLayout>
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+    </FrameLayout>
 
 </LinearLayout>

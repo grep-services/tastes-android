@@ -7,7 +7,7 @@
     <string name="title_fragment_picture">Select Picture</string>
     <string name="title_fragment_display"></string>
     <string name="title_fragment_home">Home</string>
-    <string name="title_fragment_filter">Filter</string>
+    <string name="title_fragment_filter">Follow Hashtag</string>
     <string name="title_fragment_item">Menu</string>
     <string name="distance_unit">m</string> <!-- &#160; to insert space. -->
 
@@ -16,12 +16,14 @@
     <string name="location_empty">Choose a location.</string>
     <string name="location_wait">Getting location, wait...</string>
     <string name="location_ok">OK</string>
+    <string name="location_change">Location</string>
     <string name="upload_wait">Wait...</string>
     <string name="upload_image">There is no image</string>
     <string name="network_retry">Check your network status and try again.</string>
     <string name="upload_tag">Add a tag</string>
     <string name="tag_empty">No tag</string>
     <string name="img_empty">No image</string>
+    <string name="follow_tag">Follow</string>
     <string name="date_sec">sec</string>
     <string name="date_min">min</string>
     <string name="date_hour">hr</string>

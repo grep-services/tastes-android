@@ -157,7 +157,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         homeFragment = HomeFragment.newInstance(latitude, longitude, mLocationUpdated);
 
-        filterFragment = FilterFragment.newInstance(/*defaultTag, */tags, switches);
+        //filterFragment = FilterFragment.newInstance(/*defaultTag, */tags, switches);
 
         viewPagerFragment = ViewPagerFragment.newInstance();
         replaceFragment(R.id.container, viewPagerFragment);
@@ -182,11 +182,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     public HomeFragment getHomeFragment() {
         return homeFragment;
     }
-
+/*
     public FilterFragment getFilterFragment() {
         return filterFragment;
     }
-
+*/
     //---- location
     private void setLocationManager() {
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -454,15 +454,6 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 if(mapFragment != null) {
                     mapFragment.notifyLocationFailure();
                 } else {
-                    /*
-                    home, profile은 사용자 눈에 보이는 부분이므로 당장 map이 아니더라도 화면상에서 위치 실패 표시 의무 있지만
-                    display 경우 어차피 무조건 map을 거쳐야 되는 관계로 거기서 알아서 실패 인식 되도록 놔둔다.
-                    if(displayFragment != null) {// display가 살아있고
-                        if(displayFragment.isWaiting()) {// wait 중이라면
-                            displayFragment.notifyLocationFailure();// failure를 알린다.
-                        }
-                    }
-                    */
                     if(profileFragment != null) {
                         profileFragment.notifyLocationFailure();
                     } else {
@@ -746,6 +737,17 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         fragmentTransaction.commit();
     }
 
+    public void addFragment(Fragment fragment, int enter, int exit) {// for frag anim. 크게 수정될 일 없기에 일단 통합 안하고 놔둔다.
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        fragmentTransaction.setCustomAnimations(enter, exit, enter, exit);
+        fragmentTransaction.add(R.id.container, fragment);// with null tag
+        fragmentTransaction.addToBackStack(null);// name 필요없다.
+
+        fragmentTransaction.commit();
+    }
+
     public void popFragment() {
         FragmentManager fragmentManager = getFragmentManager();
 
@@ -812,6 +814,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         //defaultTag = preferences.getBoolean("DefaultTag", true);
 
         mLocationUpdates = preferences.getBoolean("LocationUpdates", false);
+        //mLocationUpdates = false;
 
         strTags = preferences.getString("Tags", null);
         tags = getList(strTags);
@@ -923,6 +926,39 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         //LogWrapper.e("ADD PREF", strTags+","+strSwitches);
     }
 
+    public boolean checkTag(String tag) {
+        return (tags != null && tags.contains(tag));
+    }
+
+    // profile에서만 쓰이는 것인데, 일단 refresh까지 해준다.(사실 camera-display-home에서는 tag 추가가 안되므로 형평성 안맞을 수 있으나, 그건 복잡성 줄이기 위한 조치이므로 그냥 둔다.
+    public void addTag(String tag) {
+        // 오류 최소화하기 위해 이렇게까지도 한다.
+        List<String> tags_ = tags != null ? new ArrayList<String>(tags) : new ArrayList<String>();
+        List<String> switches_ = switches != null ? new ArrayList<String>(switches) : new ArrayList<String>();
+
+        tags_.add(tag);
+        switches_.add("true");
+
+        setTag(tags_, switches_);
+    }
+
+    // addTag from profile 및 filter close에서 쓰이기 위해 따로 뺐다.
+    public void setTag(List<String> tags, List<String> switches) {
+        // set to pref.
+        setPreferences(/*defaultTag, */tags, switches);
+        // update home
+            /*
+            위치는 어차피 home 자체적으로 표시되고 해결되게 되어있다.
+            따라서 여기서는 위치가 없으면 pass, 있으면 진행하면 된다.
+            (사실 onRefres에서 위치가 있는 부분만 떼온 것이나 다름없다고 보면 된다.)
+             */
+        //if(mLocationUpdated) {//TODO: 이것도 HOME의 LOC AVAILABLE CHECK로 바꿔야 한다.
+        if(homeFragment.isLocationAvailable()) {
+            homeFragment.setRefreshing(true);
+            homeFragment.setView();
+        }
+    }
+
     //---- splash
     public boolean isSplashViewing() {
         return flag_fragment_splash;
@@ -973,7 +1009,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 break;
             case 1:// Home
                 flag_fragment_home = true;
-
+/*
                 if(flag_fragment_filter == true) {
                     flag_fragment_filter = false;
 
@@ -983,9 +1019,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                     //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
                 }
-
+*/
                 break;
-            case 2:
+            /*case 2:
                 flag_fragment_home = false;
                 flag_fragment_filter = true;
 
@@ -993,7 +1029,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                 //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-                break;
+                break;*/
         }
     }
 /*
@@ -1061,21 +1097,22 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     //---- gallery
     @Override
-    //public void onGalleryItemClicked(Image image, boolean isLocationAvailable) {
-    public void onGalleryItemClicked(int position) {
-        /*
-        // set rotation : 이것도 일단 아무 값이나 둔다.
-        int rotation = 0;
+    public void onGalleryItemClicked(Image image, int rotation) {
         // set flag
         flag_fragment_display = true;
-        //DisplayFragment.imageToShow = image;
-        displayFragment = DisplayFragment.newInstance(false, image.origin, Long.valueOf(image.time), ROTATE_TAG ? rotation : 0, image.latitude, image.longitude, isLocationAvailable);// 여기서도 보내야 location process 잘 맞아떨어진다.
+
+        // image에서 받아와서 하자니, 작은 갭이 있어서 이렇게 직접 한다.
+        double latitude_ = image.distance > -2 ? image.latitude : latitude;
+        double longitude_ = image.distance > -2 ? image.longitude : longitude;
+        boolean isLocationAvailable = image.distance > -2 || mLocationUpdated;
+
+        displayFragment = DisplayFragment.newInstance(false, image.origin, Long.valueOf(image.time), rotation, latitude_, longitude_, isLocationAvailable);// 여기서도 보내야 location process 잘 맞아떨어진다.
 
         addFragment(displayFragment);
-        */
-        Fragment fragment = PictureFragment.newInstance(position, latitude, longitude, mLocationUpdated);
 
-        addFragment(fragment);
+        /*Fragment fragment = PictureFragment.newInstance(position, rotation, latitude, longitude, mLocationUpdated);
+
+        addFragment(fragment);*/
     }
 
     //---- picture
@@ -1192,7 +1229,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     //---- profile
     @Override
     public void onProfileActionAddClicked(String tag) {
-        filterFragment.addTag(tag);
+        //filterFragment.addTag(tag);
+        addTag(tag);
     }
 
     @Override
@@ -1462,6 +1500,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     flag_fragment_gallery = false;
 
                     galleryFragment = null;
+                } else if(flag_fragment_filter) {// 순서는 별 상관없다.
+                    flag_fragment_filter = false;
+
+                    filterFragment = null;
                 } else if(flag_fragment_item) {
                     flag_fragment_item = false;
 
@@ -1480,9 +1522,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 viewPagerFragment.setCurrentPage(1);
             } else */if(flag_fragment_home == true) { // isVisible 아직은 안정확함.
                 viewPagerFragment.setCurrentPage(0);
-            } else if(flag_fragment_filter == true) {
+            }/* else if(flag_fragment_filter == true) {
                 viewPagerFragment.setCurrentPage(1);
-            } else { // camera라 하더라도
+            }*/ else { // camera라 하더라도
                 if(flag_taking_camera == false) { // 사진 찍는 중은 skip한다.
                     finish();
                 }
@@ -1515,7 +1557,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                 break;
             //case R.id.fragment_display_close:
-            //case R.id.fragment_home_camera:
+            case R.id.fragment_home_camera:
             case R.id.fragment_gallery_close:
             case R.id.fragment_profile_back:
             case R.id.fragment_item_close:
@@ -1523,11 +1565,24 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 onBackPressed();
 
                 break;
-            /*
             case R.id.fragment_home_filter:
-                viewPagerFragment.setCurrentPage(3);
+                //viewPagerFragment.setCurrentPage(2);
 
-                break;*/
+                flag_fragment_filter = true;
+
+                filterFragment = FilterFragment.newInstance(/*defaultTag, */tags, switches);
+
+                addFragment(filterFragment, R.anim.slide_up, R.anim.slide_down);
+
+                break;
+            case R.id.fragment_filter_ok:// close에 비해서 저장이 추가된 방식.
+                flag_fragment_filter = false;
+
+                filterFragment.closeFilter();
+            case R.id.fragment_filter_close:
+                onBackPressed();
+
+                break;
         }
     }
 

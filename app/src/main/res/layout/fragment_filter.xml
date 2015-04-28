@@ -1,30 +1,75 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.tastes.widget.SlidingLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/view_inverse"
+    android:clickable="true"
     tools:context="com.tastes.app.FilterFragment">
-    
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/view"
+        android:padding="@dimen/margin"
+        android:background="@color/view_inverse">
+
+        <Button
+            android:id="@+id/fragment_filter_close"
+            android:layout_width="@dimen/button"
+            android:layout_height="@dimen/button"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/close_light"
+            android:onClick="mOnClick"/>
+
+        <com.devspark.robototextview.widget.RobotoTextView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/fragment_filter_close"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/margin"
+            android:padding="4dp"
+            android:includeFontPadding="false"
+            android:text="@string/title_fragment_filter"
+            android:textSize="@dimen/text"
+            android:textColor="@color/text_inverse"
+            app:fontFamily="noto_sans_cjk_kr"
+            app:textWeight="demilight"
+            app:textStyle="normal"/>
+
+        <Button
+            android:id="@+id/fragment_filter_ok"
+            android:layout_width="@dimen/button"
+            android:layout_height="@dimen/button"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/ok_light"
+            android:onClick="mOnClick"/>
+
+    </RelativeLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
-        
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/gray_dark">
 
             <!-- 아무리 해도 include로는 selector 연결 잘 안되서 이렇게 했다. -->
             <RelativeLayout
                 android:id="@+id/fragment_filter_header"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/view"
                 android:padding="@dimen/margin"
                 android:background="@drawable/selector_list"
                 android:clickable="true"
-                android:descendantFocusability="blocksDescendants"><!-- for item click event. -->
+                android:descendantFocusability="blocksDescendants"
+                android:visibility="gone">
 
                 <com.devspark.robototextview.widget.RobotoTextView
                     android:layout_width="wrap_content"
@@ -36,14 +81,14 @@
                     android:includeFontPadding="false"
                     android:singleLine="true"
                     android:ellipsize="marquee"
-                    android:textSize="18sp"
+                    android:textSize="@dimen/text"
                     android:textColor="@color/text_inverse"
                     android:text="@string/select_all"/>
 
                 <CheckBox
                     android:id="@+id/fragment_filter_header_check"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="@dimen/check"
+                    android:layout_height="@dimen/check"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
                     android:button="@null"
@@ -54,7 +99,8 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/list_divider"
-                android:background="@color/list_divider"/>
+                android:background="@color/list_divider"
+                android:visibility="gone"/>
 
             <ListView
                 android:id="@+id/fragment_filter_list"
@@ -86,13 +132,13 @@
             android:layout_height="match_parent"
             android:background="@color/black_overlay"
             android:visibility="gone"/>
-        
+
     </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
+        android:layout_height="@dimen/view"
+        android:padding="@dimen/margin_narrow"
         android:gravity="center_vertical"
         android:background="@color/view">
 
@@ -105,16 +151,16 @@
             android:padding="4dp"
             android:includeFontPadding="false"
             android:inputType="text"
-            android:textSize="18sp"
+            android:textSize="@dimen/text"
             android:imeOptions="actionDone"
             android:background="@drawable/background_edit"/>
 
         <Button
             android:id="@+id/fragment_filter_add"
-            android:layout_width="39dp"
-            android:layout_height="39dp"
-            android:background="@drawable/add"/>
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/add"/><!-- 39인데 비율상 34인 것을 대략 36으로 했다. -->
 
     </LinearLayout>
 
-</LinearLayout>
+</com.tastes.widget.SlidingLinearLayout>

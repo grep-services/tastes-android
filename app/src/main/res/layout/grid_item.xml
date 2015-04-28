@@ -8,7 +8,7 @@
         android:id="@+id/grid_item_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black"
+        android:background="@color/view_inverse"
         android:scaleType="centerCrop"/>
 
     <com.devspark.robototextview.widget.RobotoTextView
@@ -20,7 +20,7 @@
         android:includeFontPadding="false"
         android:gravity="center"
         android:background="@drawable/gradient"
-        android:textSize="14sp"
+        android:textSize="@dimen/text_small"
         android:textColor="@color/text_inverse"
         android:visibility="gone"/><!-- 안해도 되긴 하지만 해두는게 더 안정적인 것 같다. -->
 
