@@ -4,25 +4,29 @@
     <!-- basic colors - 파스텔 톤 느낌으로 -->
     <color name="transparent">@android:color/transparent</color><!-- 00000000 과 같을것임. 사실 00ff0000이 언제나 투명이라고 하긴 함. -->
     <color name="white">#fff7f7f7</color>
-    <color name="white_dark">#ffdfdfdf</color>
+    <color name="white_dark">#ffbfbfbf</color>
     <color name="white_overlay">#80f7f7f7</color>
     <color name="gray_light">#ff7f7f7f</color>
     <color name="gray">#ff3f3f3f</color>
     <color name="gray_dark">#ff353535</color>
     <color name="gray_overlay">#c03f3f3f</color>
     <color name="black">#ff2b2b2b</color>
+    <color name="black_dark">#ff151515</color>
     <color name="black_overlay">#c02b2b2b</color>
     <color name="orange">#ffef5000</color>
     <color name="orange_dark">#ffbf5100</color>
 
     <!-- view colors -->
     <color name="view">@color/white</color>
-    <color name="view_medium">@color/white_dark</color>
+    <color name="view_medium_light">@color/white_dark</color>
+    <color name="view_medium_dark">@color/gray</color>
+    <color name="view_dark">@color/gray_dark</color>
     <color name="view_inverse">@color/black</color>
 
     <!-- text colors -->
     <color name="text">@color/gray</color>
-    <color name="text_medium">@color/gray_light</color>
+    <color name="text_medium_light">@color/white_dark</color><!-- for loc bar -->
+    <color name="text_medium_dark">@color/gray_light</color><!-- for tag search edit -->
     <color name="text_inverse">@color/white</color>
 
     <!-- button colors -->

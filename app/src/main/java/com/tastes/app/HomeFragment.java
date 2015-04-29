@@ -194,7 +194,8 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
 
                     edit.setText(Tag.HEADER);
 
-                    edit.setTextColor(getResources().getColor(R.color.text_inverse));
+                    //edit.setTextColor(getResources().getColor(R.color.text_inverse));
+                    //edit.setTextColor(getResources().getColor(R.color.text));
 
                     layerView.setVisibility(View.VISIBLE);
                 } else {
@@ -207,7 +208,7 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
                     edit.setFilters(new InputFilter[]{new DefaultFilter(), new ByteLengthFilter(50)});
 
                     //edit.setAlpha(0.5f);
-                    edit.setTextColor(getResources().getColor(R.color.text_medium));
+                    //edit.setTextColor(getResources().getColor(R.color.text_medium));
                 }
             }
         });

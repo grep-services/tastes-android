@@ -55,7 +55,7 @@
         android:gravity="center_vertical"
         android:paddingLeft="@dimen/margin"
         android:paddingRight="@dimen/margin"
-        android:background="@color/gray">
+        android:background="@color/view_dark">
 
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/fragment_profile_location_text"
@@ -67,14 +67,14 @@
             android:singleLine="true"
             android:ellipsize="marquee"
             android:textSize="@dimen/text_small"
-            android:textColor="@color/text_medium"/>
+            android:textColor="@color/text_medium_light"/>
 
         <View
             android:layout_width="@dimen/divider"
             android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/margin"
             android:layout_marginRight="@dimen/margin"
-            android:background="@color/text_medium"/>
+            android:background="@color/view_medium_dark"/>
 
         <com.devspark.robototextview.widget.RobotoButton
             android:id="@+id/fragment_profile_location_button"
@@ -87,7 +87,7 @@
             android:background="@null"
             android:text="@string/location_change"
             android:textSize="@dimen/text_small"
-            android:textColor="@color/text_medium"/>
+            android:textColor="@color/text_medium_light"/>
 
     </LinearLayout>
 
@@ -100,7 +100,7 @@
             android:id="@+id/fragment_profile_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/view_medium">
+            android:background="@color/view_medium_light">
 
             <FrameLayout
                 android:layout_width="match_parent"

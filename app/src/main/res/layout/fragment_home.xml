@@ -35,9 +35,9 @@
             android:includeFontPadding="false"
             android:inputType="text"
             android:textSize="@dimen/text"
-            android:textColor="@color/text_medium"
+            android:textColor="@color/selector_edit_rounded"
             android:imeOptions="actionDone"
-            android:background="@drawable/background_edit_rounded"/>
+            android:background="@drawable/selector_edit_rounded"/>
 
         <Button
             android:id="@+id/fragment_home_filter"
@@ -54,7 +54,7 @@
         android:gravity="center_vertical"
         android:paddingLeft="@dimen/margin"
         android:paddingRight="@dimen/margin"
-        android:background="@color/gray">
+        android:background="@color/view_dark">
 
         <com.devspark.robototextview.widget.RobotoTextView
             android:id="@+id/fragment_home_location_text"
@@ -66,14 +66,14 @@
             android:singleLine="true"
             android:ellipsize="marquee"
             android:textSize="@dimen/text_small"
-            android:textColor="@color/text_medium"/>
+            android:textColor="@color/text_medium_light"/>
 
         <View
             android:layout_width="@dimen/divider"
             android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/margin"
             android:layout_marginRight="@dimen/margin"
-            android:background="@color/text_medium"/>
+            android:background="@color/view_medium_dark"/>
 
         <com.devspark.robototextview.widget.RobotoButton
             android:id="@+id/fragment_home_location_button"
@@ -85,7 +85,7 @@
             android:background="@null"
             android:text="@string/location_change"
             android:textSize="@dimen/text_small"
-            android:textColor="@color/text_medium"/>
+            android:textColor="@color/text_medium_light"/>
 <!--
         <com.devspark.robototextview.widget.RobotoButton
             android:id="@+id/fragment_home_location"
@@ -110,7 +110,7 @@
             android:id="@+id/fragment_home_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/view_medium">
+            android:background="@color/view_medium_light">
 
             <FrameLayout
                 android:layout_width="match_parent"

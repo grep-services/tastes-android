@@ -24,8 +24,8 @@
     <dimen name="check">32dp</dimen>
 
     <!-- listview -->
-    <dimen name="divider">1px</dimen>
-    <dimen name="list_divider">@dimen/divider</dimen>
+    <dimen name="divider">2dp</dimen>
+    <dimen name="list_divider">1px</dimen>
     <dimen name="grid_divider">2dp</dimen>
     <dimen name="grid_padding">-1px</dimen><!-- 좌우 흰줄 없애기 위한 방법... 다른 방법이 마땅히 없다. -->
     <!--<dimen name="navigation_drawer_width">300dp</dimen>-->

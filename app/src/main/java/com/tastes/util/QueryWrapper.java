@@ -67,7 +67,7 @@ public class QueryWrapper {
     }
 
     // add image.(create)
-    public void addImage(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations) throws HttpHostConnectException {
+    public void addImage(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions/*, List<String> orientations*/) throws HttpHostConnectException {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
@@ -78,7 +78,7 @@ public class QueryWrapper {
         parameters.add(new BasicNameValuePair("longitude", String.valueOf(longitude)));
         parameters.add(new BasicNameValuePair("tag", getString(tags)));
         parameters.add(new BasicNameValuePair("positions", getString(positions)));
-        parameters.add(new BasicNameValuePair("orientations", getString(orientations)));
+        //parameters.add(new BasicNameValuePair("orientations", getString(orientations)));
         // get result
         String response = networkProcessor.getResponse(PATH_ADD_IMAGE, parameters, file);
 
@@ -94,7 +94,9 @@ public class QueryWrapper {
         parameters.add(new BasicNameValuePair("id", String.valueOf(id)));
         // get result
         String response = networkProcessor.getResponse(PATH_DELETE_IMAGE, parameters, null);
-LogWrapper.e("DELETE", response);
+
+        LogWrapper.e("DELETE", response);
+
         if(response != null && response.contains("502 Bad Gateway")) {
             // 여기도 어차피 가만히 놔두면 json exception으로 넘어간다.
             throw new HttpHostConnectException(null, null);// null 괜찮은지 모르겠다.(일단 괜찮은 것 같긴 하다.)
@@ -143,7 +145,7 @@ LogWrapper.e("DELETE", response);
 
             List<String> positions = getList(imageObject.getString("positions"));
 
-            List<String> orientations = getList(imageObject.getString("orientations"));
+            //List<String> orientations = getList(imageObject.getString("orientations"));
 
             String datetime = null;
             if(imageObject.getString("time").equals("null") == false) {
@@ -152,7 +154,7 @@ LogWrapper.e("DELETE", response);
                 datetime = format.format(new Date(time));
             }
 
-            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, latitude_, longitude_, distance, tags, positions, orientations);
+            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, latitude_, longitude_, distance, tags, positions/*, orientations*/);
         } catch (JSONException e) {
             LogWrapper.e("JSON", e.getMessage());
         }
@@ -212,9 +214,9 @@ LogWrapper.e("DELETE", response);
 
                 List<String> positions = getList(imageObject.getString("positions"));
 
-                List<String> orientations = getList(imageObject.getString("orientations"));
+                //List<String> orientations = getList(imageObject.getString("orientations"));
 
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), latitude_, longitude_, dist, tags_, positions, orientations);
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), latitude_, longitude_, dist, tags_, positions/*, orientations*/);
 
                 if(images == null) {
                     images = new ArrayList<Image>();

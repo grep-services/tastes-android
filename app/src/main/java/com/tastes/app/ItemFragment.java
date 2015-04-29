@@ -162,7 +162,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
             text.setX((int)(container.getMeasuredWidth() * ratioX));
             text.setY((int)(container.getMeasuredHeight() * ratioY));
 
-            if(image.orientations != null) {// 기존 image에 tag가 추가되는 기능이 activate되지 않는 한 list 내에 빈 값이 있을 일은 없다. 그래서 현재는 null check만 하면 된다.
+            /*if(image.orientations != null) {// 기존 image에 tag가 추가되는 기능이 activate되지 않는 한 list 내에 빈 값이 있을 일은 없다. 그래서 현재는 null check만 하면 된다.
                 // pivot역시 padding을 고려할 필요 없이 그대로 xy를 이용해주면 된다는 계산.
                 //container.setPivotX(text.getX());
                 //container.setPivotY(text.getY());
@@ -171,7 +171,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 //TODO: should change pivot
 
                 text.setRotation(Float.valueOf(image.orientations.get(i)));
-            }
+            }*/
         }
     }
 

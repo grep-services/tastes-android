@@ -27,17 +27,17 @@ public class Image implements Serializable {
     //public boolean available;// latlng avilable(for gallery)
     public List<String> tags;
     public List<String> positions;
-    public List<String> orientations;
+    //public List<String> orientations;
 
     // 자세한 setter, getter들은 나중에 datetime, location들을 str에서 제대로 된 object들로 바꾸고 나서(tag도 tag custom object 만들게 될 수도 있다.) 만든다.
 
     // for gallery(img obj는 어차피 display에서 parse되어 쓰일 용도지만 grid, display에서 최대한 편하게 쓰일 수 있게 하기 위해 이렇게 obj를 사용한다.
     public Image(String origin, String thumbnail/*, Bitmap bitmap*/, String time, double latitude, double longitude, long distance) {
-        this(0, origin, thumbnail/*, bitmap*/, time, /*null, */latitude, longitude, distance, null, null, null);
+        this(0, origin, thumbnail/*, bitmap*/, time, /*null, */latitude, longitude, distance, null, null/*, null*/);
     }
 
     // default(for query)
-    public Image(int id, String origin, String thumbnail, String time, /*String address,*/ double latitude, double longitude, long distance, List<String> tags, List<String> positions, List<String> orientations) {
+    public Image(int id, String origin, String thumbnail, String time, /*String address,*/ double latitude, double longitude, long distance, List<String> tags, List<String> positions/*, List<String> orientations*/) {
         this.id = id;
         this.origin = origin;
         this.thumbnail = thumbnail;
@@ -49,6 +49,6 @@ public class Image implements Serializable {
         this.distance = distance;
         this.tags = tags;
         this.positions = positions;
-        this.orientations = orientations;
+        //this.orientations = orientations;
     }
 }

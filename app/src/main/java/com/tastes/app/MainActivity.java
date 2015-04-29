@@ -1143,7 +1143,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     @Override
-    public void onDisplayUpload(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions, final List<String> orientations) {
+    public void onDisplayUpload(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions/*, final List<String> orientations*/) {
         // send to server
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             @Override
@@ -1156,7 +1156,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             @Override
             protected Boolean doInBackground(Void... params) {
                 try {
-                    queryWrapper.addImage(file, time, latitude, longitude, tags, positions, orientations);
+                    queryWrapper.addImage(file, time, latitude, longitude, tags, positions/*, orientations*/);
                 } catch (HttpHostConnectException e) {
                     LogWrapper.e("Loc", e.getMessage());
                     return false;
@@ -1500,10 +1500,6 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     flag_fragment_gallery = false;
 
                     galleryFragment = null;
-                } else if(flag_fragment_filter) {// 순서는 별 상관없다.
-                    flag_fragment_filter = false;
-
-                    filterFragment = null;
                 } else if(flag_fragment_item) {
                     flag_fragment_item = false;
 
@@ -1512,6 +1508,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                     flag_fragment_profile = false;
 
                     profileFragment = null;
+                } else if(flag_fragment_filter) {// filter -> profile일 때 back하면 profile부터 꺼지도록 profile 뒤에.
+                    flag_fragment_filter = false;
+
+                    filterFragment = null;
                 }
 
                 //fragmentManager.popBackStack();// 이건 다 해준다.(display에서 저렇게 중간에서 해줬었는데 괜찮은지 확인해보기.)
@@ -1567,6 +1567,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                 break;
             case R.id.fragment_home_filter:
                 //viewPagerFragment.setCurrentPage(2);
+                //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
                 flag_fragment_filter = true;
 
@@ -1576,10 +1577,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
                 break;
             case R.id.fragment_filter_ok:// close에 비해서 저장이 추가된 방식.
-                flag_fragment_filter = false;
-
                 filterFragment.closeFilter();
             case R.id.fragment_filter_close:
+                //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+
                 onBackPressed();
 
                 break;
