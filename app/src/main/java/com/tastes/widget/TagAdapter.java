@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Switch;
+//import android.support.v7.widget.SwitchCompat;
 import android.widget.TextView;
 
 import com.devspark.robototextview.widget.RobotoTextView;
@@ -120,6 +122,7 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
 
     public void toggleTag(View view) {
         CheckBox switch_ = ((ViewHolder) view.getTag()).switch_;
+        //Switch switch_ = ((ViewHolder) view.getTag()).switch_;
 
         switch_.setChecked(!switch_.isChecked());
     }
@@ -172,13 +175,14 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
     @Override
     public void onClick(View v) {
         CheckBox switch_ = ((ViewHolder) v.getTag()).switch_;
+        //Switch switch_ = ((ViewHolder) v.getTag()).switch_;
 
         switch_.setChecked(!switch_.isChecked());
     }
 
     public static class ViewHolder {
         public RobotoTextView tag;
-        //public SwitchCompat switch_;
+        //public Switch switch_;
         public CheckBox switch_;
     }
 
@@ -195,14 +199,12 @@ public class TagAdapter extends BaseAdapter implements CompoundButton.OnCheckedC
             viewHolder.tag.setOnClickListener(listener);
 
             if(switch_ == true) {
-                //viewHolder.switch_ = (SwitchCompat) convertView.findViewById(R.id.list_row_switch);
+                //viewHolder.switch_ = (Switch) convertView.findViewById(R.id.list_row_switch);
                 viewHolder.switch_ = (CheckBox) convertView.findViewById(R.id.list_row_check);
-                //viewHolder.switch_.setOnCheckedChangeListener(this);// 굳이 fragment까지 갈 필요 없다. 여기서 switch list 제어해주면 되므로.
                 viewHolder.switch_.setVisibility(View.VISIBLE);
             }
 
             convertView.setTag(viewHolder);
-            //convertView.setOnClickListener(this);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }

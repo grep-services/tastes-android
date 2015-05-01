@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
 import android.text.InputFilter;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -55,8 +56,8 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
 
     View layerView;
 
-    View header;
-    CheckBox check;
+    //View header;
+    //CheckBox check;
     ListView list;
     TagAdapter adapter;
     EditText edit;
@@ -155,11 +156,11 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
         //list.setEmptyView(view.findViewById(R.id.fragment_filter_empty));
         list.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);// 이게 last item visible이면 다 위로 올리고, 아니면 그대로 덮는다.
 
-        header = view.findViewById(R.id.fragment_filter_header);
-        header.setOnClickListener(this);
+        //header = view.findViewById(R.id.fragment_filter_header);
+        //header.setOnClickListener(this);
 
         // 이건 항상 false가 낫다. 따라서 pref 저장하지 않는다.
-        check = (CheckBox) header.findViewById(R.id.fragment_filter_header_check);
+        /*check = (CheckBox) header.findViewById(R.id.fragment_filter_header_check);
         //check.setChecked(defaultTag);
         check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -167,7 +168,7 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
                 adapter.setSwitches(isChecked);
                 //defaultTag = isChecked;
             }
-        });
+        });*/
 
         layerView = view.findViewById(R.id.fragment_filter_layer);
         layerView.setOnTouchListener(new View.OnTouchListener() {
@@ -316,11 +317,11 @@ public class FilterFragment extends Fragment implements View.OnClickListener, Ad
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.fragment_filter_header:
+            /*case R.id.fragment_filter_header:
                 CheckBox checkBox = (CheckBox) v.findViewById(R.id.fragment_filter_header_check);
                 checkBox.setChecked(!checkBox.isChecked());
 
-                break;
+                break;*/
             case R.id.fragment_filter_add:
                 setButtonEnabled(false);
 

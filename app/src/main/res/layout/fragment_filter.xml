@@ -61,7 +61,7 @@
             android:background="@color/gray_dark">
 
             <!-- 아무리 해도 include로는 selector 연결 잘 안되서 이렇게 했다. -->
-            <RelativeLayout
+            <!--<RelativeLayout
                 android:id="@+id/fragment_filter_header"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/view"
@@ -100,7 +100,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/list_divider"
                 android:background="@color/list_divider"
-                android:visibility="gone"/>
+                android:visibility="gone"/>-->
 
             <ListView
                 android:id="@+id/fragment_filter_list"

@@ -59,35 +59,29 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="@dimen/margin">
 
-            <RelativeLayout
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 
-                <com.makeramen.roundedimageview.RoundedImageView
-                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                <ImageView
                     android:layout_width="39dp"
                     android:layout_height="39dp"
-                    android:layout_centerHorizontal="true"
-                    android:src="@color/view"
-                    app:riv_corner_radius="2dp"
-                    app:riv_border_width="0.5dp"
-                    app:riv_border_color="@color/view_inverse"
-                    app:riv_mutate_background="true"/><!-- drawable을 겹쳐 만들까 하다가 그냥 이렇게 갔다. round 유지 목적도 있고. -->
+                    android:layout_gravity="center"
+                    android:background="@drawable/gallery"/><!-- grid와는 여백이 좀 다르다. -->
 
                 <com.makeramen.roundedimageview.RoundedImageView
                     xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/fragment_camera_gallery"
                     android:layout_width="39dp"
                     android:layout_height="39dp"
-                    android:layout_centerHorizontal="true"
-                    android:padding="2dp"
+                    android:layout_gravity="center"
+                    android:padding="3dp"
                     android:scaleType="centerCrop"
                     android:onClick="mOnClick"
-                    app:riv_corner_radius="2dp"
-                    app:riv_mutate_background="true"/>
+                    app:riv_corner_radius="2dp"/>
 
-            </RelativeLayout>
+            </FrameLayout>
 
             <Button
                 android:id="@+id/fragment_camera_shot"
