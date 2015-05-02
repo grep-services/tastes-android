@@ -32,6 +32,9 @@
     <string name="select_all">Select all</string>
     <string name="search_tag">Search HashTag</string>
     <string name="add_tag">Add HashTag</string>
+    <string name="passcode_enter">Enter Passcode</string>
+    <string name="passcode_delete">Delete</string>
+    <string name="passcode_cancel">Cancel</string>
 
     <string name="msg_no_location_data_provided">no_location_data_provided</string>
     <string name="msg_service_not_available">service_not_available</string>

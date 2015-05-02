@@ -34,6 +34,9 @@
     <string name="select_all">전체선택</string>
     <string name="search_tag">해시태그 검색</string>
     <string name="add_tag">해시태그 추가</string>
+    <string name="passcode_enter">패스코드 입력</string>
+    <string name="passcode_delete">삭제</string>
+    <string name="passcode_cancel">닫기</string>
 
     <string name="msg_no_location_data_provided">no_location_data_provided</string>
     <string name="msg_service_not_available">service_not_available</string>

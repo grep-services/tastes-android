@@ -227,9 +227,9 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
             stringList.add(address.getThoroughfare());// 동 정도.
             //stringList.add(address.getSubThoroughfare());// null 확률 있음.(동 이하) => 번지수 될때 있음. 버림.
 
-            for(String string : stringList) {
-                if(string != null) {
-                    if(result == null) {
+            for (String string : stringList) {
+                if (string != null) {
+                    if (result == null) {
                         result = string;
                     } else {
                         result += " " + string;
@@ -261,30 +261,30 @@ public class ProfileFragment extends Fragment implements GridView.OnItemClickLis
     */
 
     public void notifyLocationFailure() {
-        showToast(R.string.location_retry);// TODO: profile visible일 때만 show할지는 고민해보기. -> invisible일 때 여기로 올 일이 일단 없을 것 같다.
+        if(adapter != null) {// getview 안되서 대신. view null인데 toast show할 필요 없다.
+            if(adapter.isEmpty()) {
+                setEmptyView(R.string.location_retry);
 
-        if(getView() != null) {
-            setEmptyView(R.string.img_empty);// 이제 통일.
-            //setEmptyView(R.string.location_retry);
+                adapter.setImages(null);// server에서 받아오지 않아도 null이다. 그리고 해줘야 msg 바뀐다.
 
-            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
-            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
-
-            setRefreshing(false);
+                setRefreshing(false);
+            } else {
+                showToast(R.string.location_retry);// TODO: profile visible일 때만 show할지는 고민해보기. -> invisible일 때 여기로 올 일이 일단 없을 것 같다.
+            }
         }
     }
 
     public void notifyNetworkFailure() {
-        showToast(R.string.network_retry);// TODO: profile visible일 때만 show할지는 고민해보기. -> invisible일 때 여기로 올 일이 일단 없을 것 같다.
+        if(adapter != null) {// getview 안되서 대신. view null인데 toast show할 필요 없다.
+            if(adapter.isEmpty()) {
+                setEmptyView(R.string.network_retry);
 
-        if(getView() != null) {
-            setEmptyView(R.string.img_empty);// 이제 통일.
-            //setEmptyView(R.string.network_retry);
+                adapter.setImages(null);// server에서 받아오지 않아도 null이다. 그리고 해줘야 msg 바뀐다.
 
-            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
-            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
-
-            setRefreshing(false);
+                setRefreshing(false);
+            } else {
+                showToast(R.string.network_retry);// TODO: profile visible일 때만 show할지는 고민해보기. -> invisible일 때 여기로 올 일이 일단 없을 것 같다.
+            }
         }
     }
 

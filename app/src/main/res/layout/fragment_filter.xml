@@ -33,10 +33,7 @@
             android:includeFontPadding="false"
             android:text="@string/title_fragment_filter"
             android:textSize="@dimen/text"
-            android:textColor="@color/text_inverse"
-            app:fontFamily="noto_sans_cjk_kr"
-            app:textWeight="demilight"
-            app:textStyle="normal"/>
+            android:textColor="@color/text_inverse"/>
 
         <Button
             android:id="@+id/fragment_filter_ok"

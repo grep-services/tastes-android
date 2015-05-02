@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationSource, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, PictureFragment.PictureFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks {
+public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationSource, LocationListener, SplashFragment.SplashFragmentCallbakcs, ViewPagerFragment.ViewPagerFragmentCallbacks, /*CameraHostProvider, */CameraFragment_.CameraFragmentCallbacks, GalleryFragment.GalleryFragmentCallbacks, PictureFragment.PictureFragmentCallbacks, DisplayFragment.DisplayFragmentCallbacks, HomeFragment.HomeFragmentCallbacks, ProfileFragment.ProfileFragmentCallbacks, MapFragment_.MapFragmentCallbacks, FilterFragment.FilterFragmentCallbacks, ItemFragment.ItemFragmentCallbacks, PasscodeFragment.PasscodeFragmentCallbakcs {
 
     private QueryWrapper queryWrapper;
 
@@ -1385,6 +1385,10 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onItemMoreClicked(final int id) {
+
+        Fragment fragment = PasscodeFragment.newInstance(false, "1234");
+        addFragment(fragment);
+        /*
         new MaterialDialog.Builder(this)
                 .items(R.array.items)
                 .itemsCallback(new MaterialDialog.ListCallback() {
@@ -1450,7 +1454,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                         }
                     }
                 })
-                .show();
+                .show();*/
     }
 
     @Override

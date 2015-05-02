@@ -51,7 +51,7 @@ public class RobotoTextViewUtils {
 
             if (a.hasValue(R.styleable.RobotoTextView_typeface)) {
                 //int typefaceValue = a.getInt(R.styleable.RobotoTextView_typeface, RobotoTypefaceManager.Typeface.ROBOTO_REGULAR);
-                int typefaceValue = a.getInt(R.styleable.RobotoTextView_typeface, RobotoTypefaceManager.Typeface.NOTO_SANS_CJK_KR_DEMILIGHT);
+                int typefaceValue = a.getInt(R.styleable.RobotoTextView_typeface, RobotoTypefaceManager.Typeface.NOTO_SANS_CJK_KR_THIN);
                 typeface = RobotoTypefaceManager.obtainTypeface(context, typefaceValue);
             } else {
                 /*
@@ -60,7 +60,8 @@ public class RobotoTextViewUtils {
                 int textStyle = a.getInt(R.styleable.RobotoTextView_textStyle, RobotoTypefaceManager.TextStyle.NORMAL);
                 */
                 int fontFamily = a.getInt(R.styleable.RobotoTextView_fontFamily, RobotoTypefaceManager.FontFamily.NOTO_SANS_CJK_KR);
-                int textWeight = a.getInt(R.styleable.RobotoTextView_textWeight, RobotoTypefaceManager.TextWeight.DEMILIGHT);
+                //int textWeight = a.getInt(R.styleable.RobotoTextView_textWeight, RobotoTypefaceManager.TextWeight.REGUALR);
+                int textWeight = a.getInt(R.styleable.RobotoTextView_textWeight, RobotoTypefaceManager.TextWeight.THIN);
                 int textStyle = a.getInt(R.styleable.RobotoTextView_textStyle, RobotoTypefaceManager.TextStyle.NORMAL);
 
                 typeface = RobotoTypefaceManager.obtainTypeface(context, fontFamily, textWeight, textStyle);
@@ -69,7 +70,7 @@ public class RobotoTextViewUtils {
             a.recycle();
         } else {
             //typeface = RobotoTypefaceManager.obtainTypeface(context, RobotoTypefaceManager.Typeface.ROBOTO_REGULAR);
-            typeface = RobotoTypefaceManager.obtainTypeface(context, RobotoTypefaceManager.Typeface.NOTO_SANS_CJK_KR_DEMILIGHT);
+            typeface = RobotoTypefaceManager.obtainTypeface(context, RobotoTypefaceManager.Typeface.NOTO_SANS_CJK_KR_THIN);
         }
 
         setTypeface(textView, typeface);

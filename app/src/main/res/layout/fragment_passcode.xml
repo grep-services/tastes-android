@@ -1,0 +1,220 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/margin"
+    android:background="@color/black_overlay"
+    android:gravity="center"
+    android:clickable="true"
+    tools:context="com.tastes.app.PasscodeFragment">
+
+    <com.devspark.robototextview.widget.RobotoTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/margin_narrow"
+        android:includeFontPadding="false"
+        android:textSize="@dimen/text"
+        android:textColor="@color/text_inverse"
+        android:text="@string/passcode_enter"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:layout_marginBottom="@dimen/margin">
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginRight="@dimen/margin"
+            android:scaleType="centerInside"
+            android:src="@drawable/circle_small"/>
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginRight="@dimen/margin"
+            android:layout_marginLeft="@dimen/margin"
+            android:scaleType="centerInside"
+            android:src="@drawable/circle_small"/>
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginRight="@dimen/margin"
+            android:layout_marginLeft="@dimen/margin"
+            android:scaleType="centerInside"
+            android:src="@drawable/circle_small"/>
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginLeft="@dimen/margin"
+            android:scaleType="centerInside"
+            android:src="@drawable/circle_small"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:layout_marginBottom="@dimen/margin">
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginRight="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="1"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginRight="@dimen/margin"
+            android:layout_marginLeft="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="2"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginLeft="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="3"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:layout_marginBottom="@dimen/margin">
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginRight="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="4"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginRight="@dimen/margin"
+            android:layout_marginLeft="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="5"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginLeft="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="6"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:layout_marginBottom="@dimen/margin">
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginRight="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="7"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginRight="@dimen/margin"
+            android:layout_marginLeft="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="8"/>
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginLeft="@dimen/margin"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="9"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin"
+        android:layout_marginBottom="@dimen/margin">
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@drawable/selector_button_number"
+            android:textSize="36sp"
+            android:textColor="@color/text_inverse"
+            android:text="0"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.devspark.robototextview.widget.RobotoButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:padding="@dimen/margin_narrow"
+            android:includeFontPadding="false"
+            android:background="@null"
+            android:textSize="@dimen/text"
+            android:textColor="@color/text_inverse"
+            android:text="@string/passcode_cancel"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

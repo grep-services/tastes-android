@@ -403,34 +403,34 @@ public class HomeFragment extends Fragment implements GridView.OnItemClickListen
     }
 
     public void notifyLocationFailure() {
-        if(mActivity != null && mActivity.isHomeViewing()) {
-            showToast(R.string.location_retry);
-        }
+        if(adapter != null) {// getview 안되서 대신. view null인데 toast show할 필요 없다.
+            if(adapter.isEmpty()) {// 비어 있을 때는 msg를 바꿔주고
+                setEmptyView(R.string.location_retry);
 
-        if(getView() != null) {
-            setEmptyView(R.string.img_empty);// 이제 통일.
-            //setEmptyView(R.string.location_retry);
+                adapter.setImages(null);// server에서 받아오지 않아도 null이다. 그리고 해줘야 msg 바뀐다.
 
-            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
-            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
-
-            setRefreshing(false);
+                setRefreshing(false);
+            } else {// 안 비어 있을 때는 그냥 toast를 띄워준다.
+                if(mActivity != null && mActivity.isHomeViewing()) {
+                    showToast(R.string.location_retry);
+                }
+            }
         }
     }
 
     public void notifyNetworkFailure() {
-        if(mActivity != null && mActivity.isHomeViewing()) {
-            showToast(R.string.network_retry);
-        }
+        if(adapter != null) {// getview 안되서 대신. view null인데 toast show할 필요 없다.
+            if (adapter.isEmpty()) {
+                setEmptyView(R.string.network_retry);
 
-        if(getView() != null) {
-            setEmptyView(R.string.img_empty);// 이제 통일.
-            //setEmptyView(R.string.network_retry);// 이제 통일.
+                adapter.setImages(null);// server에서 받아오지 않아도 null이다. 그리고 해줘야 msg 바뀐다.
 
-            //그대로 남겨두는 것 나쁘지 않다.(어차피 다른 것 더 누르면 바로 null된다.)
-            //adapter.setImages(null);// server에서 받아오지 않아도 null이다.
-
-            setRefreshing(false);
+                setRefreshing(false);
+            } else {
+                if (mActivity != null && mActivity.isHomeViewing()) {
+                    showToast(R.string.network_retry);
+                }
+            }
         }
     }
 
