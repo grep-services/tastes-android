@@ -64,6 +64,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private String strTags;
     private String strSwitches;
     private static final String TAG_DEFAULT = "tastes";
+    private String passcode;
 
     private boolean flag_fragment_splash = true;// 위치 잡히면 frag remove하면서 false되고, 나머지에 대해서는 true가 되어서 back key 때 무조건 finish되게 한다.
     private boolean flag_fragment_home = false;// except for home, default back key processing.
@@ -74,6 +75,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private boolean flag_fragment_gallery = false;// back pressed 때문에 필요.
     private boolean flag_fragment_filter = false;
     private boolean flag_fragment_map = false;
+    private boolean flag_fragment_passcode = false;
 
     //private SlidingMenu slidingMenu;
 
@@ -87,6 +89,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     private FilterFragment filterFragment;
     private ViewPagerFragment viewPagerFragment;
     private MapFragment_ mapFragment;
+    private PasscodeFragment passcodeFragment;
 
     // location
     private GoogleApiClient mGoogleApiClient;
@@ -824,6 +827,8 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         //LogWrapper.e("INIT PREF", strTags+","+strSwitches);
         initDefaultTag();
+
+        passcode = preferences.getString("Passcode", null);
     }
 
     // home, filter 등에서 사용되기 전에 바로 이렇게 해준다.
@@ -876,6 +881,16 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.putBoolean("LocationUpdates", locationUpdates);
+
+        editor.commit();
+    }
+
+    public void setPreferences(String passcode) {
+        this.passcode = passcode;// local에는 보관할 필요 없지만, 그냥 해둔다.
+
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putString("Passcode", passcode);
 
         editor.commit();
     }
@@ -1143,7 +1158,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     @Override
-    public void onDisplayUpload(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions/*, final List<String> orientations*/) {
+    public void onDisplayUpload(final byte[] file, final long time, final double latitude, final double longitude, final List<String> tags, final List<String> positions/*, final List<String> orientations*/, final String passcode) {
         // send to server
         AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
             @Override
@@ -1156,7 +1171,7 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             @Override
             protected Boolean doInBackground(Void... params) {
                 try {
-                    queryWrapper.addImage(file, time, latitude, longitude, tags, positions/*, orientations*/);
+                    queryWrapper.addImage(file, time, latitude, longitude, tags, positions/*, orientations*/, passcode);
                 } catch (HttpHostConnectException e) {
                     LogWrapper.e("Loc", e.getMessage());
                     return false;
@@ -1184,6 +1199,37 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
         //TODO: 여기가 중요. DISPLAY를 끄기 전에 확실히 UPLOAD를 한다.
         //onBackPressed();// 다만, 이게 display의 finish가 맞아야 한다.
+    }
+
+    public void uploadProcess(String passcode, double latitude, double longitude) {// map에서, 또는 map의 passcode에서 올 수 있다.
+        // display에서 온건지 home/profile에서 온건지 구분해야 한다.
+        if(displayFragment != null) {
+            // 1. show toast.
+            //showToast(R.string.upload_wait);//TODO: 다른 서비스들 봐도 그냥 안내 없이 올린다. 그렇게 하기.
+            // 2. set display location - //TODO: upload와 같이 하고 싶지만 upload도 일단 독립적으로 둬보는게 좋을듯하다.
+            displayFragment.setLocation(latitude, longitude);
+            // 3. upload via display frag
+            displayFragment.upload(passcode);
+            // 4. move to home(refresh는 async post에서 될 것)
+            viewPagerFragment.setCurrentPage(1);
+            // 5. close display frag. => display의 upload가 main의 callback으로 오고, 거기서 back이 된다. => 그럴 필요 없다. home으로 돌려놓고 바로 close하면 된다.
+            onBackPressed();
+
+            if(galleryFragment != null) {
+                onBackPressed();// close gallery
+                //onBackPressed();// close picture - item, profile이 gallery 다음 check 대상이지만, 아직 item, profile이 켜진 상태에서 picture이 열릴 경우는 없으므로 괜찮다.
+            }
+        } else {
+            if(profileFragment != null) {
+                profileFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
+                profileFragment.setLocation(latitude, longitude);
+            } else {// profile에서 뜬 map의 설정시에는 home은 안 건드린다는 말과 같다.(당장은 profile에서 map 뜨지도 않으므로 상관없다.)
+                if(homeFragment != null) {
+                    homeFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
+                    homeFragment.setLocation(latitude, longitude);
+                }
+            }
+        }
     }
 
     public void showToast(int resId) {
@@ -1254,39 +1300,18 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     //---- map
     @Override
     public void onMapOKClicked(double latitude, double longitude) {
-        //TODO: keyboard back은 좀 막을 수 있다면 막아보도록 한다. 하지만 워낙 빠르기도 하고, 다른 부분들도 그대로이므로 일단 놔두고 나중에 한꺼번에 한다.
-        onBackPressed();// 먼저 해야, loc stop without update가 되어서 loc change 안나오고 그래야 home loc reset안된다.
+        if(passcode != null) {
+            //TODO: keyboard back은 좀 막을 수 있다면 막아보도록 한다. 하지만 워낙 빠르기도 하고, 다른 부분들도 그대로이므로 일단 놔두고 나중에 한꺼번에 한다.
+            onBackPressed();// 먼저 해야, loc stop without update가 되어서 loc change 안나오고 그래야 home loc reset안된다.
 
-        // display에서 온건지 home/profile에서 온건지 구분해야 한다.
-        if(displayFragment != null) {
-            // 1. show toast.
-            //showToast(R.string.upload_wait);//TODO: 다른 서비스들 봐도 그냥 안내 없이 올린다. 그렇게 하기.
-            // 2. set display location - //TODO: upload와 같이 하고 싶지만 upload도 일단 독립적으로 둬보는게 좋을듯하다.
-            displayFragment.setLocation(latitude, longitude);
-            // 3. upload via display frag
-            displayFragment.upload();
-            // 4. move to home(refresh는 async post에서 될 것)
-            viewPagerFragment.setCurrentPage(1);
-            // 5. close display frag. => display의 upload가 main의 callback으로 오고, 거기서 back이 된다. => 그럴 필요 없다. home으로 돌려놓고 바로 close하면 된다.
-            onBackPressed();
-
-            if(galleryFragment != null) {
-                onBackPressed();// close gallery
-                onBackPressed();// close picture - item, profile이 gallery 다음 check 대상이지만, 아직 item, profile이 켜진 상태에서 picture이 열릴 경우는 없으므로 괜찮다.
-            }
+            uploadProcess(passcode, latitude, longitude);
         } else {
-            if(profileFragment != null) {
-                profileFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
-                profileFragment.setLocation(latitude, longitude);
-            } else {// profile에서 뜬 map의 설정시에는 home은 안 건드린다는 말과 같다.(당장은 profile에서 map 뜨지도 않으므로 상관없다.)
-                if(homeFragment != null) {
-                    homeFragment.setRefreshing(true);// 이게 필요없는 것들도 있지만(직접 refresh한다거나, display에서 넘어간다거나 등) 여긴 필요하다.
-                    homeFragment.setLocation(latitude, longitude);
-                }
-            }
-        }
+            flag_fragment_passcode = true;
 
-        //onBackPressed();// 뭐가 됐든 back은 필요하다.(display 등은 2번이므로 묶어야 keyboard back 등에 의한 꼬임 발생 안할 것 같긴 하지만...)
+            passcodeFragment = PasscodeFragment.newInstance(true, null, -1, latitude, longitude);
+
+            addFragment(passcodeFragment);
+        }
     }
 
     @Override
@@ -1384,11 +1409,53 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     }
 
     @Override
-    public void onItemMoreClicked(final int id) {
+    public void onItemMoreClicked(String passcode, int id) {
+        if(this.passcode == null || !this.passcode.equals(passcode)) {
+            flag_fragment_passcode = true;
 
-        Fragment fragment = PasscodeFragment.newInstance(false, "1234");
-        addFragment(fragment);
-        /*
+            passcodeFragment = PasscodeFragment.newInstance(false, passcode, id, 0, 0);
+
+            addFragment(passcodeFragment);
+        } else {// not null and equals
+            showMoreDialog(id);
+        }
+    }
+
+    @Override
+    public void onItemActionDistanceClicked(double latitude, double longitude) {
+        flag_fragment_map = true;
+
+        mapFragment = MapFragment_.newInstance(latitude, longitude, true, true);
+
+        addFragment(mapFragment);
+    }
+
+    /*
+    @Override
+    public void onItemAddTag(List<String> tags, List<String> switches) {
+        addPreferences(tags, switches);
+    }
+    */
+
+    //---- passcode
+    @Override
+    public void onPasscodeInit(String passcode, double latitude, double longitude) {
+        setPreferences(passcode);
+
+        onBackPressed();// passcode
+        onBackPressed();// map
+
+        uploadProcess(passcode, latitude, longitude);
+    }
+
+    @Override
+    public void onPasscodeConfirmed(int id) {
+        onBackPressed();
+
+        showMoreDialog(id);
+    }
+
+    public void showMoreDialog(final int id) {
         new MaterialDialog.Builder(this)
                 .items(R.array.items)
                 .itemsCallback(new MaterialDialog.ListCallback() {
@@ -1454,39 +1521,27 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
                         }
                     }
                 })
-                .show();*/
+                .show();
     }
-
-    @Override
-    public void onItemActionDistanceClicked(double latitude, double longitude) {
-        flag_fragment_map = true;
-
-        mapFragment = MapFragment_.newInstance(latitude, longitude, true, true);
-
-        addFragment(mapFragment);
-    }
-
-    /*
-    @Override
-    public void onItemAddTag(List<String> tags, List<String> switches) {
-        addPreferences(tags, switches);
-    }
-    */
 
     @Override
     public void onBackPressed() {
         FragmentManager fragmentManager = getFragmentManager();
         if(fragmentManager.getBackStackEntryCount() > 0) {
-            if(flag_fragment_splash == true) {
+            if(flag_fragment_splash) {
                 finish();
             } else {
-                if(flag_fragment_map == true) {
+                if(flag_fragment_passcode) {
+                    flag_fragment_passcode = false;
+
+                    passcodeFragment = null;
+                } else if(flag_fragment_map) {
                     mapFragment.onClosed();
 
                     flag_fragment_map = false;
 
                     mapFragment = null;
-                } else if(flag_fragment_display == true) {
+                } else if(flag_fragment_display) {
                     flag_fragment_display = false;// 미리 false로 하고 pop한다.
 
                     displayFragment = null;// 쓸 일 없으면 null 처리를 해주는게 나을듯 하다.

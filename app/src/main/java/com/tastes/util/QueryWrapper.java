@@ -67,7 +67,7 @@ public class QueryWrapper {
     }
 
     // add image.(create)
-    public void addImage(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions/*, List<String> orientations*/) throws HttpHostConnectException {
+    public void addImage(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions/*, List<String> orientations*/, String passcode) throws HttpHostConnectException {
         // set params
         List<NameValuePair> parameters = new ArrayList<NameValuePair>();
         // 일단 보낼 필요도 없다. 괜히 method에서 null때문에 exception이나 나고(network processor에서) 일단 보내지 않고 놔둔다.
@@ -79,6 +79,7 @@ public class QueryWrapper {
         parameters.add(new BasicNameValuePair("tag", getString(tags)));
         parameters.add(new BasicNameValuePair("positions", getString(positions)));
         //parameters.add(new BasicNameValuePair("orientations", getString(orientations)));
+        parameters.add(new BasicNameValuePair("passcode", passcode));
         // get result
         String response = networkProcessor.getResponse(PATH_ADD_IMAGE, parameters, file);
 
@@ -154,7 +155,9 @@ public class QueryWrapper {
                 datetime = format.format(new Date(time));
             }
 
-            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, latitude_, longitude_, distance, tags, positions/*, orientations*/);
+            String passcode = imageObject.getString("passcode");
+
+            image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), datetime, latitude_, longitude_, distance, tags, positions/*, orientations*/, passcode.equals("null") ? null : passcode);
         } catch (JSONException e) {
             LogWrapper.e("JSON", e.getMessage());
         }
@@ -216,7 +219,9 @@ public class QueryWrapper {
 
                 //List<String> orientations = getList(imageObject.getString("orientations"));
 
-                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), latitude_, longitude_, dist, tags_, positions/*, orientations*/);
+                String passcode = imageObject.getString("passcode");
+
+                Image image = new Image(imageObject.getInt("id"), imageObject.getString("origin"), imageObject.getString("thumbnail"), imageObject.getString("time"), latitude_, longitude_, dist, tags_, positions/*, orientations*/, passcode.equals("null") ? null : passcode);
 
                 if(images == null) {
                     images = new ArrayList<Image>();

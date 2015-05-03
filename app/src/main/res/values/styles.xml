@@ -12,4 +12,29 @@
         <item name="colorControlHighlight">@color/transparent</item>--><!-- because of edittext -->
     </style>
 
+    <style name="Circle">
+
+        <item name="android:layout_width">@dimen/passcode</item>
+        <item name="android:layout_height">@dimen/passcode</item>
+        <item name="android:layout_marginLeft">@dimen/passcode</item>
+        <item name="android:layout_marginRight">@dimen/passcode</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:src">@drawable/selector_circle</item>
+
+    </style>
+
+    <style name="Number">
+
+        <item name="android:layout_width">@dimen/button_number</item>
+        <item name="android:layout_height">@dimen/button_number</item>
+        <item name="android:layout_marginLeft">@dimen/margin</item>
+        <item name="android:layout_marginRight">@dimen/margin</item>
+        <item name="android:padding">@dimen/margin_narrow</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:background">@drawable/selector_button_number</item>
+        <item name="android:textSize">@dimen/text_number</item>
+        <item name="android:textColor">@color/text_inverse</item>
+
+    </style>
+
 </resources>

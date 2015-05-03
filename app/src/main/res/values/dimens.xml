@@ -8,6 +8,7 @@
     <!-- view -->
     <dimen name="view">48dp</dimen><!-- usually, height -->
     <dimen name="view_narrow">36dp</dimen><!-- usually, height -->
+    <dimen name="margin_wide">12dp</dimen>
     <dimen name="margin">8dp</dimen><!-- default margin that can be used for any view. -->
     <dimen name="margin_narrow">4dp</dimen>
 
@@ -15,10 +16,17 @@
     <dimen name="text">16sp</dimen>
     <dimen name="text_small">14sp</dimen>
 
+    <dimen name="text_number">32sp</dimen>
+
+    <!-- image -->
+    <dimen name="passcode">12dp</dimen>
+
     <!-- button -->
     <dimen name="button">32dp</dimen>
     <!--<dimen name="button_small">24dp</dimen>-->
     <dimen name="button_large">64dp</dimen>
+
+    <dimen name="button_number">72dp</dimen>
 
     <!-- check -->
     <dimen name="check">32dp</dimen>

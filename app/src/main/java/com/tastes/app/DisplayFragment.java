@@ -722,7 +722,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
     */
 
     // 따로 빼야 location 완료 등에서도 연결될 수 있다.
-    public void upload() {
+    public void upload(String passcode) {
         if (mCallbacks != null) {
             int position = pager.getCurrentItem();
 
@@ -745,7 +745,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
             //actionOKClicked(image, internal ? time : System.currentTimeMillis(), latitude, longitude, tags, positions, orientations, switches);
             //TODO: caller에서 task 실행하게 해야 frag 닫혀도 나머지 process 처리할 수 있다. 그리고 나중에 image obj로 바꿔서 간다.(for retry in home)
-            mCallbacks.onDisplayUpload(image, internal ? time : System.currentTimeMillis(), latitude, longitude, tags, positions/*, orientations*/);
+            mCallbacks.onDisplayUpload(image, internal ? time : System.currentTimeMillis(), latitude, longitude, tags, positions/*, orientations*/, passcode);
         }
     }
 
@@ -888,7 +888,7 @@ public class DisplayFragment extends Fragment implements Button.OnClickListener,
 
     public interface DisplayFragmentCallbacks {
         public void onDisplayForwardClicked(double latitude, double longitude, boolean isLocationAvailable);
-        public void onDisplayUpload(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions/*, List<String> orientations*/);
+        public void onDisplayUpload(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions/*, List<String> orientations*/, String passcode);
         //public void onDisplayActionOKClicked(byte[] file, long time, double latitude, double longitude, List<String> tags, List<String> positions, List<String> orientations, List<String> switches);
     }
 }

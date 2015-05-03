@@ -361,9 +361,9 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
         }
     }
 
-    public void moreClicked(int id) {
+    public void moreClicked(String passcode, int id) {
         if (mCallbacks != null) {
-            mCallbacks.onItemMoreClicked(id);
+            mCallbacks.onItemMoreClicked(passcode, id);
         }
     }
 
@@ -384,9 +384,10 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
                 */
             case R.id.fragment_item_more:
                 //showDialog((Integer) v.getTag());
+                String passcode = images.get(pager.getCurrentItem()).passcode;
                 int id = images.get(pager.getCurrentItem()).id;
 
-                moreClicked(id);
+                moreClicked(passcode, id);
 
                 break;
             case R.id.fragment_item_tag:
@@ -407,7 +408,7 @@ public class ItemFragment extends Fragment implements Button.OnClickListener {
     public interface ItemFragmentCallbacks {
         public void onItemActionShareClicked();
         public void onItemActionTagClicked(String tag);
-        public void onItemMoreClicked(int id);
+        public void onItemMoreClicked(String passcode, int id);
         public void onItemActionDistanceClicked(double latitude, double longitude);
     }
 }
